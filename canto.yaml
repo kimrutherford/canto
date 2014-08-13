@@ -1,6 +1,6 @@
 # Canto config file  -*- conf -*-
 name: Canto
-long_name: Community curation application
+long_name: Curation application for the PHI-base database
 
 # The name of the destination database for the annotations from this instance.
 # eg. "PomBase".
@@ -17,7 +17,7 @@ long_name: Community curation application
 header_image_url: '/'
 header_image: logos/curation_tool.png
 
-canto_url: http://curation.pombase.org/
+canto_url: http://localhost:5000/
 
 app_version: v783
 
