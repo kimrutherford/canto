@@ -1,4 +1,4 @@
-Canto: The PomBase community curation tool
+Canto for PHI-base: A community curation tool for the PHI-base database
 ===================================
 
 Canto is web based genome annotation tool.
