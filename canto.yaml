@@ -1569,7 +1569,7 @@ help_text:
     url: "@@instance_top_uri@@/docs/genetic_interaction_annotation"
 
 contact_email:
-  address: "set_me@localhost"
+  address: "alistair.irvine@rothamsted.ac.uk"
 
 external_links:
   gene:
