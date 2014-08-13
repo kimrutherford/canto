@@ -1,0 +1,4 @@
+FOXG_02277	GeneName1	Syn1	conserved hypothetical protein
+FOXG_08661	GeneName2	Syn2	conserved hypothetical protein
+FOXG_00016	GeneName3	Syn3	hypothetical protein
+FOXG_00076	GeneName4	Syn4	conserved hypothetical protein
