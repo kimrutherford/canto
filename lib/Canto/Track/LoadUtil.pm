@@ -42,8 +42,11 @@ use warnings;
 use Carp;
 use Moose;
 use Digest::SHA qw(sha1_base64);
+use Try::Tiny;
 
 use feature qw(state);
+
+use Canto::Track;
 
 has 'schema' => (
   is => 'ro',
@@ -53,6 +56,10 @@ has 'schema' => (
 
 has 'default_db_name' => (
   is => 'ro'
+);
+
+has 'preload_cache' => (
+  is => 'ro',
 );
 
 has 'cache' => (
@@ -69,6 +76,10 @@ sub _build_cache
     cvterm => {},
     dbxref => {},
   };
+
+  if ($self->preload_cache()) {
+    $self->_preload_dbxref_cache($cache);
+  }
 
   return $cache;
 }
@@ -325,16 +336,15 @@ sub _create_dbxref
   return $dbxref;
 }
 
-sub _preload_dbxref_cache()
+sub _preload_dbxref_cache
 {
   my $self = shift;
-
-  my $cache = $self->cache();
+  my $cache = shift;
 
   my $dbxref_rs = $self->schema()->resultset('Dbxref')
     ->search({}, { prefetch => 'db' });
 
-  while (defined (my $dbxref = $dbxref_rs->next())) {
+  for my $dbxref ($dbxref_rs->all()) {
     $cache->{dbxref}->{$dbxref->db_accession()} = $dbxref;
   }
 }
@@ -375,12 +385,21 @@ sub get_dbxref_by_accession
 
   my $key = "$db_name:$accession";
 
-  if (!exists $self->cache()->{dbxref} || keys %{$self->cache()->{dbxref}} == 0) {
-    $self->_preload_dbxref_cache();
-  }
-
   if (exists $self->cache()->{dbxref}->{$key}) {
     return $self->cache()->{dbxref}->{$key};
+  } else {
+    my $dbxref = undef;
+
+    try {
+      $dbxref = $self->find_dbxref($key);
+      $self->cache()->{dbxref}->{$key} = $dbxref;
+    } catch {
+      # fall through - dbxref not in DB
+    };
+
+    if (defined $dbxref) {
+      return $dbxref;
+    }
   }
 
   my $db = $self->get_db($db_name);
@@ -597,6 +616,44 @@ sub get_person
         password => $hashed_password,
         role => $role_cvterm,
       });
+}
+
+=head2 create_user_session
+
+ Usage   : my ($curs, $cursdb, $curator) =
+             $load_util->create_user_session($config, $pubmedid, $email_address);
+ Function: Create a session for a publication and set the curator.  If the
+           publication has no corresponding_author, set it to the curator.
+ Args    : $config - the Config object
+           $pub_uniquename - a PubMed ID with optional "PMID:" prefix
+           $email_address - the email address of the user to curate the session
+ Return  : The Curs object from the Track database, the CursDB object and the
+           Person object for the email_address.
+
+=cut
+sub create_user_session
+{
+  my $self = shift;
+  my $config = shift;
+  my $pub_uniquename = shift;
+  my $email_address = shift;
+
+  if ($pub_uniquename =~ /^\d+$/) {
+    $pub_uniquename = "PMID:$pub_uniquename";
+  }
+
+  my ($curs, $cursdb) =
+    Canto::Track::create_curs($config, $self->schema(), $pub_uniquename);
+
+  my $person = $self->schema()->resultset('Person')->find_or_create({
+    email_address => $email_address,
+  });
+
+  my $curator_manager = Canto::Track::CuratorManager->new(config => $config);
+
+  $curator_manager->set_curator($curs->curs_key(), $email_address);
+
+  return ($curs, $cursdb, $person);
 }
 
 1;

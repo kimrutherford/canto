@@ -26,13 +26,18 @@ The URL of the database that this instance is installed for. e.g.
 A path (relative to `root/static`) of the logo to put in the header.
 
 ### instance_organism
-Canto has two modes: single or multi organism. In multi organism mode, genes
-from any number of organisms can be annotated in each session. In this mode
-after uploading a list of gene identifiers, the user will be shown the
-organism name as well as the names, synonyms and products. The organism is
-shown so the user can confirm that the identifier they gave matched the gene
-from the right organism. In single organism mode the organism is not
-displayed.
+Canto has two modes: single or multi organism.  Single organism mode is
+activated by setting an "instance organism".  That organism will be assumed
+throughout the interface.  Only genes from that single organism can be
+annotated and the user will not be shown the organism name.
+
+In multi organism mode, genes from any number of organisms can be annotated in
+each session.  In this mode after uploading a list of gene identifiers, the
+user will be shown the organism name as well as the names, synonyms and
+products.  The organism is shown so the user can confirm that the identifier
+they gave matched the gene from the right organism.  Generally an external
+gene adaptor should be configured using the [instance_organism](`instance_organism`)
+setting in the multi-organism case.
 
 Example:
 
@@ -102,8 +107,9 @@ configured with the option "with_gene" set to true will cause the
 interface to ask for a gene for later storage in the "with/from" column
 of a GAF file.
 
-New evidence codes must also be configured in
-`available_annotation_type_list`.  See [`evidence_codes`](#evidence_codes).
+Evidence codes must also be configured for in
+`available_annotation_type_list`.  See [`evidence_codes`](#evidence_codes) in
+the [Configuring annotation types](configuringannotationtypes) section.
 
 Example:
 
@@ -123,9 +129,10 @@ description.
 ### available_annotation_type_list
 List of possible annotation type and their configuration details.
 
-See [Configuring annotation types](#configuring-annotation-types) for details.
+See [Configuring annotation types](configuration_file#configuringannotationtypes)
+for details.
 
-### enable_annotation_type_list
+### enabled_annotation_type_list
 The names of the types that are enabled in this Canto instance.  If not set
 all annotation types from `available_annotation_type_list` will be enabled.
 

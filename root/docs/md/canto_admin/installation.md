@@ -29,7 +29,7 @@ package manager:
     sudo apt-get install perl gcc g++ tar gzip bzip2 make git-core wget \
       libmodule-install-perl libcatalyst-devel-perl liblocal-lib-perl
 
-To improve the installation speed, these packages can optionally be installed
+Optional: to improve the installation speed, these Perl packages can be installed
 before proceeding:
 
     sudo apt-get install libhash-merge-perl \
@@ -48,7 +48,7 @@ before proceeding:
       libdbd-pg-perl libdata-javascript-anon-perl starman libnet-server-perl \
       libautobox-list-util-perl libwant-perl libautobox-core-perl
 
-If these packages aren't installed, these Perl modules will be installed using
+If these packages aren't installed, the required Perl modules will be installed using
 CPAN, which is slower.
 
 [CLucene](http://clucene.sourceforge.net/) is required by Canto. For
@@ -65,11 +65,31 @@ CLucene version 0.9.* but Ubuntu v13.10 and later ship with CLucene v2.3.3.4.
 
 The required CLucene library can be installed with:
 
-    wget http://archive.ubuntu.com/ubuntu/pool/main/c/clucene-core/libclucene0ldbl_0.9.21b-2build1_amd64.deb
-    wget http://archive.ubuntu.com/ubuntu/pool/main/c/clucene-core/libclucene-dev_0.9.21b-2build1_amd64.deb
-    sudo dpkg -i libclucene0ldbl_0.9.21b-2build1_amd64.deb libclucene-dev_0.9.21b-2build1_amd64.deb
+    wget http://archive.ubuntu.com/ubuntu/pool/main/c/clucene-core/libclucene0ldbl_0.9.21b-2_amd64.deb
+    wget http://archive.ubuntu.com/ubuntu/pool/main/c/clucene-core/libclucene-dev_0.9.21b-2_amd64.deb
+    sudo dpkg -i libclucene0ldbl_0.9.21b-2_amd64.deb libclucene-dev_0.9.21b-2_amd64.deb
+
+You may need to "pin" those version in v14.10.  For example, add a file
+called `/etc/apt/preferences.d/clucene-pin` with these contents:
+
+   Package: libclucene0ldbl
+   Pin: release a=precise
+   Pin-Priority: 999
+
+   Package: libclucene-dev
+   Pin: release a=precise
+   Pin-Priority: 999
+
+### CLucene on Debian v8 ("Jessie") and later
+
+The CLucene libraries must be manually installed for Debian v8 with:
+
+    wget http://ftp.debian.org/debian/pool/main/c/clucene-core/libclucene-dev_0.9.21b-2+b1_amd64.deb
+    wget http://ftp.debian.org/debian/pool/main/c/clucene-core/libclucene0ldbl_0.9.21b-2+b1_amd64.deb
+    sudo dpkg -i libclucene0ldbl_0.9.21b-2+b1_amd64.deb libclucene-dev_0.9.21b-2+b1_amd64.deb
 
 ### Installing prerequisites on Centos/Red Hat
+
 If you have added
 [RPMforge](http://wiki.centos.org/AdditionalResources/Repositories/RPMForge)
 as an extra [Centos](http://www.centos.org/) package repository many of the
@@ -184,7 +204,7 @@ its dependencies:
     vagrant box add precise64 http://files.vagrantup.com/precise64.box
     vagrant up
 
-The `vagrant` commands will many minutes to complete. If everything is
+The `vagrant` command will take many minutes to complete. If everything is
 successful, once `vagrant up` returns you can `ssh` to the virtual machine
 with:
 
@@ -204,14 +224,15 @@ To try the Canto server:
 ### Initialise a test data directory
 Make a data directory somewhere:
 
-    mkdir /tmp/canto-test
+    mkdir /var/canto-data
 
 From the `canto` directory:
 
-    ./script/canto_start --init /tmp/canto-test
+    ./script/canto_start --init /var/canto-data
 
-This will initialise the `canto-test` directory and will create a
-configuration file (`canto_deploy.yaml`) that can be customised.
+This will initialise the `canto-data` directory and will create a
+configuration file (`canto_deploy.yaml`) in the `canto` directory that can be
+customised.
 
 ### Run a test server
 Again, from the `canto` directory.
@@ -221,3 +242,5 @@ Again, from the `canto` directory.
 ### Visit the application start page
 The test application should now be running at http://localhost:5000
 
+# Next step
+[Setting up Canto](setup)

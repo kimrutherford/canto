@@ -52,11 +52,31 @@ with 'Canto::Role::SimpleCache';
 has load_util => (is => 'ro', isa => 'Canto::Track::LoadUtil',
                   lazy_build => 1, init_arg => undef);
 
+has inverse_relationships => (is => 'rw', init_arg => undef);
+has follow_inverse_cv_names => (is => 'rw', init_arg => undef);
+
 sub _build_load_util
 {
   my $self = shift;
 
   return Canto::Track::LoadUtil->new(schema => $self->schema());
+}
+
+sub BUILD
+{
+  my $self = shift;
+
+  # "inverse" relationships are where the more specific term is the object. eg. has_part
+  my @inverse_relationships =
+    @{$self->config()->{load}->{ontology}->{inverse_relationships} // []};
+
+  $self->inverse_relationships(\@inverse_relationships);
+
+  # follow has_part and friends only for some CVs
+  my @follow_inverse_cv_names =
+    @{$self->config()->{curs_config}->{follow_inverse_cv_names} // []};
+
+  $self->follow_inverse_cv_names(\@follow_inverse_cv_names);
 }
 
 sub _get_synonyms
@@ -77,12 +97,16 @@ sub _get_synonyms
 
 sub _make_term_hash
 {
+  my $self = shift;
   my $cvterm = shift;
   my $cv_name = shift;
   my $include_definition = shift;
   my $include_children = shift;
   my $include_exact_synonyms = shift;
   my $matching_synonym = shift;
+
+  my $inverse_relationships = $self->inverse_relationships();
+  my $follow_inverse_cv_names = $self->follow_inverse_cv_names();
 
   my %term_hash = ();
 
@@ -111,17 +135,35 @@ sub _make_term_hash
   if ($include_children) {
     @{$term_hash{children}} = ();
 
-    my @child_cvterms = $cvterm->cvterm_relationship_objects()
-      ->search_related('subject',
-                       { 'cv.name' => $cv_name, 'subject.is_obsolete' => 0 },
-                       { order_by => 'subject.name', join => 'cv' })->all();
+    my $search_details;
+
+    if (grep { $_ eq $cv_name } @{$follow_inverse_cv_names}) {
+      $search_details = {};
+    } else {
+      $search_details = { 'type.name' => { 'not in' => $inverse_relationships }};
+    }
+
+    my @child_cvterms =
+      $cvterm->cvterm_relationship_objects()
+        ->search($search_details,
+                 { join => 'type' })
+        ->search_related('subject',
+                         { 'cv.name' => $cv_name, 'subject.is_obsolete' => 0 },
+                         { join => 'cv' })->all();
+
+    my @child_hashes = ();
 
     for my $child_cvterm (@child_cvterms) {
-      push @{$term_hash{children}}, {
-        _make_term_hash($child_cvterm,
-                        $child_cvterm->cv()->name(), 0, 0, 0)
-      };
+      push @child_hashes,
+        {$self->_make_term_hash($child_cvterm,
+                                $child_cvterm->cv()->name(), 0, 0, 0, undef)};
     }
+
+    @child_hashes = sort {
+      $a->{name} cmp $b->{name};
+    } @child_hashes;
+
+    $term_hash{children} = \@child_hashes;
   }
 
   if ($include_exact_synonyms) {
@@ -237,11 +279,11 @@ sub lookup
       my $cvterm = $hit_hash->{cvterm};
 
       my %term_hash =
-        _make_term_hash($cvterm,
-                        $ontology_name,
-                        $include_definition, $include_children,
-                        $include_exact_synonyms,
-                        $matching_synonym);
+        $self->_make_term_hash($cvterm,
+                               $ontology_name,
+                               $include_definition, $include_children,
+                               $include_exact_synonyms, undef,
+                               $matching_synonym);
 
       push @ret_list, \%term_hash;
     }
@@ -325,8 +367,8 @@ sub lookup_by_name
   }
 
   if (defined $cvterm) {
-    return { _make_term_hash($cvterm, $cv->name(), $include_definition,
-                             $include_children, $include_exact_synonyms) };
+    return { $self->_make_term_hash($cvterm, $cv->name(), $include_definition,
+                                    $include_children, $include_exact_synonyms, undef) };
   } else {
     return undef;
   }
@@ -411,9 +453,10 @@ sub lookup_by_id
     $cvterm = $terms[0];
   }
 
-  my $ret_val = { _make_term_hash($cvterm, $cvterm->cv()->name(),
+  my $ret_val = { $self->_make_term_hash($cvterm, $cvterm->cv()->name(),
                            $include_definition, $include_children,
-                           $include_exact_synonyms) };
+                           $include_exact_synonyms, undef,
+                           $self->inverse_relationships()) };
 
   $cache->set($cache_key, $ret_val, $self->config()->{cache}->{default_timeout});
 
@@ -460,9 +503,9 @@ sub get_all
 
   while (defined (my $cvterm = $cvterm_rs->next())) {
     my %term_hash =
-      _make_term_hash($cvterm, $ontology_name,
-                      $include_definition, $include_children,
-                      $include_exact_synonyms);
+      $self->_make_term_hash($cvterm, $ontology_name,
+                             $include_definition, $include_children,
+                             $include_exact_synonyms, undef);
 
     push @ret_list, \%term_hash;
   }

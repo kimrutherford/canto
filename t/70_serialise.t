@@ -7,6 +7,8 @@ use Test::More tests => 6;
 use Clone qw(clone);
 use JSON;
 
+use utf8;
+
 use Digest::SHA qw(sha1_base64);
 
 use Canto::TestUtil;
@@ -119,6 +121,26 @@ my $full_expected_curation_session =
             {
               primary_identifier => 'SPBC14F5.07',
             },
+          ]
+        },
+        {
+          type => 'genetic_interaction',
+          publication => 'PMID:19756689',
+          curator => {
+            name => 'Some Testperson',
+            email => 'some.testperson@pombase.org',
+            community_curated => JSON::XS::false,
+          },
+          status => 'new',
+          creation_date => "2010-01-02",
+          evidence_code => 'Far Western',
+          genes => {
+            'Schizosaccharomyces pombe SPCC63.05' => {
+              uniquename => 'SPCC63.05',
+              organism => 'Schizosaccharomyces pombe',
+            },
+          },
+          interacting_genes => [
             {
               primary_identifier => 'SPAC27D7.13c',
             }
@@ -305,8 +327,8 @@ my %expected_people = (
   },
   'iwasaki@tsurumi.yokohama-cu.ac.jp' => {
     'password' => sha1_base64('iwasaki@tsurumi.yokohama-cu.ac.jp'),
-    'lab' => "\x{e5}\x{b2}\x{a9}\x{e5}\x{b4}\x{8e}\x{e3}\x{81}\x{b2}\x{e3}\x{82}\x{8d}\x{e3}\x{81}\x{97} Lab",
-    'name' => "\x{e5}\x{b2}\x{a9}\x{e5}\x{b4}\x{8e}\x{e3}\x{81}\x{b2}\x{e3}\x{82}\x{8d}\x{e3}\x{81}\x{97}",
+    'lab' => '岩崎ひろし Lab',
+    'name' => '岩崎ひろし',
     'role' => 'user'
   },
   'Nicholas.Willis@umassmed.edu' => {
@@ -388,8 +410,8 @@ my %expected_labs = (
   'Hardwick Lab' => {
     'head' => 'Kevin Hardwick'
   },
-  "\x{e5}\x{b2}\x{a9}\x{e5}\x{b4}\x{8e}\x{e3}\x{81}\x{b2}\x{e3}\x{82}\x{8d}\x{e3}\x{81}\x{97} Lab" => {
-    'head' => "\x{e5}\x{b2}\x{a9}\x{e5}\x{b4}\x{8e}\x{e3}\x{81}\x{b2}\x{e3}\x{82}\x{8d}\x{e3}\x{81}\x{97}"
+  '岩崎ひろし Lab', => {
+    'head' => '岩崎ひろし',
   },
   'Winston Lab' => {
     'head' => 'Fred Winston'

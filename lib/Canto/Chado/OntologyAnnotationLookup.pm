@@ -177,14 +177,17 @@ sub lookup
   my $cache_key;
 
   if (defined $gene_identifier) {
-    $cache_key = "$pub_uniquename!$gene_identifier!$ontology_name";
+    $cache_key = "$pub_uniquename!$gene_identifier!$ontology_name!$max_results";
   } else {
-    $cache_key = "$pub_uniquename!$ontology_name";
+    $cache_key = "$pub_uniquename!$ontology_name!$max_results";
   }
 
   my $cached_value = $self->cache->get($cache_key);
 
   if (defined $cached_value) {
+use Data::Dumper;
+warn qq(returning cached result from Chado ontology lookup using key "$cache_key": ), Dumper([$cached_value]);
+
     return @{$cached_value};
   }
 
@@ -418,6 +421,10 @@ sub lookup
   } else {
     $ret_val = [0, []];
   }
+
+use Data::Dumper;
+warn qq(adding result to cache in Chado ontology lookup with cache key "$cache_key": ),
+  Dumper([$ret_val]);
 
   $self->cache()->set($cache_key, $ret_val, "2 hours");
 

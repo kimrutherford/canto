@@ -1,6 +1,6 @@
 # Configuring Canto and loading data
 
-After the software is installed some configuration is needed.
+After the software is [installed](installation) some configuration is needed.
 
 ## Creating users
 
@@ -9,10 +9,31 @@ one "admin" user.  Users can be added with the `canto_add.pl` script:
 
     ./script/canto_add.pl --person "Kim Rutherford" kim@pombase.org secret_password admin
 
+The `secret_password` is stored as a SHA1 hash.
+
 ## Loading data
 
-You will need to load at least one organisms, a list of genes and one or more
-ontologies before using Canto.
+Canto can operate in two modes: "single organism" and "multi organism".
+Single organism mode is activated by setting the `instance_organism`
+configuration option.  Multi-organism mode is assumed otherwise.  See the
+[`instance_organism`](configuration_file#instance_organism) section in the
+[configuration file documentation](configuration_file) for a full description
+of the two modes.
+
+The default implementation stores the details of the organism and genes for
+annotation in Canto's own database.  The `canto_load.pl` in the sections below
+loads data from flat files into Canto's database.
+
+But it's also possible to configure
+["adaptors"](configuration_file#implementation_classes) to retreive these
+details as needed from an external database or webserver.  At PomBase for
+example, gene information is read from the Chado curation database.  See the
+[configuration_file documentation](configuration_file#implementation_classes)
+for details of how to configure the adaptors.
+
+In the following sections "single organism" mode is assumed.  To run Canto in
+that mode you will need to load at least one organism, a list of genes and one
+or more ontologies before using Canto.
 
 ### Organisms
 
@@ -65,5 +86,5 @@ The OBO file can also be given by URL.  eg.
        http://purl.obolibrary.org/obo/go/go-basic.obo
 
 Each ontology must be configured in the
-[annotation_type_list](configuration_file#annotation_type_list) section of
-the `canto.yaml` file.
+[available_annotation_type_list](configuration_file#available_annotation_type_list)
+section of the `canto.yaml` file before it can be used in the interface.

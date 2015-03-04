@@ -163,6 +163,9 @@ sub create_curs_db
   $pub->triage_status($curatable_cvterm);
   $pub->update();
 
+  my $state = Canto::Curs::State->new(config => $config);
+  $state->store_statuses($curs_schema);
+
   if (wantarray) {
     return ($curs_schema, $db_file_name);
   } else {
@@ -248,7 +251,8 @@ sub curs_iterator
     while (defined (my $curs = shift @curs_objects)) {
       my $curs_key = $curs->curs_key();
       my $curs_schema =
-        Canto::Curs::get_schema_for_key($config, $curs_key);
+        Canto::Curs::get_schema_for_key($config, $curs_key,
+                                        { cache_connection => 0 });
       if (defined $curs_schema) {
         return ($curs, $curs_schema);
       } else {
@@ -284,7 +288,8 @@ sub curs_map
   while (defined (my $curs = shift @curs_objects)) {
     my $curs_key = $curs->curs_key();
     my $curs_schema =
-      Canto::Curs::get_schema_for_key($config, $curs_key);
+      Canto::Curs::get_schema_for_key($config, $curs_key,
+                                      { cache_connection => 0 });
     push @ret, $func->($curs, $curs_schema, $track_schema);
   }
 

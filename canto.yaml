@@ -19,9 +19,9 @@ header_image: logos/curation_tool.png
 
 canto_url: http://localhost:5000/
 
-app_version: v783
+app_version: v797
 
-schema_version: 6
+schema_version: 8
 
 ## Set this to create a Canto instance for a particular organism.  If not set,
 ## all gene lookups with match genes from any organism (and will return the
@@ -194,6 +194,11 @@ db_initial_data:
           - name: link_sent_to_curator_date
             dbxref:
               accession: link_sent_to_curator_date
+              db:
+                name: Canto
+          - name: session_reactivated_timestamp
+            dbxref:
+              accession: session_reactivated_timestamp
               db:
                 name: Canto
       - name: Canto publication triage status
@@ -851,6 +856,9 @@ class_info:
     sessions_with_term_requests:
       extends: curs
       constraint: "me.curs_id in (select curs from cursprop p, cvterm t where me.curs_id = p.curs and t.cvterm_id = p.type and t.name = 'annotation_status' and (p.value = 'CURATION_IN_PROGRESS' or p.value = 'CURATION_PAUSED' or p.value = 'NEEDS_APPROVAL' or p.value = 'APPROVAL_IN_PROGRESS') and cast((select value from cursprop p, cvterm t where me.curs_id = p.curs and t.cvterm_id = p.type and t.name = 'session_term_suggestions_count') as int) > 0)"
+    reactivated_sessions:
+      extends: curs
+      constraint: "me.curs_id in (select curs from cursprop p, cvterm t where me.curs_id = p.curs and t.cvterm_id = p.type and t.name = 'annotation_status' and (p.value = 'CURATION_IN_PROGRESS')) and me.curs_id in (select curs from cursprop p, cvterm t where me.curs_id = p.curs and t.cvterm_id = p.type and t.name = 'session_reactivated_timestamp')"
     approved_sessions:
       extends: curs
       constraint: "me.curs_id in (select curs from cursprop p, cvterm t where me.curs_id = p.curs and t.cvterm_id = p.type and t.name = 'annotation_status' and p.value = 'APPROVED')"
@@ -1038,6 +1046,7 @@ reports:
       children:
         - report: approved_sessions
         - report: sessions_with_term_requests
+        - report: reactivated_sessions
 #        - report: sessions_needing_approval
 #    - report: named_genes
   chado:
@@ -1057,6 +1066,18 @@ load:
       - narrow
       - broad
       - related
+    relationships_to_load:
+      - is_a
+      - has_output
+      - output_of
+      - part_of
+      - has_part
+      - regulates
+      - negatively_regulates
+      - positively_regulates
+    inverse_relationships:
+      # relationships where the more specific term is the object
+      - has_part
 
 track_db_template_file: db_templates/track_db_template.sqlite3
 curs_db_template_file: db_templates/curs_db_template.sqlite3
@@ -1618,7 +1639,7 @@ ontology_external_links:
   fission_yeast_phenotype:
     - name: BioPortal
       icon: bioportal.png
-      url: 'http://bioportal.bioontology.org/ontologies/FYPO?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2F@@term_ont_id:s/:/_/r@@&t=visualization'
+      url: 'http://bioportal.bioontology.org/ontologies/FYPO?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2F@@term_ont_id:s/:/_/r@@#visualization'
 
 chado:
   ontology_cv_names:
@@ -1655,6 +1676,10 @@ curs_config:
     - Other
   demo_user_name: Demo User
   demo_user_email_address: "demo@example.com"
+
+  # we should only follow relationships like has_part in some CVs
+  follow_inverse_cv_names:
+    - fission_yeast_phenotype
 
   finish_form:
     # the "extra_text" is always shown on the finish form, the

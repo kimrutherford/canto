@@ -50,7 +50,6 @@ the Free Software Foundation, either version 3 of the License, or
 
 use Moose;
 use Carp;
-use feature qw(state);
 
 use Try::Tiny;
 
@@ -77,12 +76,25 @@ has 'default_db_name' => (
   required => 1,
 );
 
+has 'temp_file_name' => (
+  is => 'rw',
+  init_arg => undef
+);
+
+has 'relationships_to_load' => (
+  is => 'ro',
+  required => 1,
+  isa => 'ArrayRef[Str]',
+);
+
 sub BUILD
 {
   my $self = shift;
 
   # use load_schema as a temporary database for loading
   my ($fh, $temp_file_name) = tempfile();
+
+  $self->temp_file_name($temp_file_name);
 
   my $dbi_connect_string =
     Canto::DBUtil::connect_string_for_file_name($temp_file_name);
@@ -244,7 +256,8 @@ sub load
   # create this object after deleting as LoadUtil has a dbxref cache (that
   # is a bit ugly ...)
   my $load_util = Canto::Track::LoadUtil->new(schema => $schema,
-                                              default_db_name => $self->default_db_name());
+                                              default_db_name => $self->default_db_name(),
+                                              preload_cache => 1);
   my $store_term_handler =
     sub {
       my $ni = shift;
@@ -266,16 +279,16 @@ sub load
 
         my $x_db_id = $db_ids{$x_db_name};
 
-       if (defined $x_db_id) {
-         my $x_dbxref = undef;
+        if (defined $x_db_id) {
+          my $x_dbxref = undef;
 
-         try {
-           $x_dbxref = $load_util->find_dbxref("OBO_REL:$x_acc");
-         } catch {
-           # dbxref not found
-         };
+          try {
+            $x_dbxref = $load_util->find_dbxref("OBO_REL:$x_acc");
+          } catch {
+            # dbxref not found
+          };
 
-         if (defined $x_dbxref) {
+          if (defined $x_dbxref) {
             # no need to add it as it's already there, loaded from another
             # ontology
             if ($term->is_relationship_type()) {
@@ -291,6 +304,10 @@ sub load
       }
 
       my $term_name = $term->name();
+
+      if (!defined $term_name) {
+        die "Term ", $term->acc(), " from $cv_name has no name - cannot continue\n";
+      }
 
       my $cvterm = $load_util->get_cvterm(cv_name => $cv_name,
                                           term_name => $term_name,
@@ -361,17 +378,15 @@ sub load
     $a->{acc2} cmp $b->{acc2};
   } @$rels;
 
+  my %relationships_to_load = ();
+
+  map { $relationships_to_load{$_} = 1; } @{$self->relationships_to_load()};
+
   for my $rel (@sorted_rels) {
     my $subject_term_acc = $rel->subject_acc();
     my $object_term_acc = $rel->object_acc();
 
-    next if $rel->type() eq 'has_part' ||
-      $rel->type() eq 'has_functional_part' ||
-      $rel->type() eq 'has_functional_parent' ||
-      $rel->type() eq 'derives_from' ||
-      $rel->type() eq 'contains' ||
-      $rel->type() eq 'includes_cells_with_phenotype' ||
-      $rel->type() eq 'comprises_cells_with_phenotype';
+    next unless $relationships_to_load{$rel->type()};
 
     my $rel_type = $rel->type();
     my $rel_type_cvterm = $relationship_cvterms{$rel_type};
@@ -456,6 +471,8 @@ sub DESTROY
   if (defined $self->load_schema()) {
     die __PACKAGE__ . "::finalise() not called\n";
   }
+
+  unlink($self->temp_file_name());
 }
 
 1;

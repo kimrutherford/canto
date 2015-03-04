@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 44;
+use Test::More tests => 45;
 
 use Canto::TestUtil;
 use Canto::Track::OntologyLoad;
@@ -15,7 +15,7 @@ my $schema = Canto::TrackDB->new(config => $config);
 
 my @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is (@loaded_cvterms, 71);
+is (@loaded_cvterms, 72);
 
 my $test_go_file =
   $test_util->root_dir() . '/' . $config->{test_config}->{test_go_obo_file};
@@ -32,7 +32,12 @@ sub load_all {
   my $include_ro = shift;
   my $include_fypo = shift;
 
-  my $ontology_load = Canto::Track::OntologyLoad->new(schema => $schema, default_db_name => 'Canto');
+  my @relationships_to_load = @{$config->{load}->{ontology}->{relationships_to_load}};
+
+  my $ontology_load =
+    Canto::Track::OntologyLoad->new(schema => $schema,
+                                    relationships_to_load => \@relationships_to_load,
+                                    default_db_name => 'Canto');
 
   $ontology_index->initialise_index();
 
@@ -56,7 +61,11 @@ load_all($ontology_index, 1);
 
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is(@loaded_cvterms, 113);
+is(@loaded_cvterms, 114);
+
+my @cvterm_relationships = $schema->resultset('CvtermRelationship')->all();
+
+is(@cvterm_relationships, 34);
 
 ok((grep {
   $_->name() eq 'regulation of transmembrane transport'
@@ -161,7 +170,7 @@ $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
 load_all($ontology_index, 1, 1);
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is(@loaded_cvterms, 131);
+is(@loaded_cvterms, 133);
 
 ok((grep {
   $_->name() eq 'viable elongated vegetative cell population'
@@ -170,7 +179,7 @@ ok((grep {
 # test that non-obsolete term is indexed
 my $viable = 'viable vegetative cell population';
 @results = $ontology_index->lookup('fission_yeast_phenotype', $viable, 100);
-is(@results, 6);
+is(@results, 7);
 
 ok((grep {
   $_->{term_name} eq $viable;
