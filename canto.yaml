@@ -1293,14 +1293,14 @@ evidence_types:
   'Not Applicable': ~
 
 available_annotation_type_list:
-  - name: taxonomy
+  - name: pathogen_taxon
     #needs_allele: 1
     #gene_cardinality: one_or_more  # default is "one"
     category: ontology
     namespace: ncbi_taxonomy
-    very_short_display_name: 'taxon'
-    short_display_name: 'ncbi taxon'
-    display_name: 'NCBI taxon of host organism'
+    very_short_display_name: 'pathogen taxon'
+    short_display_name: 'ncbi pathogen taxon'
+    display_name: 'NCBI taxon of pathogen'
     show_synonyms: always
     evidence_codes:
        - 'Not Applicable'
@@ -1325,33 +1325,33 @@ available_annotation_type_list:
 #      - Transcript expression level evidence
 #      - Western blot assay
     broad_term_suggestions: >
-      wheat, tomato, human
+      Fusarium, Magnaporthe
     specific_term_examples: >
-      wheat, tomato, human
+      Fusarium graminearum GZ3639
     help_text: >
-      Annotate the taxon used for the host in the pathogen-host interaction.
+      Annotate the taxon used for the pathogen in the pathogen-host interaction. This is useful if the pathogen strain is different from the strain supplied by the UniProt entry.
 #      A host response is any qualitative or quantitative change observed in the host as a result of infection by the pathogenic organism specified in this pathogen-host interaction.
 #    more_help_text: >
 #      Phenotypes result from the expression of the genes of an organism as well
 #      as the influence of environmental factors and the interactions between
 #      the two.
-    detailed_help_path: /docs/host_response_annotation
+    detailed_help_path: /docs/pathogen_taxon_annotation
     annotation_comment_help_text: |
       Please provide any additional details you have.
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
-  - name: brenda_tissue
+#  - name: taxonomy
     #needs_allele: 1
     #gene_cardinality: one_or_more  # default is "one"
-    category: ontology
-    namespace: BrendaTissueOBO
-    very_short_display_name: 'tissue'
-    short_display_name: 'BRENDA tissue'
-    display_name: 'Host tissue'
-    show_synonyms: always
-    evidence_codes:
-      - 'Not Applicable'
+#    category: ontology
+#    namespace: ncbi_taxonomy
+#    very_short_display_name: 'taxon'
+#    short_display_name: 'ncbi taxon'
+#    display_name: 'NCBI taxon of host organism'
+#    show_synonyms: always
+#    evidence_codes:
+#       - 'Not Applicable'
 #      - Cell growth assay
 #      - Chromatin immunoprecipitation experiment
 #      - Chromatography evidence
@@ -1372,20 +1372,68 @@ available_annotation_type_list:
 #      - Substance quantification evidence
 #      - Transcript expression level evidence
 #      - Western blot assay
-    broad_term_suggestions: >
-      tissue
-    specific_term_examples: >
-      tissue
-    help_text: >
-      Annotate the host tissue tested in this pathogen-host interaction.
+#    broad_term_suggestions: >
+#      wheat, tomato, human
+#    specific_term_examples: >
+#      wheat, tomato, human
+#    help_text: >
+#      Annotate the taxon used for the host in the pathogen-host interaction.
 #      A host response is any qualitative or quantitative change observed in the host as a result of infection by the pathogenic organism specified in this pathogen-host interaction.
 #    more_help_text: >
 #      Phenotypes result from the expression of the genes of an organism as well
 #      as the influence of environmental factors and the interactions between
 #      the two.
-    detailed_help_path: /docs/tissue
-    annotation_comment_help_text: |
-      Please provide any additional details you have.
+#    detailed_help_path: /docs/host_response_annotation
+#    annotation_comment_help_text: |
+#      Please provide any additional details you have.
+#      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
+#      ii) Penetrance or severity of the phenotype
+#      The curators will record this additional information in PHI-base.
+#  - name: brenda_tissue
+#    #needs_allele: 1
+#    #gene_cardinality: one_or_more  # default is "one"
+#    category: ontology
+#    namespace: BrendaTissueOBO
+#    very_short_display_name: 'tissue'
+#    short_display_name: 'BRENDA tissue'
+#    display_name: 'Host tissue'
+#    show_synonyms: always
+#    evidence_codes:
+#      - 'Not Applicable'
+#      - Cell growth assay
+#      - Chromatin immunoprecipitation experiment
+#      - Chromatography evidence
+#      - Co-immunoprecipitation experiment
+#      - Competitive growth assay evidence
+#      - Electrophoretic mobility shift assay data
+#      - Enzyme assay data
+#      - Epitope-tagged protein immunolocalization experiment data
+#      - Flow cytometry data
+#      - Gel electrophoresis evidence
+#      - Immunolocalization experiment data
+#      - Microscopy
+#      - Other
+#      - Particle size and count assay
+#      - Plasmid maintenance assay evidence
+#      - Quantitative PCR
+#      - Reporter gene assay
+#      - Substance quantification evidence
+#      - Transcript expression level evidence
+#      - Western blot assay
+#    broad_term_suggestions: >
+#      tissue
+#    specific_term_examples: >
+#      tissue
+#    help_text: >
+#      Annotate the host tissue tested in this pathogen-host interaction.
+#      A host response is any qualitative or quantitative change observed in the host as a result of infection by the pathogenic organism specified in this pathogen-host interaction.
+#    more_help_text: >
+#      Phenotypes result from the expression of the genes of an organism as well
+#      as the influence of environmental factors and the interactions between
+#      the two.
+#    detailed_help_path: /docs/tissue
+#    annotation_comment_help_text: |
+#      Please provide any additional details you have.
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
@@ -1640,50 +1688,50 @@ available_annotation_type_list:
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PomBase.
-  - name: experiment_specification
-    #needs_allele: 1
-    #gene_cardinality: one_or_more  # default is "one"
-    category: ontology
-    namespace: experiment_specification_ontology
-    very_short_display_name: 'experiment'
-    short_display_name: 'experiment specification'
-    display_name: 'Experiment specification'
-    show_synonyms: always
-    evidence_codes:
-      - Cell growth assay
-      - Chromatin immunoprecipitation experiment
-      - Chromatography evidence
-      - Co-immunoprecipitation experiment
-      - Competitive growth assay evidence
-      - Electrophoretic mobility shift assay data
-      - Enzyme assay data
-      - Epitope-tagged protein immunolocalization experiment data
-      - Flow cytometry data
-      - Gel electrophoresis evidence
-      - Immunolocalization experiment data
-      - Microscopy
-      - Other
-      - Particle size and count assay
-      - Plasmid maintenance assay evidence
-      - Quantitative PCR
-      - Reporter gene assay
-      - Substance quantification evidence
-      - Transcript expression level evidence
-      - Western blot assay
-    broad_term_suggestions: >
-      altered gene expression, gene mutation, gene deletion
-    specific_term_examples: >
-      gene overexpression, characterised gene mutation, partial gene deletion
-    help_text: >
-      Annotate the experimental specification of a pathogen-host interaction.
-      An experimental specification describes the nature of the experiment used to determine the outcome of the annotated interaction between a pathogen gene and host organism.
+#  - name: experiment_specification
+#    #needs_allele: 1
+#    #gene_cardinality: one_or_more  # default is "one"
+#    category: ontology
+#    namespace: experiment_specification_ontology
+#    very_short_display_name: 'experiment'
+#    short_display_name: 'experiment specification'
+#    display_name: 'Experiment specification'
+#    show_synonyms: always
+#    evidence_codes:
+#      - Cell growth assay
+#      - Chromatin immunoprecipitation experiment
+#      - Chromatography evidence
+#      - Co-immunoprecipitation experiment
+#      - Competitive growth assay evidence
+#      - Electrophoretic mobility shift assay data
+#      - Enzyme assay data
+#      - Epitope-tagged protein immunolocalization experiment data
+#      - Flow cytometry data
+#      - Gel electrophoresis evidence
+#      - Immunolocalization experiment data
+#      - Microscopy
+#      - Other
+#      - Particle size and count assay
+#      - Plasmid maintenance assay evidence
+#      - Quantitative PCR
+#      - Reporter gene assay
+#      - Substance quantification evidence
+#      - Transcript expression level evidence
+#      - Western blot assay
+#    broad_term_suggestions: >
+#      altered gene expression, gene mutation, gene deletion
+#    specific_term_examples: >
+#      gene overexpression, characterised gene mutation, partial gene deletion
+#    help_text: >
+#      Annotate the experimental specification of a pathogen-host interaction.
+#      An experimental specification describes the nature of the experiment used to determine the outcome of the annotated interaction between a pathogen gene and host organism.
 #    more_help_text: >
 #      Phenotypes result from the expression of the genes of an organism as well
 #      as the influence of environmental factors and the interactions between
 #      the two.
-    detailed_help_path: /docs/experimental_specification_annotation
-    annotation_comment_help_text: |
-      Please provide any additional details you have.
+#    detailed_help_path: /docs/experimental_specification_annotation
+#    annotation_comment_help_text: |
+#      Please provide any additional details you have.
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
@@ -1734,97 +1782,97 @@ available_annotation_type_list:
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
-  - name: anti_infective
+#  - name: anti_infective
     #needs_allele: 1
     #gene_cardinality: one_or_more  # default is "one"
-    category: ontology
-    namespace: chebi_ontology
-    very_short_display_name: 'chemical'
-    short_display_name: 'ChEBI chemical'
-    display_name: 'Anti-infective chemical'
-    show_synonyms: always
-    evidence_codes:
-      - Cell growth assay
-      - Chromatin immunoprecipitation experiment
-      - Chromatography evidence
-      - Co-immunoprecipitation experiment
-      - Competitive growth assay evidence
-      - Electrophoretic mobility shift assay data
-      - Enzyme assay data
-      - Epitope-tagged protein immunolocalization experiment data
-      - Flow cytometry data
-      - Gel electrophoresis evidence
-      - Immunolocalization experiment data
-      - Microscopy
-      - Other
-      - Particle size and count assay
-      - Plasmid maintenance assay evidence
-      - Quantitative PCR
-      - Reporter gene assay
-      - Substance quantification evidence
-      - Transcript expression level evidence
-      - Western blot assay
-    broad_term_suggestions: >
-      anti-infective
-    specific_term_examples: >
-      anti-infective
-    help_text: >
-      Annotate the anti-infective chemical tested in a pathogen-host interaction.
+#    category: ontology
+#    namespace: chebi_ontology
+#    very_short_display_name: 'chemical'
+#    short_display_name: 'ChEBI chemical'
+#    display_name: 'Anti-infective chemical'
+#    show_synonyms: always
+#    evidence_codes:
+#      - Cell growth assay
+#      - Chromatin immunoprecipitation experiment
+#      - Chromatography evidence
+#      - Co-immunoprecipitation experiment
+#      - Competitive growth assay evidence
+#      - Electrophoretic mobility shift assay data
+#      - Enzyme assay data
+#      - Epitope-tagged protein immunolocalization experiment data
+#      - Flow cytometry data
+#      - Gel electrophoresis evidence
+#      - Immunolocalization experiment data
+#      - Microscopy
+#      - Other
+#      - Particle size and count assay
+#      - Plasmid maintenance assay evidence
+#      - Quantitative PCR
+#      - Reporter gene assay
+#      - Substance quantification evidence
+#      - Transcript expression level evidence
+#      - Western blot assay
+#    broad_term_suggestions: >
+#      anti-infective
+#    specific_term_examples: >
+#      anti-infective
+#    help_text: >
+#      Annotate the anti-infective chemical tested in a pathogen-host interaction.
 #      A host response is any qualitative or quantitative change observed in the host as a result of infection by the pathogenic organism specified in this pathogen-host interaction.
 #    more_help_text: >
 #      Phenotypes result from the expression of the genes of an organism as well
 #      as the influence of environmental factors and the interactions between
 #      the two.
-    detailed_help_path: /docs/chemical
-    annotation_comment_help_text: |
-      Please provide any additional details you have.
+#    detailed_help_path: /docs/chemical
+#    annotation_comment_help_text: |
+#      Please provide any additional details you have.
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
-  - name: inducer
-    #needs_allele: 1
-    #gene_cardinality: one_or_more  # default is "one"
-    category: ontology
-    namespace: chebi_ontology
-    very_short_display_name: 'chemical'
-    short_display_name: 'ChEBI chemical'
-    display_name: 'Inducer chemical'
-    show_synonyms: always
-    evidence_codes:
-      - Cell growth assay
-      - Chromatin immunoprecipitation experiment
-      - Chromatography evidence
-      - Co-immunoprecipitation experiment
-      - Competitive growth assay evidence
-      - Electrophoretic mobility shift assay data
-      - Enzyme assay data
-      - Epitope-tagged protein immunolocalization experiment data
-      - Flow cytometry data
-      - Gel electrophoresis evidence
-      - Immunolocalization experiment data
-      - Microscopy
-      - Other
-      - Particle size and count assay
-      - Plasmid maintenance assay evidence
-      - Quantitative PCR
-      - Reporter gene assay
-      - Substance quantification evidence
-      - Transcript expression level evidence
-      - Western blot assay
-    broad_term_suggestions: >
-      inducer
-    specific_term_examples: >
-      inducer
-    help_text: >
-      Annotate the chemical used to induce a pathogen-host interaction.
+#  - name: inducer
+#    #needs_allele: 1
+#    #gene_cardinality: one_or_more  # default is "one"
+#    category: ontology
+#    namespace: chebi_ontology
+#    very_short_display_name: 'chemical'
+#    short_display_name: 'ChEBI chemical'
+#    display_name: 'Inducer chemical'
+#    show_synonyms: always
+#    evidence_codes:
+#      - Cell growth assay
+#      - Chromatin immunoprecipitation experiment
+#      - Chromatography evidence
+#      - Co-immunoprecipitation experiment
+#      - Competitive growth assay evidence
+#      - Electrophoretic mobility shift assay data
+#      - Enzyme assay data
+#      - Epitope-tagged protein immunolocalization experiment data
+#      - Flow cytometry data
+#      - Gel electrophoresis evidence
+#      - Immunolocalization experiment data
+#      - Microscopy
+#      - Other
+#      - Particle size and count assay
+#      - Plasmid maintenance assay evidence
+#      - Quantitative PCR
+#      - Reporter gene assay
+#      - Substance quantification evidence
+#      - Transcript expression level evidence
+#      - Western blot assay
+#    broad_term_suggestions: >
+#      inducer
+#    specific_term_examples: >
+#      inducer
+#    help_text: >
+#      Annotate the chemical used to induce a pathogen-host interaction.
 #      A host response is any qualitative or quantitative change observed in the host as a result of infection by the pathogenic organism specified in this pathogen-host interaction.
 #    more_help_text: >
 #      Phenotypes result from the expression of the genes of an organism as well
 #      as the influence of environmental factors and the interactions between
 #      the two.
-    detailed_help_path: /docs/chemical
-    annotation_comment_help_text: |
-      Please provide any additional details you have.
+#    detailed_help_path: /docs/chemical
+#    annotation_comment_help_text: |
+#      Please provide any additional details you have.
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
@@ -1868,6 +1916,27 @@ available_annotation_type_list:
 #      - Synthetic Lethality
 #      - Synthetic Rescue
 #    detailed_help_path: /docs/genetic_interaction_annotation
+  - name: physical_interaction_in_path
+    category: interaction
+    display_name: 'Interacting protein in pathogen'
+    #display_name: 'physical interaction'
+    help_text: 'Examples: co-purification, two-hybrid, affinity capture'
+    evidence_codes:
+      - Affinity Capture-Luminescence
+      - Affinity Capture-MS
+      - Affinity Capture-RNA
+      - Affinity Capture-Western
+      - Co-crystal Structure
+      - Co-fractionation
+      - Co-purification
+      - Far Western
+      - FRET
+      - PCA
+      - Protein-peptide
+      - Protein-RNA
+      - Reconstituted Complex
+      - Two-hybrid
+    detailed_help_path: /docs/physical_interaction_annotation
   - name: physical_interaction
     category: interaction
     display_name: 'Interacting protein in host'
