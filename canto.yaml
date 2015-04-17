@@ -19,7 +19,7 @@ header_image: logos/curation_tool.png
 
 canto_url: http://localhost:5000/
 
-app_version: v797
+app_version: v798
 
 schema_version: 8
 
@@ -1252,14 +1252,12 @@ evidence_types:
   'Far Western':
     name: 'Far Western (captures)'
   'Microarray RNA expression level data': ~
-  'Negative Genetic': ~
   'PCA':
     name: 'PCA (interacts with)'
   'Phenotypic Enhancement':
     name: 'Phenotypic Enhancement (phenotype enhanced by)'
   'Phenotypic Suppression':
     name: 'Phenotypic Suppression (rescued by)'
-  'Positive Genetic': ~
   'Protein-RNA':
     name: 'Protein-RNA (binds to RNA)'
   'Protein-peptide':
@@ -2104,6 +2102,10 @@ curator_manager:
   accept_hooks:
 # call with args: $config, $track_schema, $curs
     - set_pub_community_curatable
+
+# if set to "yes", always prompt for an annotation extension on the
+# annotation transfer page
+always_show_extensions: yes
 
 curs_config:
   # Possible reasons for a paper to have no genes, shown on the gene upload
