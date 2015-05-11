@@ -2077,11 +2077,15 @@ default_curation_priority_name: low
 
 messages:
   gene_upload:
-    systematic_identifier_desc: systematic identifier
-    primary_name_desc: standard name
+    #systematic_identifier_desc: systematic identifier
+    systematic_identifier_desc: UniProt accession
+    #primary_name_desc: standard name
+    primary_name_desc: UniProt entry name
     examples:
-      gene_identifier: 'SPCC1739.10'
-      gene_name: 'cdc11'
+      #gene_identifier: 'SPCC1739.10'
+      gene_identifier: 'G4MQZ9'
+      #gene_name: 'cdc11'
+      gene_name: 'G4MQZ9_MAGO7'
 
 test_config_file: 't/test_config.yaml'
 
