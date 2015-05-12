@@ -1565,7 +1565,6 @@ available_annotation_type_list:
       To curate a phenotye that causes rice blast disease in the seedling of host Oryza sativa (Rice), resulting in increased necrosis, when the current pathogen gene is part of a multiple gene interaction together with gene TGL3-2, then the following notation would be used in the annotation extension:
 
       causes_disease(PDO:0000031),pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),host_response(HRO:0000011),interaction_partner(UniProt:Q0PND3)
-
 #  - name: disease
 #    #needs_allele: 1
 #    #gene_cardinality: one_or_more  # default is "one"
@@ -1620,125 +1619,125 @@ available_annotation_type_list:
 #       ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
 #       iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
 #       An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
-#  - name: molecular_function
-#    category: ontology
-#    abbreviation: F
-#    very_short_display_name: 'function'
-#    short_display_name: 'molecular function'
-#    display_name: 'GO molecular function'
-#    evidence_codes:
-#      - IDA
-#      - IGI
-#      - IMP
-#      - IPI
-#      - EXP
-#    broad_term_suggestions: >
-#      transporter, transferase activity
-#    specific_term_examples: >
-#      adenylate cyclase activity or biotin transporter activity
-#    help_text: >
-#      A molecular function is a catalytic (e.g. protein
-#      serine/threonine kinase activity, pyruvate carboxylase activity)
-#      or binding activity, or any other activity that occurs at the
-#      molecular level.
-#    more_help_text: >
-#      GO molecular function terms represent activities, rather than
-#      the things that perform the actions (gene products or
-#      complexes). As a general rule, molecular functions correspond to
-#      single step activities performed by individual gene products.
-#    detailed_help_path: /docs/go_annotation
-#    annotation_comment_help_text: |
-#      Please provide any additional details you have about this activity, such as:
-#      i) Substrates, such as a protein modified by a kinase or phosphatase, or a DNA or RNA binding site
-#      ii) Direct or indirect regulatory targets, such as genes regulated by a transcription factor
-#      iii) The period or phase (e.g. during S phase; during sporulation) when the activity exists
-#      Please also enter annotation extensions that help to specify the nature of the interaction, separated by a colon, using the following relationships:
-#      i) To specify the host organism use pathogen_of(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
-#      ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
-#      iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
-#      An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
-#      The curators will record this additional information in PHI-base.
-#  - name: biological_process
-#    category: ontology
-#    abbreviation: P
-#    very_short_display_name: 'process'
-#    short_display_name: 'biological process'
-#    display_name: 'GO biological process'
-#    evidence_codes:
-#      - IMP
-#      - IDA
-#      - IGI
-#      - IPI
-#      - EXP
-#    broad_term_suggestions: >
-#      cell cycle, transport
-#    specific_term_examples: >
-#      pyrimidine metabolic process or alpha-glucoside transport
-#    help_text: >
-#      A biological process is series of events accomplished by one or more
-#      ordered assemblies of molecular functions.
-#    more_help_text: >
-#      It can be difficult to distinguish between a biological process
-#      and a molecular function, but the general rule is that a process must
-#      have more than one distinct steps (eg. cell cycle, transport, signal
-#      transduction).
-#    suggest_term_help_text: >
-#      A new term should be differentiated from the parent as a "sub term"  by
-#      the mechanism of action, or the genes which are required to perform the
-#      action. It should not be differentiated only by its target gene
-#      products. For example, histone H2A-S121 phosphorylation
-#      is a valid term request because it is performed by a set of genes
-#      specific for this process, translation of histone H2a is not a valid
-#      term request because there is no translation machinery specifically for
-#      histone H2a.
-#    detailed_help_path: /docs/go_annotation
-#    annotation_comment_help_text: |
-#      Please provide any additional details you have about this process, such as:
-#      i) Direct or indirect targets of the process, such as gene targets of transcriptional or translational regulation, protein targets of a localisation process, etc.
-#      ii) The period or phase (e.g. during S phase; during sporulation) when the gene product acts in the process
-#      Please also enter annotation extensions that help to specify the nature of the interaction, separated by a colon, using the following relationships:
-#      i) To specify the host organism use pathogen_of(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
-#      ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
-#      iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
-#      An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
-#      The curators will record this additional information in PHI-base.
-#  - name: cellular_component
-#    category: ontology
-#    abbreviation: C
-#    very_short_display_name: 'component'
-#    short_display_name: 'cellular component'
-#    display_name: 'GO cellular component'
-#    evidence_codes:
-#      - IDA
-#      - IGI
-#      - IMP
-#      - IPI
-#      - EXP
-#    broad_term_suggestions: >
-#      rough endoplasmic reticulum, nucleus, ribosome
-#    specific_term_examples: >
-#      condensed nuclear chromosome, inner kinetochore and GET complex
-#    help_text: >
-#      Cellular components include subcellular structures and
-#      macromolecular complexes, such as nucleus, nuclear inner
-#      membrane, nuclear pore, and proteasome complex.
-#    more_help_text: >
-#      Generally, a gene product is located in or is a subcomponent of a
-#      particular cellular component. The cellular component ontology includes
-#      multi-subunit enzymes and other protein complexes, but not individual
-#      proteins or nucleic acids. Cellular component also does not include
-#      multicellular anatomical terms.
-#    detailed_help_path: /docs/go_annotation
-#    annotation_comment_help_text: |
-#      Please provide any additional details you have, such as:
-#      i) Any other protein, substance or modification required for this localisation
-#      ii) The period or phase (e.g. during S phase; during sporulation) when the localisation is observed
-#      Please also enter annotation extensions that help to specify the nature of the interaction, separated by a colon, using the following relationships:
-#      i) To specify the host organism use pathogen_of(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
-#      ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
-#      iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
-#      An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
-#      The curators will record this additional information in PHI-base.
+  - name: molecular_function
+    category: ontology
+    abbreviation: F
+    very_short_display_name: 'function'
+    short_display_name: 'molecular function'
+    display_name: 'GO molecular function'
+    evidence_codes:
+      - IDA
+      - IGI
+      - IMP
+      - IPI
+      - EXP
+    broad_term_suggestions: >
+      transporter, transferase activity
+    specific_term_examples: >
+      adenylate cyclase activity or biotin transporter activity
+    help_text: >
+      A molecular function is a catalytic (e.g. protein
+      serine/threonine kinase activity, pyruvate carboxylase activity)
+      or binding activity, or any other activity that occurs at the
+      molecular level.
+    more_help_text: >
+      GO molecular function terms represent activities, rather than
+      the things that perform the actions (gene products or
+      complexes). As a general rule, molecular functions correspond to
+      single step activities performed by individual gene products.
+    detailed_help_path: /docs/go_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have about this activity, such as:
+      i) Substrates, such as a protein modified by a kinase or phosphatase, or a DNA or RNA binding site
+      ii) Direct or indirect regulatory targets, such as genes regulated by a transcription factor
+      iii) The period or phase (e.g. during S phase; during sporulation) when the activity exists
+      Please also enter annotation extensions that help to specify the nature of the interaction, separated by a colon, using the following relationships:
+      i) To specify the host organism use pathogen_of(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
+      ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
+      iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
+      An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
+      The curators will record this additional information in PHI-base.
+  - name: biological_process
+    category: ontology
+    abbreviation: P
+    very_short_display_name: 'process'
+    short_display_name: 'biological process'
+    display_name: 'GO biological process'
+    evidence_codes:
+      - IMP
+      - IDA
+      - IGI
+      - IPI
+      - EXP
+    broad_term_suggestions: >
+      cell cycle, transport
+    specific_term_examples: >
+      pyrimidine metabolic process or alpha-glucoside transport
+    help_text: >
+      A biological process is series of events accomplished by one or more
+      ordered assemblies of molecular functions.
+    more_help_text: >
+      It can be difficult to distinguish between a biological process
+      and a molecular function, but the general rule is that a process must
+      have more than one distinct steps (eg. cell cycle, transport, signal
+      transduction).
+    suggest_term_help_text: >
+      A new term should be differentiated from the parent as a "sub term"  by
+      the mechanism of action, or the genes which are required to perform the
+      action. It should not be differentiated only by its target gene
+      products. For example, histone H2A-S121 phosphorylation
+      is a valid term request because it is performed by a set of genes
+      specific for this process, translation of histone H2a is not a valid
+      term request because there is no translation machinery specifically for
+      histone H2a.
+    detailed_help_path: /docs/go_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have about this process, such as:
+      i) Direct or indirect targets of the process, such as gene targets of transcriptional or translational regulation, protein targets of a localisation process, etc.
+      ii) The period or phase (e.g. during S phase; during sporulation) when the gene product acts in the process
+      Please also enter annotation extensions that help to specify the nature of the interaction, separated by a colon, using the following relationships:
+      i) To specify the host organism use pathogen_of(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
+      ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
+      iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
+      An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
+      The curators will record this additional information in PHI-base.
+  - name: cellular_component
+    category: ontology
+    abbreviation: C
+    very_short_display_name: 'component'
+    short_display_name: 'cellular component'
+    display_name: 'GO cellular component'
+    evidence_codes:
+      - IDA
+      - IGI
+      - IMP
+      - IPI
+      - EXP
+    broad_term_suggestions: >
+      rough endoplasmic reticulum, nucleus, ribosome
+    specific_term_examples: >
+      condensed nuclear chromosome, inner kinetochore and GET complex
+    help_text: >
+      Cellular components include subcellular structures and
+      macromolecular complexes, such as nucleus, nuclear inner
+      membrane, nuclear pore, and proteasome complex.
+    more_help_text: >
+      Generally, a gene product is located in or is a subcomponent of a
+      particular cellular component. The cellular component ontology includes
+      multi-subunit enzymes and other protein complexes, but not individual
+      proteins or nucleic acids. Cellular component also does not include
+      multicellular anatomical terms.
+    detailed_help_path: /docs/go_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have, such as:
+      i) Any other protein, substance or modification required for this localisation
+      ii) The period or phase (e.g. during S phase; during sporulation) when the localisation is observed
+      Please also enter annotation extensions that help to specify the nature of the interaction, separated by a colon, using the following relationships:
+      i) To specify the host organism use pathogen_of(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
+      ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
+      iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
+      An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
+      The curators will record this additional information in PHI-base.
 #  - name: phenotype
 #    needs_allele: 1
 #    gene_cardinality: one_or_more  # default is "one"
