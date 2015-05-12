@@ -1550,12 +1550,6 @@ available_annotation_type_list:
 
       For a protein in the pathogen known to interact with the pathogen gene or gene product, use pathogen_interacting_protein(UniProt:<geneID>), where <geneID> is the UniProt accession of the gene in the pathogen
 
-      Where the interaction illustrates a new molecular function for the pathogen gene, use molecular_function(GO:<GOID>), where <GOID> is the identifier for a molecular function term from the Gene Ontology
-
-      Where the interaction illustrates a new biological process for the pathogen gene, use biological_process(GO:<GOID>), where <GOID> is the identifier for a biological process term from the Gene Ontology
-
-      Where the interaction illustrates a new cellular component for the pathogen gene, use cellular_component(GO:<GOID>), where <GOID> is the identifier for a cellular component term from the Gene Ontology
-
       If the experimental strain used for this interaction is different from the strain used for the UniProt entry, then the experimental strain can be specified using experimental_strain(NCBItaxon:<taxonID>), where the taxonID is the identifier for the NCBI taxon of the experimental strain
 
       Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another pathogen gene involved in the interaction
