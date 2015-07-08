@@ -1534,31 +1534,33 @@ available_annotation_type_list:
       In Annotation Extension:
       Please enter annotation extensions that help to specify the nature of the interaction (in any order), each separated by a comma, using the following relationships:
 
-      For Disease use causes_disease(DO:<diseaseID>) or causes_disease(PDO:<diseaseID>), where <diseaseID> is the identifier for either the animal disease (from the Disease Ontology) or the plant disease (from the Plant Disease Ontology)
+      For Pathogen Strain used in the experiment, use pathogen_strain(NCBItaxon:<taxonID>), where the taxonID is the identifier for the NCBI taxon of the experimental pathogen strain
 
-      For Host Organism use pathogen_of(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
+      For Host Organism use experimental_host(NCBItaxon:<taxonID>), where <taxonID> is the NCBI taxon identifier for the host organism
 
       For Host Tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
 
-      For Host Response use host_response(HRO:<hostResponseID>), where <hostResponseID> is the identifier for the relevant term in the Host Response Ontology
+      For Disease use causes_disease(DO:<diseaseID>) or causes_disease(PDO:<diseaseID>), where <diseaseID> is the identifier for either the animal disease (from the Disease Ontology) or the plant disease (from the Plant Disease Ontology)
 
-      For an interaction that has been induced by the addition of a chemical agent, use induced_by(ChEBI:<ChEBIID>), where <ChEBIID> is the ChEBI identifier for the inducer chemical 
+      For the response from the experimental host use response(HRO:<hostResponseID>), where <hostResponseID> is the identifier for the relevant term in the Host Response Ontology. 
+
+      For an interaction that has been induced by the addition of a chemical agent, use induced_by_chemical(ChEBI:<ChEBIID>), where <ChEBIID> is the ChEBI identifier for the inducer chemical 
+
+      For an interaction that has been induced by the addition of a gene or gene product, use induced_by_gene(UniProt:<UniProtAcc>), where <UniProtAcc> is the UniProt accession of the gene product
 
       For an interaction that has had an anti-infective chemical added, use anti_infective(ChEBI:<ChEBIID>), where <ChEBIID> is the ChEBI identifier for the anti-infective chemical 
 
-      For a protein in the host known to interact with the pathogen gene or gene product, use host_interacting_protein(UniProt:<geneID>), where <geneID> is the UniProt accession of the gene in the host
+      For a protein in the host known to interact with the pathogen gene or gene product, use host_interacting_protein(UniProt:<UniProtAcc>), where <UniProtAcc> is the UniProt accession of the gene in the host
 
-      For a protein in the pathogen known to interact with the pathogen gene or gene product, use pathogen_interacting_protein(UniProt:<geneID>), where <geneID> is the UniProt accession of the gene in the pathogen
+      For a protein in the pathogen known to interact with the pathogen gene or gene product, use pathogen_interacting_protein(UniProt:<UniProtAcc>), where <UniProtAcc> is the UniProt accession of the gene in the pathogen
 
-      If the experimental strain used for this interaction is different from the strain used for the UniProt entry, then the experimental strain can be specified using experimental_strain(NCBItaxon:<taxonID>), where the taxonID is the identifier for the NCBI taxon of the experimental strain
-
-      Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another pathogen gene involved in the interaction
+      Where multiple gene interactions occur, use interaction_partner(UniProt:<UniProtAcc>), where <UniProtAcc> is the UniProt accession of another pathogen gene involved in the interaction
 
       For Example:
       
-      To curate a phenotye that causes rice blast disease in the seedling of host Oryza sativa (Rice), resulting in increased necrosis, when the current pathogen gene is part of a multiple gene interaction together with gene TGL3-2, then the following notation would be used in the annotation extension:
+      To curate a phenotye caused by the KJ201 strain of the Magnaporthe oryzae pathogen, which causes rice blast disease in the seedling of host Oryza sativa (Rice), resulting in increased necrosis, when the current pathogen gene is part of a multiple gene interaction together with gene TGL3-2, then the following notation would be used in the annotation extension:
 
-      causes_disease(PDO:0000031),pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),host_response(HRO:0000011),interaction_partner(UniProt:Q0PND3)
+      pathogen_strain(1271791),causes_disease(PDO:0000031),experimental_host(NCBItaxon:4530),occurs_in(BTO:0001228),response(HRO:0000011),interaction_partner(UniProt:Q0PND3)
 #  - name: disease
 #    #needs_allele: 1
 #    #gene_cardinality: one_or_more  # default is "one"
