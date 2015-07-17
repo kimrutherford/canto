@@ -1,12 +1,13 @@
 use strict;
 use warnings;
-use Test::More tests => 14;
+use Test::More tests => 23;
 
 use Canto::TestUtil;
 
 use Plack::Test;
 use Plack::Util;
 use HTTP::Request;
+use JSON;
 
 use Canto::Track;
 
@@ -26,10 +27,7 @@ test_psgi $app, sub {
 
     is $res->code, 200;
 
-    use JSON::Any;
-
-    my $json_any = JSON::Any->new();
-    my $obj = $json_any->jsonToObj($res->content());
+    my $obj = decode_json($res->content());
 
     is (@$obj, 7);
 
@@ -45,11 +43,8 @@ test_psgi $app, sub {
 
     is $res->code, 200;
 
-    use JSON::Any;
-
-    my $json_any = JSON::Any->new();
     my $obj;
-    eval { $obj = $json_any->jsonToObj($res->content()); };
+    eval { $obj = decode_json($res->content()); };
     if ($@) {
       die "$@\n", $res->content();
     }
@@ -71,11 +66,8 @@ test_psgi $app, sub {
 
     is $res->code, 200;
 
-    use JSON::Any;
-
-    my $json_any = JSON::Any->new();
     my $obj;
-    eval { $obj = $json_any->jsonToObj($res->content()); };
+    eval { $obj = decode_json($res->content()); };
     if ($@) {
       die "$@\n", $res->content();
     }
@@ -86,6 +78,45 @@ test_psgi $app, sub {
     ok(grep { $_->{annotation_namespace} =~ /phenotype_condition/ } @$obj);
   }
 
+  # try lookup_by_id()
+  {
+    my $search_term = 'GO:0055085';
+    my $url = "http://localhost:5000/ws/lookup/ontology/?term=$search_term";
+    my $req = HTTP::Request->new(GET => $url);
+    my $res = $cb->($req);
+
+    is $res->code, 200;
+
+    my $obj;
+    eval { $obj = decode_json($res->content()); };
+    if ($@) {
+      die "$@\n", $res->content();
+    }
+
+    is($obj->{id}, $search_term);
+    is($obj->{name}, 'transmembrane transport');
+    is($obj->{annotation_namespace}, 'biological_process');
+  }
+
+  {
+    my $url = "http://localhost:5000/ws/canto_config/allele_types";
+    my $req = HTTP::Request->new(GET => $url);
+    my $res = $cb->($req);
+
+    is $res->code, 200;
+
+    my $obj;
+    eval { $obj = decode_json($res->content()); };
+    if ($@) {
+      die "$@\n", $res->content();
+    }
+
+    like($res->content(), qr/"allele_name_required"\s*:\s*false/);
+    like($res->content(), qr/"allele_name_required"\s*:\s*true/);
+
+    ok ($obj->{'partial deletion, nucleotide'}->{allow_expression_change});
+    ok (!$obj->{'partial deletion, nucleotide'}->{allele_name_required});
+  }
 };
 
 done_testing;

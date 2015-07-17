@@ -1,0 +1,25 @@
+<div class="curs-evidence-directive">
+  <div ng-class="{ 'has-error': !isValidEvidenceCode() }">
+    <select class="form-control"
+            ng-model="evidenceCode"
+            ng-options="code for code in annotationType.evidence_codes">
+      <option value="">Choose an evidence code ...</option>
+    </select>
+  </div>
+
+  <div ng-show="showWith()" ng-class="{ 'has-error': !isValidWithGene() }">
+    <div class="curs-evidence-directive-with">
+      <span>With:</span>
+      <span><feature-chooser feature-type="gene"
+                             chosen-feature-id="withGeneId"></feature-chooser></span>
+    </div>
+    <div ng-show="isValidEvidenceCode() && !isValidWithGene()"
+          class="help-block">Please select a 'with' gene</div>
+  </div>
+
+  <div ng-if="showConditions()" class="curs-evidence-conditions">
+    Please add experimental conditions:
+    <condition-picker conditions="conditions"></condition-picker>
+  </div>
+</div>
+

@@ -1,0 +1,56 @@
+<div class="clearall">
+  <div ng-hide="annotationTypes.length">
+    <img ng-src="{{app_static_path + '/images/spinner.gif'}}"></img>
+Annotation loading ...
+  </div>
+  <div ng-show="annotationTypes.length"
+       id="curs-annotation-tables" class="sect">
+    <div ng-repeat="annotationType in annotationTypes">
+      <div class="curs-box"
+           ng-show="annotationsByType[annotationType.name] && annotationsByType[annotationType.name].length > 0">
+        <div class="curs-box-title">
+          {{annotationType.display_name}}
+        </div>
+        <div class="curs-box-body">
+          <div ng-if="annotationType.feature_type != 'genotype'">
+      <annotation-table annotation-type-name="{{annotationType.name}}"
+                        feature-id-filter="{{featureIdFilter}}"
+                        feature-type-filter="{{featureTypeFilter}}"
+                        feature-status-filter="new"
+                        feature-filter-display-name="{{featureFilterDisplayName}}"></annotation-table>
+      <annotation-table annotation-type-name="{{annotationType.name}}"
+                        feature-id-filter="{{featureIdFilter}}"
+                        feature-type-filter="{{featureTypeFilter}}"
+                        feature-status-filter="existing"
+                        feature-filter-display-name="{{featureFilterDisplayName}}"></annotation-table>
+          </div>
+          <div ng-if="annotationType.feature_type == 'genotype'">
+            <annotation-table annotation-type-name="{{annotationType.name}}"
+                              feature-id-filter="{{featureIdFilter}}"
+                              feature-type-filter="{{featureTypeFilter}}"
+                              feature-status-filter="new"
+                              allele-count-filter="single"
+                              feature-filter-display-name="{{featureFilterDisplayName}}"></annotation-table>
+            <annotation-table annotation-type-name="{{annotationType.name}}"
+                              feature-id-filter="{{featureIdFilter}}"
+                              feature-type-filter="{{featureTypeFilter}}"
+                              feature-status-filter="new"
+                              allele-count-filter="multi"
+                              feature-filter-display-name="{{featureFilterDisplayName}}"></annotation-table>
+            <annotation-table annotation-type-name="{{annotationType.name}}"
+                              feature-id-filter="{{featureIdFilter}}"
+                              feature-type-filter="{{featureTypeFilter}}"
+                              feature-status-filter="existing"
+                              allele-count-filter="single"
+                              feature-filter-display-name="{{featureFilterDisplayName}}"></annotation-table>
+            <annotation-table annotation-type-name="{{annotationType.name}}"
+                              feature-id-filter="{{featureIdFilter}}"
+                              feature-type-filter="{{featureTypeFilter}}"
+                              feature-status-filter="existing"
+                              allele-count-filter="multi"
+                              feature-filter-display-name="{{featureFilterDisplayName}}"></annotation-table>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>

@@ -38,6 +38,7 @@ the Free Software Foundation, either version 3 of the License, or
 =cut
 
 use Moose::Role;
+use Carp;
 
 with 'Canto::Role::SimpleCache';
 
@@ -61,6 +62,10 @@ around 'lookup' => sub {
     @args = @{$_[1]};
   }
 
+  if (!defined $args[0]) {
+    confess "no argument passed to lookup()";
+  }
+
   my $cache_key = $organism_name . ':' . join '#@%', @args;
   my $cache = $self->cache();
 
@@ -72,7 +77,7 @@ around 'lookup' => sub {
 
   my $ret_val = $self->$orig(@_);
 
-  $cache->set($cache_key, $ret_val, $self->config()->{cache}->{default_timeout});
+  $cache->set($cache_key, $ret_val, $self->config()->{cache}->{chado_gene_timeout});
 
   return $ret_val;
 };

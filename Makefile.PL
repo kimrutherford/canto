@@ -5,6 +5,9 @@ use inc::Module::Install;
 use Module::Install::Catalyst; # Complain loudly if you don't have
                                # Catalyst::Devel installed or haven't said
                                # 'make dist' to create a standalone tarball.
+
+use 5.014000;
+
 name 'Canto';
 all_from 'lib/Canto.pm';
 
@@ -13,9 +16,10 @@ requires 'CHI';
 requires 'CHI::Driver::Memcached';
 requires 'Cache';
 requires 'Cache::Memcached';
+requires 'HTML::FormFu' => '2.00';
 requires 'Catalyst::Action::RenderView';
 requires 'Catalyst::Authentication::Store::DBIx::Class';
-requires 'Catalyst::Controller::HTML::FormFu';
+requires 'Catalyst::Controller::HTML::FormFu' => '1.00';
 requires 'Catalyst::Engine::PSGI';
 requires 'Catalyst::Helper';
 requires 'Catalyst::Model::DBIC::Schema';
@@ -36,7 +40,7 @@ requires 'Catalyst::View::JSON';
 requires 'Catalyst::View::Mason';
 requires 'CatalystX::RoleApplicator';
 requires 'Clone';
-requires 'Config::General';
+requires 'Config::Any';
 requires 'DBD::Pg';
 requires 'DBD::SQLite' => '1.40';
 requires 'DBIx::Class';
@@ -48,8 +52,8 @@ requires 'Data::Compare';
 requires 'Data::Dumper';
 requires 'Data::JavaScript::Anon';
 requires 'Data::Rmap';
-requires 'Email::Sender';
 requires 'Email::MIME';
+requires 'Email::Sender';
 requires 'Email::Simple';
 requires 'File::Basename';
 requires 'File::Copy::Recursive';
@@ -67,6 +71,7 @@ requires 'JSON::Any';
 requires 'LWP';
 requires 'LWP::Simple';
 requires 'Lingua::EN::Inflect::Number';
+requires 'List::MoreUtils';
 requires 'Lucene';
 requires 'MIME::Types';
 requires 'Memoize';
@@ -85,6 +90,8 @@ requires 'Plack::Middleware::Debug';
 requires 'Plack::Middleware::Expires';
 requires 'Plack::Middleware::InteractiveDebugger';
 requires 'Plack::Middleware::ReverseProxy';
+requires 'Plack::Middleware::Conditional';
+requires 'Plack::Middleware::Expires';
 requires 'Scalar::Util';
 requires 'String::Similarity';
 requires 'Sub::Exporter';
@@ -96,6 +103,7 @@ requires 'XML::Simple';
 requires 'Starman';
 requires 'Net::Server::SS::PreFork';
 requires 'Server::Starter';
+requires 'Capture::Tiny';
 
 test_requires 'LWP::Protocol::PSGI';
 test_requires 'LWP::Protocol::https';

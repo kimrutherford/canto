@@ -13,6 +13,7 @@ my $config = $test_util->config();
 my $schema = $test_util->track_schema();
 
 my $curs_schema = Canto::Curs::get_schema_for_key($config, 'aaaa0007');
+
 sub check_new_annotations
 {
   my $exp_term_ontid = shift // 'GO:0055085';
@@ -64,9 +65,139 @@ sub check_new_annotations
     is ($interacting_gene_count, 2);
   }
 
+  {
+    my ($completed_count, $annotations_ref) =
+      Canto::Curs::Utils::get_annotation_table($config, $curs_schema,
+                                               'phenotype');
+
+    my @annotations =
+      sort { $a->{genotype_identifier} cmp $b->{genotype_identifier} } @$annotations_ref;
+
+    cmp_deeply(\@annotations,
+             [
+               {
+                 'genotype_id' => 1,
+                 'annotation_extension' => '',
+                 'status' => 'new',
+                 'term_suggestion_name' => undef,
+                 'term_suggestion_definition' => undef,
+                 'with_gene_id' => undef,
+                 'curator' => 'Some Testperson <some.testperson@pombase.org>',
+                 'genotype_identifier' => 'aaaa0007-genotype-test-1',
+                 'taxonid' => undef,
+                 'conditions' => [
+                   {
+                     'term_id' => 'PECO:0000137',
+                     'name' => 'glucose rich medium'
+                   },
+                   {
+                     'name' => 'rich medium'
+                   }
+                 ],
+                 'term_ontid' => 'FYPO:0000013',
+                 'with_or_from_identifier' => undef,
+                 'term_name' => 'T-shaped cells',
+                 'needs_with' => undef,
+                 'completed' => 1,
+                 'annotation_type' => 'phenotype',
+                 'annotation_id' => 6,
+                 'is_not' => JSON::false,
+                 'evidence_code' => 'Epitope-tagged protein immunolocalization experiment data',
+                 'annotation_type_abbreviation' => '',
+                 'annotation_type_display_name' => 'phenotype',
+                 'genotype_name' => "h+ SPCC63.05delta ssm4KE",
+                 'genotype_background' => "h+",
+                 'is_obsolete_term' => 0,
+                 'creation_date_short' => '20100102',
+                 'with_or_from_display_name' => undef,
+                 'qualifiers' => [],
+                 'creation_date' => '2010-01-02',
+                 'submitter_comment' => undef,
+                 'publication_uniquename' => 'PMID:19756689',
+                 'feature_type' => 'genotype',
+                 'feature_id' => 1,
+                 'genotype_display_name' => 'h+ SPCC63.05delta ssm4KE',
+                 'feature_display_name' => 'h+ SPCC63.05delta ssm4KE',
+                 'alleles' => [
+                   {
+                     'description' => 'deletion',
+                     'name' => 'ssm4delta',
+                     'gene_id' => 2,
+                     'primary_identifier' => 'SPAC27D7.13c:aaaa0007-1',
+                     'type' => 'deletion',
+                     'expression' => undef,
+                     'allele_id' => 1,
+                     'long_display_name' => 'ssm4delta',
+                     'gene_display_name' => 'ssm4',
+                   },
+                   {
+                     'gene_id' => 4,
+                     'name' => 'SPCC63.05delta',
+                     'description' => 'deletion',
+                     'type' => 'deletion',
+                     'expression' => undef,
+                     'allele_id' => 5,
+                     'primary_identifier' => 'SPCC63.05:aaaa0007-1',
+                     'long_display_name' => 'SPCC63.05delta',
+                     'gene_display_name' => 'SPCC63.05',
+                   }
+                 ],
+               },
+               {
+                 'publication_uniquename' => 'PMID:19756689',
+                 'feature_type' => 'genotype',
+                 'feature_id' => 2,
+                 'genotype_display_name' => 'ssm4-D4(del_100-200)[Knockdown]',
+                 'feature_display_name' => 'ssm4-D4(del_100-200)[Knockdown]',
+                 'is_not' => JSON::false,
+                 'evidence_code' => 'Co-immunoprecipitation experiment',
+                 'annotation_type_abbreviation' => '',
+                 'annotation_type_display_name' => 'phenotype',
+                 'genotype_name' => undef,
+                 'genotype_background' => undef,
+                 'is_obsolete_term' => 0,
+                 'creation_date_short' => '20100102',
+                 'with_or_from_display_name' => undef,
+                 'qualifiers' => [],
+                 'submitter_comment' => undef,
+                 'creation_date' => '2010-01-02',
+                 'taxonid' => undef,
+                 'conditions' => [],
+                 'term_ontid' => 'FYPO:0000017',
+                 'with_or_from_identifier' => undef,
+                 'term_name' => 'elongated cell',
+                 'needs_with' => undef,
+                 'completed' => 1,
+                 'annotation_id' => 7,
+                 'annotation_type' => 'phenotype',
+                 'genotype_id' => 2,
+                 'annotation_extension' => '',
+                 'status' => 'new',
+                 'term_suggestion_name' => undef,
+                 'term_suggestion_definition' => undef,
+                 'with_gene_id' => undef,
+                 'curator' => 'Some Testperson <some.testperson@pombase.org>',
+                 'genotype_identifier' => 'aaaa0007-genotype-test-2',
+                 'alleles' => [
+                   {
+                     'primary_identifier' => 'SPAC27D7.13c:aaaa0007-3',
+                     'expression' => 'Knockdown',
+                     'allele_id' => 3,
+                     'type' => 'partial deletion, nucleotide',
+                     'description' => 'del_100-200',
+                     'name' => 'ssm4-D4',
+                     'gene_id' => 2,
+                     'long_display_name' => 'ssm4-D4(del_100-200)[Knockdown]',
+                     'gene_display_name' => 'ssm4',
+                   }
+                 ],
+               }
+             ]);
+  }
+
   my @annotation_type_list = @{$config->{annotation_type_list}};
 
-  my $allele_count = 0;
+  my $genotype_count = 0;
 
   for my $annotation_type_config (@annotation_type_list) {
     my ($completed_count, $annotations_ref) =
@@ -80,18 +211,19 @@ sub check_new_annotations
       ok (length $annotation_row->{evidence_code} > 0);
 
       if ($annotation_type_config->{category} eq 'ontology') {
-        ok (length $annotation_row->{gene_name_or_identifier} > 0);
         ok (length $annotation_row->{term_ontid} > 0);
         ok (length $annotation_row->{term_name} > 0);
 
-        if ($annotation_type_config->{needs_allele}) {
-          ok (length $annotation_row->{allele_display_name} > 0);
-          $allele_count++;
+        if ($annotation_type_config->{feature_type} eq 'genotype') {
+          ok (length $annotation_row->{genotype_identifier} > 0);
+          $genotype_count++;
+        } else {
+          ok (length $annotation_row->{gene_name_or_identifier} > 0);
         }
       }
     }
   }
-  ok ($allele_count > 0);
+  ok ($genotype_count > 0);
 
 }
 
@@ -119,11 +251,11 @@ check_new_annotations($dummy_alt_id);
 
 
 {
-  my $options = { pub_uniquename => 'PMID:10467002',
+  my $options = { pub_uniquename => 'PMID:19756689',
                   annotation_type_name => 'cellular_component',
                 };
   my ($all_annotation_count, $annotations) =
-    Canto::Curs::Utils::get_existing_annotations($config, $options);
+    Canto::Curs::Utils::get_existing_annotations($config, $curs_schema, $options);
 
   is (@$annotations, 1);
   cmp_deeply($annotations->[0],
@@ -135,27 +267,30 @@ check_new_annotations($dummy_alt_id);
                'with_or_from_identifier' => undef,
                'gene_identifier' => 'SPBC12C2.02c',
                'gene_name_or_identifier' => 'ste20',
-               'allele_display_name' => 'noname(unknown)',
-               'conditions' => '',
-               'expression_level' => '',
-               'qualifiers' => '',
+               'conditions' => [],
+               'qualifiers' => [],
                'evidence_code' => 'IMP',
                'annotation_id' => 1,
                'gene_name' => 'ste20',
                'gene_product' => '',
-               'is_not' => 0,
+               'gene_id' => undef,
+               'feature_id' => undef,
+               'feature_display_name' => 'ste20',
+               'feature_type' => 'gene',
+               'is_not' => JSON::false,
                'status' => 'existing',
-               'with_or_from_display_name' => 'GeneDB_Spombe:SPBC2G2.01c',
-               'with_or_from_identifier' => 'GeneDB_Spombe:SPBC2G2.01c',
+               'with_or_from_display_name' => 'PomBase:SPBC2G2.01c',
+               'with_or_from_identifier' => 'PomBase:SPBC2G2.01c',
+               'with_gene_id' => undef,
              });
 }
 
 {
-  my $options = { pub_uniquename => 'PMID:10467002',
+  my $options = { pub_uniquename => 'PMID:19756689',
                   annotation_type_name => 'biological_process',
                 };
   my ($all_annotation_count, $annotations) =
-    Canto::Curs::Utils::get_existing_ontology_annotations ($config, $options);
+    Canto::Curs::Utils::get_existing_ontology_annotations ($config, $curs_schema, $options);
 
   is (@$annotations, 1);
   cmp_deeply($annotations->[0],
@@ -167,18 +302,74 @@ check_new_annotations($dummy_alt_id);
                'with_or_from_identifier' => undef,
                'gene_identifier' => 'SPBC12C2.02c',
                'gene_name_or_identifier' => 'ste20',
-               'qualifiers' => '',
-               'allele_display_name' => 'noname(unknown)',
-               'conditions' => '',
-               'expression_level' => '',
+               'gene_id' => undef,
+               'qualifiers' => [],
+               'conditions' => [],
                'evidence_code' => 'UNK',
                'annotation_id' => 2,
                'gene_name' => 'ste20',
                'gene_product' => '',
-               'is_not' => 0,
+               'feature_id' => undef,
+               'feature_display_name' => 'ste20',
+               'feature_type' => 'gene',
+               'is_not' => JSON::true,
                'status' => 'existing',
                'with_or_from_display_name' => undef,
                'with_or_from_identifier' => undef,
+               'with_gene_id' => undef,
+           });
+}
+
+
+# test existing phenotype annotation
+{
+  my $options = { pub_uniquename => 'PMID:19756689',
+                  annotation_type_name => 'phenotype',
+                };
+  my ($all_annotation_count, $annotations) =
+    Canto::Curs::Utils::get_existing_ontology_annotations ($config, $curs_schema, $options);
+
+  is (@$annotations, 1);
+  cmp_deeply($annotations->[0],
+             {
+               'term_name' => 'sensitive to cycloheximide',
+               'feature_id' => undef,
+               'is_not' => bless( do{\(my $o = 1)}, 'JSON::XS::Boolean' ),
+               'genotype_name' => 'cdc11-33 ssm4delta',
+               'genotype_identifier' => 'aaaa0007-test-genotype-3',
+               'alleles' => [
+                 {
+                   'type' => undef,
+                   'gene_display_name' => 'cdc11',
+                   'taxonid' => '4896',
+                   'primary_identifier' => 'SPCC1739.11c:allele-1',
+                   'long_display_name' => 'cdc11-33(unknown)',
+                   'description' => 'unknown',
+                   'name' => 'cdc11-33',
+                   'gene_id' => 4,
+                 },
+                 {
+                   'long_display_name' => 'ssm4delta(deletion)',
+                   'primary_identifier' => 'SPAC27D7.13c:allele-1',
+                   'name' => 'ssm4delta',
+                   'description' => 'deletion',
+                   'gene_display_name' => 'ssm4',
+                   'type' => undef,
+                   'taxonid' => '4896',
+                   'gene_id' => 15,
+                 }
+               ],
+               'feature_type' => 'genotype',
+               'annotation_id' => 3,
+               'term_ontid' => 'FYPO:0000104',
+               'qualifiers' => [],
+               'conditions' => [],
+               'status' => 'existing',
+               'feature_display_name' => 'cdc11-33 ssm4delta',
+               'genotype_id' => undef,
+               'evidence_code' => 'UNK',
+               'genotype_name_or_identifier' => 'cdc11-33 ssm4delta',
+               'annotation_type' => 'phenotype'
              });
 }
 
@@ -192,42 +383,45 @@ sub _test_interactions
                'gene_identifier' => 'SPBC12C2.02c',
                'gene_display_name' => 'ste20',
                'gene_taxonid' => '4896',
+               'gene_id' => undef,
                'interacting_gene_identifier' => 'SPCC1739.11c',
                'interacting_gene_display_name' => 'cdc11',
                'interacting_gene_taxonid' => '4896',
+               'interacting_gene_id' => undef,
                'evidence_code' => 'Phenotypic Enhancement',
-               'publication_uniquename' => 'PMID:10467002',
+               'publication_uniquename' => 'PMID:19756689',
                'status' => 'existing',
+               'annotation_type' => 'genetic_interaction',
            });
 }
 
 {
-  my $options = { pub_uniquename => 'PMID:10467002',
+  my $options = { pub_uniquename => 'PMID:19756689',
                   annotation_type_name => 'genetic_interaction',
                   annotation_type_category => 'interaction', };
   my ($all_interactions_count, $annotations) =
-    Canto::Curs::Utils::get_existing_interaction_annotations ($config, $options);
+    Canto::Curs::Utils::get_existing_interaction_annotations ($config, $curs_schema, $options);
 
   _test_interactions(2, @$annotations);
 }
 
 {
-  my $options = { pub_uniquename => 'PMID:10467002',
+  my $options = { pub_uniquename => 'PMID:19756689',
                   annotation_type_name => 'genetic_interaction',
                   annotation_type_category => 'interaction',
                   max_results => 1, };
   my ($all_interactions_count, $annotations) =
-    Canto::Curs::Utils::get_existing_interaction_annotations ($config, $options);
+    Canto::Curs::Utils::get_existing_interaction_annotations ($config, $curs_schema, $options);
 
   _test_interactions(1, @$annotations);
 }
 
 {
-  my $options = { pub_uniquename => 'PMID:10467002',
+  my $options = { pub_uniquename => 'PMID:19756689',
                   annotation_type_name => 'genetic_interaction',
                   annotation_type_category => 'interaction', };
   my ($all_interactions_count, $annotations) =
-    Canto::Curs::Utils::get_existing_annotations($config, $options);
+    Canto::Curs::Utils::get_existing_annotations($config, $curs_schema, $options);
 
   _test_interactions(2, @$annotations);
 }

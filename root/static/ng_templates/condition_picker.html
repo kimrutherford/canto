@@ -1,0 +1,22 @@
+<span>
+  <div class="row">
+    <div class="col-md-6">
+      <ul class="curs-allele-conditions">
+      </ul>
+    </div>
+  </div>
+  <div class="curs-allele-condition-buttons row">
+    <div class="col-md-11" ng-if="usedConditions.length > 0">
+      <div>
+Previously used conditions (click to add to list):
+      </div>
+      <span ng-repeat="cond in usedConditions">
+        <button type="button" class="btn btn-default btn-sm"
+                ng-click="addCondition(cond.name)">
+          <i class="glyphicon glyphicon-plus"></i> {{cond.name}}
+        </button>
+      </span>
+    </div>
+  </div>
+  <div class="voffset2"></div>
+</span>

@@ -1,0 +1,34 @@
+<div>
+    <div class="row">
+      <div class="col-sm-5 col-md-5">
+Select one or more genes to find matching genotypes:
+        <gene-selector selected-genes="data.searchGenes"></gene-selector>
+      </div>
+      <div class="col-sm-7 col-md-7">
+        <div ng-show="waitingForServer()">
+          <img ng-src="{{app_static_path + '/images/spinner.gif'}}"></img>
+        </div>
+        <div ng-hide="waitingForServer()">
+          <div ng-show="filteredGenotypeCount() > 0">
+            <div ng-show="data.filteredCursGenotypes.length > 0">
+Matching genotypes from this session:
+              <genotype-list-view genotype-list="data.filteredCursGenotypes"></genotype-list-view>
+            </div>
+            <div ng-show="data.filteredExternalGenotypes.length > 0">
+Matches from the database:
+              <genotype-list-view genotype-list="data.filteredExternalGenotypes"></genotype-list-view>
+            </div>
+          </div>
+          <div ng-show="filteredGenotypeCount() == 0">
+            <span ng-show="data.searchGenes.length == 1">
+No genotypes match the selected gene.
+            </span>
+            <span ng-show="data.searchGenes.length > 1">
+No genotypes match all the selected genes.
+            </span>
+            <a ng-click="addGenotype()">Add a genotype ...</a>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

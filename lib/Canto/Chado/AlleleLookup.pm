@@ -39,47 +39,11 @@ the Free Software Foundation, either version 3 of the License, or
 
 use Moose;
 
+use Canto::Curs::Utils;
+
 with 'Canto::Role::Configurable';
 with 'Canto::Chado::ChadoLookup';
 
-use Canto::Curs::Utils;
-
-# Return the Canto allele type given a Chado (or "export") allele type
-# and the allele description - Canto has different types for a single
-# amino acid residue change and a multi amino acid change but Chado
-# just has "amino_acid_mutation".  Here we use the
-# export_type_reverse_map config field to map the Chado type to the
-# Canto type.
-sub _canto_allele_type
-{
-  my $self = shift;
-  my $chado_type = shift;
-  my $allele_description = shift;
-
-  my @canto_allele_types = @{$self->config()->{export_type_to_allele_type}->{$chado_type}};
-
-  if (@canto_allele_types == 0) {
-    warn qq(no allele type found for Chado allele_type "$chado_type"\n);
-    return $chado_type;
-  } else {
-    if (@canto_allele_types == 1) {
-      return $canto_allele_types[0]->{name};
-    } else {
-      for my $allele_type (@canto_allele_types) {
-        my $export_type_reverse_map_re =
-          $allele_type->{export_type_reverse_map_re};
-        if (!defined $export_type_reverse_map_re) {
-          die "no export_type_reverse_map_re config found for ", $allele_type->{name};
-        }
-        if ($allele_description =~ /$export_type_reverse_map_re/) {
-          return $allele_type->{name};
-        }
-      }
-
-      die "no Canto allele type found for: $chado_type";
-    }
-  }
-}
 
 =head2 lookup
 
@@ -100,12 +64,12 @@ sub _canto_allele_type
                display_name: "a pretty name for the user",
                uniquename: "database unique identifier for the allele",
                name: "allele name"
-               allele_type: "allele type"
+               type: "allele type"
              }, { < next match > }, ... ]
            Notes:
              - the "name" field of each returned match should have the
                search_string argument as a prefix
-             - the "allele_type" should be one of the entries in the
+             - the "type" should be one of the entries in the
                allele_type_list configuration map in canto.yaml
            Example result searching for "rad":
              [{
@@ -113,14 +77,14 @@ sub _canto_allele_type
                "display_name": "ste20+(wild type)",
                "uniquename": "SPBC12C2.02c:allele-5",
                "name": "ste20+",
-               "allele_type": "wild type"
+               "type": "wild type"
              },
              {
                "uniquename": "SPBC12C2.02c:allele-3",
                "display_name": "ste20delta(deletion)",
                "description": "deletion",
                "name": "ste20delta",
-               "allele_type": "deletion"
+               "type": "deletion"
              }]
 
 =cut
@@ -194,15 +158,92 @@ sub lookup
   return [ map {
     my $display_name =
       Canto::Curs::Utils::make_allele_display_name($_->{name},
-                                                   $_->{description});
-
+                                                   $_->{description},
+                                                   $_->{allele_type});
 
     $_->{display_name} = $display_name;
-    $_->{allele_type} = $self->_canto_allele_type($_->{allele_type},
-                                                  $_->{description});
+    $_->{type} =
+      Canto::Curs::Utils::canto_allele_type($self->config(),
+                                            $_->{allele_type},
+                                            $_->{description});
+    delete $_->{allele_type};
     $_;
   } @res ];
 }
 
-1;
+=head2 lookup_by_uniquename
 
+ Usage   : my $allele_details = $lookup->lookup_by_uniquename($allele_uniquename);
+ Function: Return the details of a given allele
+ Args    : $allele_uniquename - the uniquename of the allele in the feature
+                                table eg. "SPBC12C2.02c:allele-5"
+ Return  : Returns a hash ref in the form:
+             {
+               "uniquename": "SPBC12C2.02c:allele-5",
+               "name": "ste20+",
+               "description": "wild type",
+               "display_name": "ste20+(wild type)",
+               "type": "wild type"
+             }
+           or undef if no allele is found
+
+=cut
+
+sub lookup_by_uniquename
+{
+  my $self = shift;
+  my $uniquename = shift;
+
+  my $schema = $self->schema();
+
+  my $allele = $schema->resultset('Feature')->find({ uniquename => $uniquename,
+                                                     'type.name' => 'allele' },
+                                                   { join => 'type' });
+
+  if (defined $allele) {
+    my $allele_gene = $allele->feature_relationship_subjects()
+      ->search({ 'type.name' => 'instance_of' },
+               {
+                 join => 'type' })
+        ->search_related('object',
+                         {
+                           'type_2.name' => 'gene',},
+                         {
+                           join => 'type' })->first();
+
+    my $gene_uniquename = undef;
+
+    if ($allele_gene) {
+      $gene_uniquename = $allele_gene->uniquename();
+    } else {
+      die qq(allele "$uniquename" has no gene\n);
+    }
+
+    my %props = map {
+      ($_->type()->name(), $_->value())
+    } $allele->featureprops()->all();
+
+    my $display_name =
+      Canto::Curs::Utils::make_allele_display_name($allele->name(),
+                                                   $props{description},
+                                                   $props{allele_type});
+
+    my $allele_type =
+      Canto::Curs::Utils::canto_allele_type($self->config(),
+                                            $props{allele_type},
+                                            $props{description});
+
+    return {
+      uniquename => $uniquename,
+      display_name => $display_name,
+      name => $allele->name(),
+      description => $props{description},
+      type => $allele_type,
+      gene_uniquename => $gene_uniquename,
+    }
+  }
+
+  return undef;
+}
+
+1;

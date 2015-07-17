@@ -42,16 +42,19 @@ use Moose;
 use Carp;
 
 has cursdb_gene => (is => 'ro', required => 1,
-                    handles => [qw(gene_id
-                                   alleles
-                                   direct_annotations
-                                   indirect_annotations
-                                   all_annotations
-                                   allele_annotations
-                                   primary_identifier
-                                   delete)]);
+                    handles => {
+                      gene_id => 'gene_id',
+                      feature_id => 'gene_id',
+                      alleles => 'alleles',
+                      direct_annotations => 'direct_annotations',
+                      indirect_annotations => 'indirect_annotations',
+                      all_annotations => 'all_annotations',
+                      primary_identifier => 'primary_identifier',
+                      delete => 'delete',
+                    });
 has gene_lookup => (is => 'ro', init_arg => undef, lazy_build => 1);
 has primary_name => (is => 'ro', init_arg => undef, lazy_build => 1);
+has display_name => (is => 'ro', init_arg => undef, lazy_build => 1);
 has product => (is => 'ro', init_arg => undef, lazy_build => 1);
 has synonyms_ref => (is => 'ro', init_arg => undef, lazy_build => 1,
                  isa => 'ArrayRef[Str]',
@@ -60,6 +63,7 @@ has synonyms_ref => (is => 'ro', init_arg => undef, lazy_build => 1,
                );
 has gene_data => (is => 'ro', init_arg => undef, lazy_build => 1);
 has organism => (is => 'ro', init_arg => undef, lazy_build => 1);
+has taxonid => (is => 'ro', init_arg => undef, lazy_build => 1);
 
 with 'Canto::Role::Configurable';
 with 'Canto::Role::GeneNames';
@@ -117,6 +121,13 @@ sub _build_primary_name
   return $self->gene_data()->{primary_name};
 }
 
+sub _build_display_name
+{
+  my $self = shift;
+
+  return $self->primary_name() // $self->primary_identifier();
+}
+
 sub _build_product
 {
   my $self = shift;
@@ -129,6 +140,13 @@ sub _build_synonyms_ref
   my $self = shift;
 
   return $self->gene_data()->{synonyms};
+}
+
+sub _build_taxonid
+{
+  my $self = shift;
+
+  return $self->gene_data()->{organism_taxonid};
 }
 
 sub _build_organism

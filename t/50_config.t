@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 19;
+use Test::More tests => 23;
 
 use Canto::Config;
 use Canto::TestUtil;
@@ -14,7 +14,7 @@ my $config_single = Canto::Config->new($config_yaml_1);
 
 is($config_single->{some_key}, 'some_value_1');
 
-is(keys %{$config_single}, 8);
+is(keys %{$config_single}, 9);
 
 ok(!$config_single->{annotation_types}->{phenotype}->{needs_with_or_from});
 ok($config_single->{annotation_types}->{cellular_component}->{needs_with_or_from});
@@ -34,7 +34,7 @@ my $config_two = Canto::Config->new($config_yaml_1, $config_yaml_2);
 
 is($config_two->{some_key}, 'some_value_1');
 is($config_two->{some_key_for_overriding}, 'overidden_value');
-is(keys %{$config_two}, 8);
+is(keys %{$config_two}, 9);
 
 
 # test loading then merging
@@ -43,7 +43,7 @@ $config_merge->merge_config($config_yaml_2);
 
 is($config_merge->{some_key}, 'some_value_1');
 is($config_merge->{some_key_for_overriding}, 'overidden_value');
-is(keys %{$config_merge}, 8);
+is(keys %{$config_merge}, 9);
 
 my $lc_app_name = lc Canto::Config::get_application_name();
 my $uc_app_name = uc $lc_app_name;
@@ -70,3 +70,19 @@ ok(defined $config_with_suffix->{"Model::TrackModel"});
 ok(defined $config_with_suffix->model_connect_string('Track'));
 
 is($config_with_suffix->{extra_css}, '/static/css/test_style.css');
+
+
+use JSON;
+
+my $config_for_json = $config_with_suffix->for_json('allele_types');
+
+my $description_required =
+  $config_for_json->{'mutation of a single nucleotide'}->{description_required};
+my $allele_name_required =
+  $config_for_json->{'mutation of a single nucleotide'}->{allele_name_required};
+
+ok ($description_required);
+ok (!$allele_name_required);
+
+ok ($description_required == JSON::true);
+ok ($allele_name_required == JSON::false);

@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
 # This script will tag the current master with the next available
-# version number (v321), then creates a branch release/v321 and
-# updates the release/latest branch to point to latest release
+# version number (eg. v321) and then push the changes to GitHub
+# and Bitbucket
 
 use strict;
 use warnings;
@@ -113,7 +113,11 @@ tag_version($new_version);
 
 # make_release_branch($new_version);
 
-system "git push --tags -v repo master";
+print "pushing to GitHub\n";
+system "git push --tags github master";
+
+print "pushing to Bitbucket\n";
+system "git push --tags bitb master";
 
 END {
   if ($stashed) {

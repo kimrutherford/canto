@@ -40,11 +40,13 @@ the Free Software Foundation, either version 3 of the License, or
 use strict;
 
 use Params::Validate qw(:all);
-use YAML qw(LoadFile);
+use Config::Any;
 use Clone qw(clone);
+use JSON;
 use Carp;
 use Cwd;
 
+use Data::Rmap qw(rmap_to HASH);
 use Hash::Merge;
 
 use Canto::DBUtil;
@@ -74,7 +76,11 @@ sub new
     push @config_file_names, $app_config_file;
   }
 
-  my $self = LoadFile(shift @config_file_names);
+  my $config_file_name = shift @config_file_names;
+  my $cfg = Config::Any->load_files({ files => [$config_file_name],
+                                      use_ext => 1, });
+
+  my ($file_name, $self) = %{$cfg->[0]};
 
   bless $self, $class;
 
@@ -115,8 +121,10 @@ sub merge_config
   my $self = shift;
   my @file_names = @_;
 
-  for my $file_name (@file_names) {
-    my $new_config = LoadFile($file_name);
+  my $cfg = Config::Any->load_files({ files => \@file_names,
+                                      use_ext => 1, });
+
+  for my $new_config (map { my ($file_name, $config) = %$_; $config } @$cfg) {
     if (defined $new_config) {
       my $merge = Hash::Merge->new('RIGHT_PRECEDENT');
       my $new = $merge->merge({%$self}, $new_config);
@@ -239,13 +247,17 @@ sub setup
   }
 
   delete $self->{export_type_to_allele_type};
+  delete $self->{allele_type_names};
 
-  # create an allele_types map and the export_type_to_allele_type map
+  # create allele_types, a hash of allele type names to config, the
+  # export_type_to_allele_type map and allele_type_names to make
+  # Service::canto_config() simpler
   if (defined $self->{allele_type_list}) {
     for my $allele_type (@{$self->{allele_type_list}}) {
-      $self->{allele_types}->{$allele_type->{name}} = $allele_type;
       my $export_type = $allele_type->{export_type} // $allele_type->{name};
       push @{$self->{export_type_to_allele_type}->{$export_type}}, $allele_type;
+      $self->{allele_types}->{$allele_type->{name}} = $allele_type;
+      push @{$self->{allele_type_names}}, $allele_type->{name};
     }
   }
 
@@ -296,7 +308,8 @@ sub setup
       }
       $self->{annotation_types}->{$annotation_type_name} = $annotation_type;
       $annotation_type->{namespace} //= $annotation_type->{name};
-      $annotation_type->{gene_cardinality} //= 'one';
+      $self->{annotation_types_by_namespace}->{$annotation_type->{namespace}} =
+        $annotation_type;
 
       # if any evidence code for this type needs a with or from field, set
       # needs_with_or_from in the type
@@ -492,6 +505,30 @@ sub class_info
   }
 
   return $self->{class_info}->{$model_name};
+}
+
+my @boolean_field_names = qw|description_required allele_name_required allow_expression_change can_have_conditions|;
+
+sub for_json
+{
+  my $self = shift;
+  my $key = shift;
+
+  my $data = clone $self->{$key};
+
+  rmap_to {
+    for my $key (keys %$_) {
+      if (grep { $key eq $_; } @boolean_field_names) {
+        if ($_->{$key}) {
+          $_->{$key} = JSON::true;
+        } else {
+          $_->{$key} = JSON::false;
+        }
+      }
+    }
+  } HASH, $data;
+
+  return $data;
 }
 
 1;

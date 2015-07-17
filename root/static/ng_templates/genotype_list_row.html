@@ -1,0 +1,25 @@
+<tr>
+  <td>
+    <span>
+      <a href="{{curs_root_uri + '/feature/genotype/view/' + genotype.id_or_identifier + (read_only_curs ? '/ro' : '')}}">
+        <p ng-bind-html="genotype.allele_string | wrapAtSpaces | toTrusted"></p></a>
+    </span>
+  </td>
+  <td>
+    <span style="font-weight: bold"  ng-bind-html="genotype.background | wrapAtSpaces | toTrusted"></span>
+    <span ng-bind-html="genotype.name | wrapAtSpaces | unicodeAlleleSymbol | toTrusted"></span>
+  </td>
+  <td ng-if="!read_only_curs" class="table-row-actions">
+    <div ng-if="!genotype.genotype_id">
+      <a href="{{curs_root_uri + '/feature/genotype/view/' + genotype.id_or_identifier}}">
+Use this genotype ...
+      </a>
+    </div>
+    <div ng-if="genotype.genotype_id">
+      <a href="{{curs_root_uri + '/feature/genotype/annotate/' + genotype.id_or_identifier + '/start/phenotype'}}">Add phenotype ...</a>
+    </div>
+    <div ng-if="genotype.genotype_id">
+      <a href="#" ng-click="deleteGenotype()">Delete ...</a>
+    </div>
+  </td>
+</tr>

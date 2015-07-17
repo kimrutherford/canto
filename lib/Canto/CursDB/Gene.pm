@@ -131,6 +131,34 @@ __PACKAGE__->belongs_to(
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-10-13 23:27:25
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:I6/rCQDKf0kw6LxxvOgunA
 
+=head2 feature_id
+
+ Usage   : $gene->feature_id()
+ Function: Return the gene_id of this gene.  This is an alias for gene_id()
+           that exists to make gene and genotype handling easier.
+
+=cut
+
+sub feature_id
+{
+  my $self = shift;
+
+  return $self->gene_id();
+}
+
+=head2 feature_type
+
+ Usage   : $gene->feature_type();
+ Function: Return 'gene'.  This exists to make gene and genotype handling
+           easier.
+
+=cut
+
+sub feature_type
+{
+  return 'gene';
+}
+
 =head2 direct_annotations
 
  Usage   : my $annotations_rs = $gene->direct_annotations();
@@ -246,33 +274,30 @@ sub all_annotations
   return $self->_get_indirect_annotations(1, 0, $include_with);
 }
 
-=head2 allele_annotations
-
- Usage   : my @annotations = $gene->allele_annotations();
- Function: Return the annotations of the alleles of this gene
- Args    : none
-
-=cut
-sub allele_annotations
-{
-  my $self = shift;
-
-  return map { $_->annotations()->all() } $self->alleles();
-}
-
 sub delete
 {
   my $self = shift;
 
   map {
     my $allele = $_;
-    my @allele_annotations = $allele->allele_annotations();
-    map {
-      my $allele_annotation = $_;
-      my $annotation = $allele_annotation->annotation();
-      $allele_annotation->delete();
-      $annotation->delete();
-    } @allele_annotations;
+    my $allele_genotype_rs =
+      $allele->allele_genotypes()->search({}, { prefetch => 'genotype' });
+
+    while (defined (my $allele_genotype = $allele_genotype_rs->next())) {
+      my $genotype = $allele_genotype->genotype();
+      my $genotype_annotation_rs =
+        $genotype->genotype_annotations()
+          ->search({}, { prefetch => 'annotation' });
+
+      while (defined (my $genotype_anno = $genotype_annotation_rs->next())) {
+        my $annotation = $genotype_anno->annotation();
+        $genotype_anno->delete();
+        $annotation->delete();
+      }
+
+      $allele_genotype->delete();
+      $genotype->delete();
+    };
     $allele->delete();
   } $self->alleles();
 

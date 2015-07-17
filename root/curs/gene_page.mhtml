@@ -9,8 +9,9 @@ $gene
 var genes_in_session = <% $genes_in_session_js |n %>;
 </script>
 
-<div id="curs-annotation-actions">
-<div class="curs-box">
+<div ng-controller="GenePageCtrl">
+% if (!$read_only_curs) {
+<div class="curs-box curs-half-width-section">
   <div class="curs-box-title">
 Choose curation type for <% $gene->display_name() %>:
     <& /curs/inline_help.mhtml, key => 'gene_page_choose_curation_type' &>
@@ -18,9 +19,10 @@ Choose curation type for <% $gene->display_name() %>:
   <div class="curs-box-body">
   <ul class="annotation-start">
 % for my $annotation_type (@annotation_type_list) {
+%   next if $annotation_type->{feature_type} ne 'gene';
 %   my $annotation_type_name = $annotation_type->{name};
-%   my $action_path = $curs_root_uri . '/annotation/new/' .
-%                     $gene_id . '/' . $annotation_type_name;
+%   my $action_path = "$curs_root_uri/feature/gene/annotate/$gene_id/" .
+%     "start/$annotation_type_name";
 %   my $title = $annotation_type->{help_text} // '';
 %   my $type_display_name = $annotation_type->{display_name};
     <li>
@@ -28,35 +30,40 @@ Choose curation type for <% $gene->display_name() %>:
       <a title="<% $title %>" href="<% $action_path %>">
 %   }
       <span class="annotation-type">
-%   if ($annotation_type->{gene_cardinality} eq 'one_or_more') {
-Single gene <% $type_display_name %>
-%   } else {
 <% ucfirst $type_display_name %>
-%   }
       </span>
 %   if (!$annotation_type->{disabled}) {
       </a>
 %   }
-%#<& /curs/inline_help.mhtml, key => "${annotation_type_name}_gene_page" &>
-%   if ($is_admin && !$annotation_type->{needs_allele} &&
-%       $annotation_type->{category} eq 'ontology') {
-%     my $add_url = $curs_root_uri . '/annotation/quick_add/'
-%       . $gene->gene_id() . '/' . $annotation_type_name;
-
-    <a href="#" class="curs-quick-add-annotation curs-js-link"
-       title="Add a <% $type_display_name %>"
-       onclick="javascript:QuickAddDialog.create('Add a <% $type_display_name %>', '<% $annotation_type_name %>', '<% $add_url %>'); return false;">Add ...</a>
-%   }
+      <annotation-quick-add annotation-type-name="<% $annotation_type->{name} %>"
+                            feature-type="gene" feature-id="<% $gene->gene_id() %>"
+                            feature-display-name="<% $gene_proxy->display_name() %>">
+      </annotation-quick-add>
     </li>
 % }
+  <li class="annotation-type">
+    <div>
+      Phenotypes:
+    </div>
+    <ul style="padding-left: 10px; font-size: 95%; ">
+      <li class="annotation-type">
+        <a href="#" ng-click="singleAlleleQuick('<% $gene->display_name() |n
+        %>', '<% $gene->primary_identifier() |n %>', <% $gene->gene_id()
+        |n%>)">Single allele</a> <span style="color: #333; font-size: 95%">(add allele details and phenotype)</span>
+      </li>
+      <li class="annotation-type">
+        <a href='<% "$curs_root_uri/genotype_manage" %>'>Multiple
+        allele</a> <span style="color: #333; font-size: 95%">(specify a genotype, and then add a phenotype)</span>
+      </li>
+    </ul>
   </ul>
   </div>
 </div>
-</div>
+% }
 
-<div id="curs-gene-details" class="curs-box">
+<div id="curs-gene-details" class="curs-box curs-half-width-section">
   <div class="curs-box-title">
-Details for <% $gene->display_name() %>
+Gene details
   </div>
   <div class="curs-box-body">
 <& /linkouts.mhtml, object => $gene, context => 'gene' &>
@@ -91,18 +98,21 @@ Details for <% $gene->display_name() %>
   </div>
 </div>
 
+<div id="curs-gene-details" class="curs-box curs-half-width-section">
+  <div class="curs-box-title">
+Genotypes for this gene
+  </div>
+  <div class="curs-box-body">
+    <single-gene-genotype-list gene-primary-identifier="'<% $gene->primary_identifier() %>'"></single-gene-genotype-list>
+  </div>
+</div>
+
 <div class="clearall"/>
 
-<button type="button" id="curs-finish-gene" class="curs-finish-button"><% $finish_text %></button>
+<button type="button" id="curs-finish-gene" class="btn btn-primary curs-back-button"><% $finish_text %></button>
 
-<div id="curs-annotation-tables" class="sect">
-% for my $annotation_type (@annotation_type_list) {
-<& current_annotation_view.mhtml,
-   annotation_type => $annotation_type,
-   curs_root_uri => $curs_root_uri,
-   pub => $pub,
-   gene => $gene &>
-% }
+<annotation-table-list feature-type-filter="gene" feature-id-filter="<% $gene_id %>"
+                       feature-filter-display-name="<% $gene->display_name() %>"></annotation-table-list>
 
 </div>
 
@@ -128,14 +138,16 @@ if (defined $org_config) {
 my $st = $c->stash();
 
 my $gene_count = $st->{gene_count};
-my $finish_text;
-if ($gene_count > 1) {
-  $finish_text = 'Change gene';
-} else {
-  $finish_text = 'Back to summary';
-}
+my $finish_text = '<- Back to summary';
+my $read_only_curs = $st->{read_only_curs};
+
 my $is_admin = $st->{is_admin_user};
 
 my $genes_in_session = $st->{genes_in_session};
 my $genes_in_session_js = Data::JavaScript::Anon->anon_dump($genes_in_session);
+
+use Canto::Curs::GeneProxy;
+
+my $gene_proxy =
+  Canto::Curs::GeneProxy->new(config => $c->config(), cursdb_gene => $gene);
 </%init>

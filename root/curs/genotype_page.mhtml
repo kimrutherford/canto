@@ -1,0 +1,141 @@
+<%args>
+$curs_root_uri
+$pub
+$genotype
+$annotation_count
+@annotation_type_list
+</%args>
+
+<div ng-controller="GenotypeViewCtrl" ng-init="init(<% $annotation_count %>)">
+% if (!$read_only_curs) {
+<div class="curs-box curs-half-width-section">
+  <div class="curs-box-title">
+Actions ...
+  </div>
+  <div class="curs-box-body">
+  <ul class="annotation-start">
+% for my $annotation_type (@types_to_show) {
+%   my $annotation_type_name = $annotation_type->{name};
+%   my $title = $annotation_type->{help_text} // '';
+%   my $action_path = $curs_root_uri . '/feature/genotype/annotate/' . $genotype_id;
+%     $action_path .= "/start/$annotation_type_name";
+%   my $type_display_name = $annotation_type->{display_name};
+    <li>
+%   if (!$annotation_type->{disabled}) {
+      <a title="<% $title %>" href="<% $action_path %>">
+%   }
+      <span class="annotation-type">
+Add a new <% $type_display_name %> for this genotype ...
+      </span>
+%   if (!$annotation_type->{disabled}) {
+      </a>
+%   }
+      <annotation-quick-add annotation-type-name="<% $annotation_type->{name} %>"
+                            feature-type="genotype" feature-id="<% $genotype->genotype_id() %>"
+                            feature-display-name="<% $genotype->display_name() %>">
+      </annotation-quick-add>
+    </li>
+% }
+  </ul>
+  </div>
+</div>
+% }
+
+<div id="curs-genotype-details" class="curs-box curs-half-width-section">
+  <div class="curs-box-title">
+Genotype details
+  </div>
+  <div class="curs-box-body">
+    <div class="curs-allele-list">
+    <table class="curs-definition-table">
+      <tbody>
+        <tr>
+          <td class="title">
+Name
+          </td>
+          <td>
+<% $_unicode_allele_symbol->($genotype->name() || '[none]') |n %>
+          </td>
+        </tr>
+        <tr>
+          <td class="title">
+Background
+          </td>
+          <td>
+<% $genotype->background() || '' %>
+          </td>
+        </tr>
+        <tr>
+          <td class="title">
+Description
+          </td>
+          <td>
+<% $_unicode_allele_symbol->($nowrap_allele_string) |n %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+% for my $allele ($genotype->alleles()) {
+<% $_unicode_allele_symbol->($allele->display_name()) |n %>
+%   if ($allele->expression()) {
+-     <i><% $allele->expression() %></i>
+%   }
+% if (!$read_only_curs) {
+ - <a href="<% $start_path . '/feature/gene/view/' . $allele->gene()->gene_id() %>">
+     <span>
+       <% $_proxy_gene->($allele->gene())->display_name() %>
+     </span>
+   </a>
+% }
+   <br/>
+% }
+    </div>
+% if (!$read_only_curs) {
+    <div>
+      <a ng-click="checkEditIsSensible($event)" href="<% $start_path . '/feature/genotype/edit/' . $genotype->genotype_id() %>">Edit ...</a>
+    </div>
+% }
+  </div>
+</div>
+
+<div class="clearall"/>
+
+<button type="button" id="curs-finish-genotype" class="btn btn-primary
+curs-back-button"><% $finish_text %></button>
+
+<annotation-table-list feature-type-filter="genotype" feature-id-filter="<% $genotype_id %>"
+                       feature-filter-display-name="<% $genotype->display_name() %>"></annotation-table-list>
+
+<%init>
+my $genotype_id = $genotype->genotype_id();
+
+my $st = $c->stash();
+
+my $finish_text = '<- Back to summary';
+
+my @types_to_show = grep {
+  $_->{feature_type} eq 'genotype'
+} @annotation_type_list;
+
+my $start_path = $c->stash()->{curs_root_uri};
+my $read_only_curs = $c->stash()->{read_only_curs};
+
+my $_proxy_gene = sub {
+  return Canto::Curs::GeneProxy->new(config => $c->config(),
+                                     cursdb_gene => shift);
+
+};
+
+my $nowrap_allele_string = $genotype->allele_string() || '[none]';
+
+use Canto::WebUtil;
+
+$nowrap_allele_string = Canto::WebUtil::nowrap_words($nowrap_allele_string);
+
+my $_unicode_allele_symbol = sub {
+  my $text = shift;
+  $text =~ s/(delta)\b/&Delta;/gr;
+};
+
+</%init>

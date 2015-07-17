@@ -1,0 +1,146 @@
+  <form name="cursAlleleEdit" class="curs-allele-edit-dialog modal-content">
+    <div class="modal-header">
+      <h4 class="modal-title">
+        Allele details for {{ gene.display_name }}
+      </h4>
+    </div>
+
+    <div class="modal-body">
+      <div ng-switch="!!alleleData.primary_identifier">
+      <div ng-switch-when="false">
+      <table>
+        <tr>
+          <td>
+            Allele name
+          </td>
+          <td ng-class="{ 'has-error': !isValidName() }">
+            <allele-name-complete allele-primary-identifier="alleleData.primary_identifier"
+                                  allele-name="alleleData.name"
+                                  allele-description="alleleData.description"
+                                  allele-type="alleleData.type"
+                                  allele-test-value="alleleData.test_value"
+                                  gene-identifier="{{gene.systemtic_id}}">
+            </allele-name-complete>
+            <span ng-show="!isValidName()"
+                  class="help-block">required for this allele type</span>
+          </td>
+        </tr>
+
+        <tr class="curs-allele-type-select">
+          <td>
+            Allele type
+          </td>
+          <td ng-class="{ 'has-error': !isValidType() }">
+            <select class="form-control"
+                    ng-model="alleleData.type" name="curs-allele-type"
+                    ng-options="name for name in env.allele_type_names">
+              <option selected="selected" value="">Choose an allele type ...</option>
+            </select>
+            <span ng-show="!isValidType()"
+                  class="help-block">Please choose a type</span>
+          </td>
+        </tr>
+
+        <tr class="curs-allele-type-description ng-cloak"
+            ng-show="!!alleleData.type && current_type_config.description_required">
+          <td>
+            Allele description
+          </td>
+          <td ng-class="{ 'has-error': !isValidDescription() }">
+            <input ng-model="alleleData.description"
+                   name="curs-allele-description-input" type="text" value=""
+                   class="form-control" />
+            <span ng-show="!isValidDescription()"
+                  class="help-block">required for this allele type</span>
+          </td>
+        </tr>
+
+        <tr class="ng-cloak" ng-show="!!alleleData.type">
+          <td>
+          </td>
+          <td id="curs-allele-description-example">
+            {{ current_type_config.placeholder }}
+          </td>
+        </tr>
+      </table>
+      </div>
+
+      <div ng-switch-when="true" class="curs-box">
+        <div class="curs-box-title">
+          This is an existing allele, click "OK" to use this allele or
+          "Cancel" to create a new allele
+        </div>
+        <div class="curs-box-body">
+          <table class="curs-definition-table">
+            <tr>
+              <td class="title">
+                Allele name
+              </td>
+              <td>
+                {{alleleData.name}}
+              </td>
+            </tr>
+            <tr>
+              <td class="title">
+                Type
+              </td>
+              <td>
+                {{alleleData.type}}
+              </td>
+            </tr>
+            <tr>
+              <td class="title">
+                Description
+              </td>
+              <td>
+                {{alleleData.description}}
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <table ng-show="!!alleleData.type && current_type_config != undefined && current_type_config.allow_expression_change">
+        <tr class="curs-allele-expression ng-cloak">
+          <td valign="top">
+            Expression
+          </td>
+          <td ng-class="{ 'has-error': !isValidExpression() }">
+            <div ng-show="!isValidExpression()"
+                 class="help-block">required for this allele type</div>
+            <div>
+              <label>Overexpression</label>
+              <input ng-model="alleleData.expression" name="curs-allele-expression"
+                     type="radio" value="Overexpression" />
+            </div>
+            <div ng-show="alleleData.type !== 'wild type' || config.endogenousWildtypeAllowed">
+              <label>Endogenous</label>
+              <input ng-model="alleleData.expression" name="curs-allele-expression"
+                     type="radio" value="Endogenous" />
+            </div>
+            <div>
+              <label>Knockdown</label>
+              <input ng-model="alleleData.expression" name="curs-allele-expression"
+                     type="radio" value="Knockdown" />
+            </div>
+            <div ng-show="alleleData.type !== 'wild type'">
+              <label>Null</label>
+              <input ng-model="alleleData.expression" name="curs-allele-expression"
+                     type="radio" value="Null" />
+            </div>
+            <div ng-show="alleleData.type !== 'wild type'">
+              <label>Not specified</label>
+              <input ng-model="alleleData.expression" name="curs-allele-expression"
+                     type="radio" value="Not specified" />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        <button class="btn btn-primary" ng-click="ok()" ng-disabled="!isValid()">OK</button>
+      </div>
+    </div>
+  </form>

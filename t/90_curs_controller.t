@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 42;
+use Test::More tests => 28;
 use Test::Deep;
 
 use Data::Compare;
@@ -11,6 +11,7 @@ use HTTP::Request;
 
 use Canto::TestUtil;
 use Canto::Controller::Curs;
+use Canto::Curs::Utils;
 
 my $test_util = Canto::TestUtil->new();
 $test_util->init_test('1_curs');
@@ -31,6 +32,9 @@ my $curs_schema = Canto::Curs::get_schema_for_key($config, $curs_key);
 
 my $curs_metadata_rs = $curs_schema->resultset('Metadata');
 
+my $gene_manager = Canto::Curs::GeneManager->new(config => $config,
+                                                 curs_schema => $curs_schema);
+
 my %metadata = ();
 
 while (defined (my $metadata = $curs_metadata_rs->next())) {
@@ -46,8 +50,8 @@ like($curs_db_pub->title(), qr/Inactivating pentapeptide insertions in the/);
 my @search_list = (@known_genes, @unknown_genes);
 
 my ($result) =
-  Canto::Controller::Curs->_find_and_create_genes($curs_schema, $config,
-                                                   \@search_list);
+  $gene_manager->find_and_create_genes(\@search_list);
+
 sub check_result
 {
   my $result = shift;
@@ -70,15 +74,11 @@ sub check_result
 
 check_result($result, 2, 3, 0);
 
-($result) =
-  Canto::Controller::Curs->_find_and_create_genes($curs_schema, $config,
-                                                   \@search_list);
+($result) = $gene_manager->find_and_create_genes(\@search_list);
 
 check_result($result, 2, 3, 0);
 
-my @results =
-  Canto::Controller::Curs->_find_and_create_genes($curs_schema, $config,
-                                                   \@known_genes);
+my @results = $gene_manager->find_and_create_genes(\@known_genes);
 
 ok(@results == 1);
 
@@ -107,8 +107,7 @@ my @genes_to_filter =
   map { _lookup_gene($_)} @gene_identifiers_to_filter;
 
 my @filtered_genes =
-  Canto::Controller::Curs->_filter_existing_genes($curs_schema,
-                                                   @genes_to_filter);
+  $gene_manager->_filter_existing_genes(@genes_to_filter);
 
 is(@filtered_genes, 1);
 is($filtered_genes[0]->{primary_identifier}, 'SPCC1739.11c');
@@ -120,10 +119,9 @@ $curs_schema->resultset('Gene')->delete();
 my ($identifiers_matching_more_than_once, $genes_matched_more_than_once);
 
 ($result, $identifiers_matching_more_than_once, $genes_matched_more_than_once) =
-  Canto::Controller::Curs->_find_and_create_genes($curs_schema, $config,
-                                                   [@known_genes,
-                                                    @id_matching_two_genes,
-                                                    'SPCC576.19c']);
+  $gene_manager->find_and_create_genes([@known_genes,
+                                        @id_matching_two_genes,
+                                        'SPCC576.19c']);
 ok(defined $result);
 cmp_deeply($identifiers_matching_more_than_once,
            {
@@ -136,10 +134,9 @@ cmp_deeply($genes_matched_more_than_once, {});
 is($curs_schema->resultset('Gene')->count(), 0);
 
 ($result, $identifiers_matching_more_than_once, $genes_matched_more_than_once) =
-  Canto::Controller::Curs->_find_and_create_genes($curs_schema, $config,
-                                                   [@known_genes,
-                                                    @two_ids_matching_one_gene,
-                                                    'SPCC576.19c']);
+  $gene_manager->find_and_create_genes([@known_genes,
+                                        @two_ids_matching_one_gene,
+                                        'SPCC576.19c']);
 ok(defined $result);
 cmp_deeply($identifiers_matching_more_than_once, {});
 cmp_deeply($genes_matched_more_than_once,
@@ -154,7 +151,7 @@ is($curs_schema->resultset('Gene')->count(), 0);
 
 
 # utility methods
-my $iso_date = Canto::Controller::Curs::_get_iso_date();
+my $iso_date = Canto::Curs::Utils::get_iso_date();
 like ($iso_date, qr(^\d+-\d+-\d+$));
 
 
@@ -162,8 +159,7 @@ like ($iso_date, qr(^\d+-\d+-\d+$));
 
 my $pub_for_allele = $curs_schema->resultset('Pub')->first();
 
-Canto::Controller::Curs->_find_and_create_genes($curs_schema, $config,
-                                                 \@known_genes);
+$gene_manager->find_and_create_genes(\@known_genes);
 
 my $gene_rs = $curs_schema->resultset('Gene');
 is ($gene_rs->count(), 3);
@@ -194,13 +190,6 @@ my $allele =
                                    gene => $gene_for_allele->gene_id(),
                                  });
 
-$curs_schema->create_with_type('AlleleAnnotation',
-                               {
-                                 allele => $allele->allele_id(),
-                                 annotation => $annotation_for_allele->annotation_id(),
-                               });
-
-
 my $annotation_for_rna_allele =
   $curs_schema->create_with_type('Annotation',
                                  {
@@ -226,111 +215,10 @@ my $rna_allele =
                                    gene => $rna_gene_for_allele->gene_id(),
                                  });
 
-$curs_schema->create_with_type('AlleleAnnotation',
-                               {
-                                 allele => $rna_allele->allele_id(),
-                                 annotation => $annotation_for_rna_allele->annotation_id(),
-                               });
-
-
-my $annotation_for_allele_in_progress =
-  $curs_schema->create_with_type('Annotation',
-                                 {
-                                   type => 'phenotype',
-                                   status => 'new',
-                                   pub => $pub_for_allele,
-                                   creation_date => $iso_date,
-                                   data => {
-                                     term_ontid => 'FYPO:0000128',
-                                   },
-                                 });
-$curs_schema->create_with_type('GeneAnnotation',
-                               {
-                                 gene => $gene_for_allele->gene_id(),
-                                 annotation => $annotation_for_allele_in_progress->annotation_id(),
-                               });
-
-my %allele_creation_data_1 = (
-  name => 'test_name_1',
-  description => 'test_desc_1',
-  conditions => ['cold'],
-  evidence => 'Western blot assay',
-  expression => 'Endogenous',
-);
-
-Canto::Controller::Curs::_allele_add_action_internal($config, $curs_schema,
-                                                      $annotation_for_allele_in_progress,
-                                                      \%allele_creation_data_1);
-
-is($annotation_for_allele_in_progress->data()->{alleles_in_progress}->{0}->{conditions}->[0], 'PECO:0000006');
-
-my %allele_creation_data_2 = (
-  name => 'an_allele',
-  description => undef,
-  conditions => ['cold', 'late in the afternoon'],
-  evidence => 'Enzyme assay data',
-  expression => 'Overexpression',
-);
-
-my $add_res =
-  Canto::Controller::Curs::_allele_add_action_internal($config, $curs_schema,
-                                                        $annotation_for_allele_in_progress,
-                                                        \%allele_creation_data_2);
-my $add_expected = {
-  'expression' => 'Overexpression',
-  'name' => 'an_allele',
-  'evidence' => 'Enzyme assay data',
-  'id' => 1,
-  'display_name' => 'an_allele(unknown)',
-  'description' => undef,
-  'conditions' => [
-    'cold',
-    'late in the afternoon'
-  ]
-};
-cmp_deeply($add_res, $add_expected);
-
 
 my %allele_data_1 = Canto::Controller::Curs::_get_all_alleles($config, $curs_schema,
                                                                $gene_for_allele);
 
-is (scalar(keys %allele_data_1), 3);
-
-is ($allele_data_1{'test_name_1(test_desc_1)'}->{name}, $allele_creation_data_1{name});
-is ($allele_data_1{'an_allele(unknown)'}->{description}, undef);
-is ($allele_data_1{'existing_allele_name(desc)'}->{primary_identifier}, 'SPCC1739.10:allele-1');
-
-
-my %allele_data_2 = Canto::Controller::Curs::_get_all_alleles($config, $curs_schema,
-                                                               $rna_gene_for_allele);
-
-is (scalar(keys %allele_data_2), 1);
-
-is ($allele_data_2{'existing_rna_allele_name(rna_desc)'}->{name}, 'existing_rna_allele_name');
-is ($allele_data_2{'existing_rna_allele_name(rna_desc)'}->{description}, 'rna_desc');
-is ($allele_data_2{'existing_rna_allele_name(rna_desc)'}->{primary_identifier}, 'SPNCRNA.119:allele-2');
-
-
-
-my %allele_creation_data_3 = (
-  name => '',
-  description => 'unknown',
-  evidence => 'Enzyme assay data',
-  expression => 'Overexpression',
-);
-
-my $new_allele_data_3 =
-  Canto::Controller::Curs::_allele_add_action_internal($config, $curs_schema,
-                                                        $annotation_for_allele,
-                                                        \%allele_creation_data_3);
-
-
-is (scalar(keys %$new_allele_data_3), 6);
-
-is ($new_allele_data_3->{'expression'}, 'Overexpression');
-is ($new_allele_data_3->{'name'}, '');
-is ($new_allele_data_3->{'display_name'}, '(unknown)');
-is ($new_allele_data_3->{'id'}, 0);
-
+is (scalar(keys %allele_data_1), 1);
 
 done_testing;

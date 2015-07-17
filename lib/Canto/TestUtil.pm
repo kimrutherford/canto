@@ -14,11 +14,11 @@ use File::Copy qw(copy);
 use File::Copy::Recursive qw(dircopy);
 use File::Temp qw(tempdir);
 use File::Basename;
-use YAML qw(LoadFile);
 use Data::Rmap ':all';
 use Clone qw(clone);
 use XML::Simple;
 use IO::All;
+use YAML qw(Dump);
 
 use Plack::Test;
 use Plack::Util;
@@ -54,17 +54,128 @@ no Moose;
 
 $ENV{CANTO_CONFIG_LOCAL_SUFFIX} = 'test';
 
+our $test_date = '2010-01-02';
+
+our %shared_test_results = (
+  allele => {
+    ste =>
+      [
+        {
+          'description' => 'K132A',
+          'display_name' => 'ste20-c1(K132A)',
+          'name' => 'ste20-c1',
+          'type' => 'mutation of single amino acid residue',
+          'uniquename' => 'SPBC12C2.02c:allele-2',
+        },
+        {
+          'description' => 'K132A,K144A',
+          'display_name' => 'ste20-c2(K132A,K144A)',
+          'name' => 'ste20-c2',
+          'type' => 'mutation of multiple amino acid residues',
+          'uniquename' => 'SPBC12C2.02c:allele-3',
+        },
+        {
+          'description' => 'del_x1',
+          'display_name' => 'ste20delta',
+          'name' => 'ste20delta',
+          'type' => 'deletion',
+          'uniquename' => 'SPBC12C2.02c:allele-1',
+        }
+      ],
+  },
+  cycloheximide_annotation => {
+    'term_name' => 'sensitive to cycloheximide',
+    'feature_id' => undef,
+    'is_not' => bless( do{\(my $o = 1)}, 'JSON::XS::Boolean' ),
+    'genotype_name' => 'cdc11-33 ssm4delta',
+    'genotype_identifier' => 'aaaa0007-test-genotype-3',
+    'alleles' => [
+      {
+        'type' => undef,
+        'gene_display_name' => 'cdc11',
+        'taxonid' => '4896',
+        'primary_identifier' => 'SPCC1739.11c:allele-1',
+        'long_display_name' => 'cdc11-33(unknown)',
+        'description' => 'unknown',
+        'name' => 'cdc11-33',
+        'gene_id' => 4,
+      },
+      {
+        'long_display_name' => 'ssm4delta(deletion)',
+        'primary_identifier' => 'SPAC27D7.13c:allele-1',
+        'name' => 'ssm4delta',
+        'description' => 'deletion',
+        'gene_display_name' => 'ssm4',
+        'type' => undef,
+        'taxonid' => '4896',
+        'gene_id' => 15,
+      }
+    ],
+    'feature_type' => 'genotype',
+    'annotation_id' => 3,
+    'term_ontid' => 'FYPO:0000104',
+    'qualifiers' => [],
+    'conditions' => [],
+    'status' => 'existing',
+    'feature_display_name' => 'cdc11-33 ssm4delta',
+    'genotype_id' => undef,
+    'evidence_code' => 'UNK',
+    'genotype_name_or_identifier' => 'cdc11-33 ssm4delta',
+    'annotation_type' => 'phenotype'
+
+  },
+  post_translational_modification => {
+    'evidence_code' => 'ISS',
+    'creation_date' => '2010-01-02',
+    'with_gene_id' => undef,
+    'gene_identifier' => 'SPCC63.05',
+    'submitter_comment' => undef,
+    'gene_name' => '',
+    'with_or_from_display_name' => undef,
+    'feature_display_name' => 'SPCC63.05',
+    'feature_type' => 'gene',
+    'term_name' => 'protein modification categorized by amino acid modified',
+    'gene_synonyms_string' => '',
+    'term_ontid' => 'MOD:01157',
+    'gene_id' => 4,
+    'taxonid' => 4896,
+    'creation_date_short' => '20100102',
+    'completed' => '',
+    'is_not' => JSON::false,
+    'annotation_type_display_name' => 'protein modification',
+    'needs_with' => '1',
+    'annotation_type_abbreviation' => '',
+    'gene_name_or_identifier' => 'SPCC63.05',
+    'is_obsolete_term' => 0,
+    'term_suggestion_name' => undef,
+    'term_suggestion_definition' => undef,
+    'annotation_extension' => '',
+    'annotation_type' => 'post_translational_modification',
+    'gene_product' => 'TAP42 family protein involved in TOR signalling (predicted)',
+    'status' => 'new',
+    'annotation_id' => 8,
+    'feature_id' => 4,
+    'publication_uniquename' => 'PMID:19756689',
+    'with_or_from_identifier' => undef,
+    'curator' => 'Another Testperson <a.n.other.testperson@pombase.org>',
+    'qualifiers' => [],
+  },
+);
+
+
 =head2 new
 
  Usage   : my $utils = Canto::TestUtil->new();
  Function: Create a new TestUtil object
- Args    : none
+ Args    : $extra_config_file - extra YAML config options which
+           will be loaded into into the Config
 
 =cut
+
 sub new
 {
   my $class = shift;
-  my $arg = shift;
+  my $extra_config_file = shift;
 
   my $root_dir = getcwd();
 
@@ -91,11 +202,6 @@ sub new
   my $test_config_file_name = "$root_dir/" . $config->{test_config_file};
   $config->merge_config($test_config_file_name);
 
-  $config->{implementation_classes}->{ontology_annotation_adaptor} =
-    'Canto::Chado::OntologyAnnotationLookup';
-  $config->{implementation_classes}->{interaction_annotation_adaptor} =
-    'Canto::Chado::InteractionAnnotationLookup';
-
   $self->{config} = $config;
 
   bless $self, $class;
@@ -111,15 +217,21 @@ sub new
  Function: set up the test environment by creating a test database and
            configuration
            also sets $::test_mode to 1
- Args    : $arg - pass "empty_db" to set up the tests with an empty
-                  tracking database
-                - pass "1_curs" to get a tracking database with one curation
-                  session (initialises the curs database too)
-                - pass "3_curs" to set up 3 curation sessions
-                - pass nothing or "default" to set up a tracking database
-                  populated with test data, but with no curation sessions
+ Args    : $env_type - pass "empty_db" to set up the tests with an empty
+                       tracking database
+                     - pass "1_curs" to get a tracking database with one curation
+                       session (initialises the curs database too)
+                     - pass "3_curs" to set up 3 curation sessions
+                     - pass nothing or "default" to set up a tracking database
+                       populated with test data, but with no curation sessions
+           $args - copy_ontology_index: if 1 (the default) copy the Lucene
+                                        ontology index when initialising
+                   test_with_chado - set to 1 to initialise the config with the
+                                     Chado implementation_classes for gene,
+                                     allele and genotype lookup
 
 =cut
+
 sub init_test
 {
   my $self = shift;
@@ -139,13 +251,13 @@ sub init_test
   my $config = $self->{config};
 
   my $test_config_file_name = "$root_dir/" . $config->{test_config_file};
-  my $test_config = LoadFile($test_config_file_name)->{test_config};
+  $config->merge_config($test_config_file_name);
 
-  if (!exists $test_config->{test_cases}->{$test_env_type}) {
+  if (!exists $config->{test_config}->{test_cases}->{$test_env_type}) {
     die "no test case configured for '$test_env_type'\n";
   }
 
-  my $data_dir = $test_config->{data_dir};
+  my $data_dir = $config->{test_config}->{data_dir};
 
   if ($test_env_type ne 'empty_db') {
     my $track_db_file = test_track_db_name($config, $test_env_type);
@@ -165,14 +277,47 @@ sub init_test
     die "failed to initialise application: $@\n";
   }
 
-  $config->merge_config("$root_dir/${app_name}_test.yaml");
+  my $chado_test_db_file = $config->{test_config}->{test_chado_db};
+  copy "$data_dir/$chado_test_db_file", $temp_dir or die "$!";
+  my $test_chado_db_copy ="$temp_dir/$chado_test_db_file";
+  $self->{chado_schema} =
+    Canto::DBUtil::schema_for_file($config, $test_chado_db_copy,
+                                    'Chado');
+  $config->{'Model::ChadoModel'} = {
+    schema_class => 'Canto::ChadoDB',
+    connect_info => [
+      "dbi:SQLite:dbname=$test_chado_db_copy",
+    ],
+  };
+
+  if ($args->{test_with_chado}) {
+    my %chado_feature_impl_classes =
+      %{$config->{chado_feature_implementation_classes}};
+    for my $key (keys %chado_feature_impl_classes) {
+      $config->{implementation_classes}->{$key} =
+        $chado_feature_impl_classes{$key};
+    }
+  }
+
+  my $app_test_config_file = "$root_dir/${app_name}_test.yaml";
+
+  # merge config generated by initialise_app();
+  $config->merge_config($app_test_config_file);
+
+  # append the test settings to the config file that Catalyst reads
+  open my $app_test_config_fh, '>', $app_test_config_file
+    or die "can't open $app_test_config_file\n";
+
+  print $app_test_config_fh Dump($config);
+
+  close $app_test_config_fh;
 
   my $connect_string = $config->model_connect_string('Track');
 
   $self->{track_schema} = Canto::TrackDB->new(config => $config);
 
   my $db_file_name = Canto::DBUtil::connect_string_file_name($connect_string);
-  my $test_case_def = $test_config->{test_cases}->{$test_env_type};
+  my $test_case_def = $config->{test_config}->{test_cases}->{$test_env_type};
 
   # copy the curs databases too
   if ($test_env_type ne 'empty_db') {
@@ -185,19 +330,6 @@ sub init_test
       copy "$data_dir/$db_file_name", $temp_dir or die "$!";
     }
   }
-
-  my $chado_test_db_file = $test_config->{test_chado_db};
-  copy "$data_dir/$chado_test_db_file", $temp_dir or die "$!";
-  my $test_chado_db_copy ="$temp_dir/$chado_test_db_file";
-  $self->{chado_schema} =
-    Canto::DBUtil::schema_for_file($config, $test_chado_db_copy,
-                                    'Chado');
-  $config->{'Model::ChadoModel'} = {
-    schema_class => 'Canto::ChadoDB',
-    connect_info => [
-      "dbi:SQLite:dbname=$test_chado_db_copy",
-    ],
-  };
 
   if ($args->{copy_ontology_index}) {
     my $ontology_index_dir = $config->{ontology_index_dir};
@@ -717,7 +849,10 @@ sub _load_curs_db_data
       die "Expected 1 result for $gene_identifier not ", scalar(@found)
     }
 
-    my %new_genes = Canto::Controller::Curs->_create_genes($cursdb_schema, $result);
+    my $gene_manager = Canto::Curs::GeneManager->new(config => $config,
+                                                     curs_schema => $cursdb_schema);
+
+    my %new_genes = $gene_manager->create_genes_from_lookup($result);
 
     if (keys %new_genes != 1) {
       die "Expected only 1 gene to be created";
@@ -730,6 +865,7 @@ sub _load_curs_db_data
       my $allele_description = $allele_details->{description};
       my $allele_name = $allele_details->{name};
       my $allele_type = $allele_details->{type};
+      my $allele_expression = $allele_details->{expression};
 
       my %create_args = (
         primary_identifier => $allele_primary_identifier,
@@ -737,16 +873,40 @@ sub _load_curs_db_data
         description => $allele_description,
         name => $allele_name,
         gene => $new_gene->gene_id(),
+        expression => $allele_expression,
       );
 
       my $allele = $cursdb_schema->create_with_type('Allele', \%create_args);
     }
   }
 
+  for my $genotype_details (@{$curs_config->{genotypes}}) {
+    my %create_args = %{_process_data($cursdb_schema, $genotype_details)};
+
+    # save the args that are arrays and set them after creation to cope with
+    # many-many relations
+    my %array_args = ();
+
+    for my $key (keys %create_args) {
+      if (ref $create_args{$key} eq 'ARRAY') {
+        $array_args{$key} = $create_args{$key};
+        delete $create_args{$key};
+      }
+    }
+
+    my $new_genotype =
+      $cursdb_schema->create_with_type('Genotype', { %create_args });
+
+   for my $key (keys %array_args) {
+      my $method = "set_$key";
+      $new_genotype->$method(@{$array_args{$key}});
+    }
+  }
+
   for my $annotation (@{$curs_config->{annotations}}) {
     my %create_args = %{_process_data($cursdb_schema, $annotation)};
 
-    $create_args{creation_date} = '2010-01-02';
+    $create_args{creation_date} = $test_date;
 
     # save the args that are arrays and set them after creation to cope with
     # many-many relations

@@ -14,9 +14,10 @@ CREATE TABLE gene (
 
 CREATE TABLE allele (
        allele_id integer PRIMARY KEY,
-       primary_identifier text,  -- if null this is a new allele
+       primary_identifier text NOT NULL UNIQUE,
        type text NOT NULL,  -- 'deletion', 'partial deletion, nucleotide' etc.
        description text,
+       expression text,
        name text,
        gene integer NOT NULL REFERENCES gene(gene_id)
 );
@@ -39,10 +40,23 @@ CREATE TABLE gene_annotation (
        annotation integer REFERENCES annotation(annotation_id)
 );
 
-CREATE TABLE allele_annotation (
-       allele_annotation_id integer PRIMARY KEY,
-       allele integer REFERENCES allele(allele_id),
+CREATE TABLE genotype_annotation (
+       genotype_annotation_id integer PRIMARY KEY,
+       genotype integer REFERENCES genotype(genotype_id),
        annotation integer REFERENCES annotation(annotation_id)
+);
+
+CREATE TABLE genotype (
+       genotype_id integer PRIMARY KEY AUTOINCREMENT,
+       identifier text UNIQUE NOT NULL,
+       background text,
+       name text UNIQUE
+);
+
+CREATE TABLE allele_genotype (
+       allele_genotype_id integer PRIMARY KEY,
+       allele integer REFERENCES allele(allele_id),
+       genotype integer REFERENCES genotype(genotype_id)
 );
 
 CREATE TABLE pub (

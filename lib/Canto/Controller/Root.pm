@@ -66,6 +66,10 @@ sub end : Private
     return 0;
   }
 
+  if (delete $st->{cache_this_link} && !$ENV{CANTO_DEBUG}) {
+    $c->cache_page(99999);
+  }
+
   # copied from RenderView.pm
   if (! $c->response->content_type ) {
     $c->response->content_type( 'text/html; charset=utf-8' );

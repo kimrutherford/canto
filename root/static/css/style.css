@@ -9,7 +9,6 @@ body
   background-color: white; 
   color: #302226;
   font-size: 16px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 a:link { text-decoration:none; cursor:pointer; }
@@ -20,12 +19,12 @@ a:link:active { text-decoration:none }
 
 #heading a { color: black; }
 
-.hero-unit {
+.jumbotron {
   padding: 30px;
-  line-height: 1.4em;
+  line-height: 1.6em;
 }
 
-.hero-unit h1 {
+.jumbotron h1 {
   font-size: 50px;
 }
 
@@ -82,19 +81,7 @@ ul li {
 }
 
 button, input[type=submit] {
-  background-color: #c00;
-  color: white;
-  border-color: #c00;
   white-space: nowrap;
-  font-weight: bold;
-  cursor: pointer;
-}
-button:disabled, input[type=submit]:disabled {
-  background-color: #777;
-  color: eee;
-  border-color: #666;
-  white-space: nowrap;
-  font-weight: bold;
   cursor: pointer;
 }
 
@@ -187,47 +174,21 @@ div#footer .sponsor, .canto-front-page .footer .sponsor {
   float: right;
   right: 0px;
   top: 0px;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }
-#menu li a {
-  background-color: #333;
-  font-size: 90%;
+#menu * {
+  float: none;
+  font-weight: normal;
 }
 #menu .useridentifier {
   margin: 0; padding: 0 8px 0 8px;
   display: inline;
-  float: left;
   text-decoration: none;
 }
 #menu .useridentifier .logged-in-address {
   font-size: 80%;
-}
-#menu ul {
-  background-color: #228;
-  color: white;
-  margin: 0; padding: 0;
-}
-#menu ul li {
-  display: inline;
-}
-#menu ul li a {
-  float: left;
-  text-decoration: none;
-  color: white;
-  padding: 4px 10px;
-  white-space: nowrap;
-}
-#menu ul li span {
-  float: left;
-  text-decoration: none;
-  padding: 4px 10px;
-  color: #666;
-}
-#menu ul li a:visited {
-  color: white;
-}
-#menu ul li a:hover, .menu ul li .current {
-  color: white;
-  background-color:#0b75b2;
 }
 
 #content {
@@ -245,7 +206,7 @@ div#footer .sponsor, .canto-front-page .footer .sponsor {
   top: 0px;
   margin: auto;
   margin-top: 0px;
-  font-size: 2em;
+  font-size: 1.5em;
   font-weight: bold;
   line-height: 1em;
 }
@@ -287,10 +248,6 @@ div#footer .sponsor, .canto-front-page .footer .sponsor {
 }
 #curs-page-description .curs-reassign {
   margin-left: 10px;
-}
-
-#breadcrumb-previous-button {
-  margin-right: 6px;
 }
 
 #breadcrumbs {
@@ -343,11 +300,6 @@ div#footer .sponsor, .canto-front-page .footer .sponsor {
   float: right;
 }
 
-a.canto-toggle-button {
-  margin-left: 5px;
-  display: none;
-}
-
 .field-list {
   padding-bottom: 10px;
   margin: 10px 0px 5px 0px;
@@ -388,12 +340,19 @@ table.list tr.odd, table.list tr:nth-child(odd) {
 .list th a:link {
   color: #226
 }
+table.list td {
+  vertical-align: top;
+}
 
 table.list tr td {
   border-width: 1px;
   padding: 3px;
   border-style: solid;
   border-color: #bbb;
+}
+
+table.list thead {
+  font-weight: bold;
 }
 
 table.list thead img.sort-direction-icon {
@@ -434,6 +393,30 @@ table.list thead img.sort-direction-icon {
   background-image: url('../images/down_triangle.png');
   background-repeat: no-repeat;
   background-position: center left
+}
+
+td.table-row-actions {
+  border: 0px solid white !important;
+  background-color: white !important;
+}
+td.table-row-actions div {
+  white-space: nowrap;
+  font-size: 95%;
+}
+
+.curs-evidence-directive > div {
+  margin: 5px 0px 5px 0px;
+}
+
+.curs-evidence-directive-with {
+  margin: 8px 0px 8px 0px;
+}
+
+.curs-evidence-conditions {
+  margin: 30px 0px 5px 0px;
+}
+.curs-evidence-conditions .tagit {
+  font-size: 80%;
 }
 
 .sect .sect-title a {
@@ -538,7 +521,8 @@ span.error_constraint_required {
 }
 .page_nav_number_current {
   font-weight: bold;
-  border: 1px solid #666;
+  font-size: 110%;
+  border: 1.8px solid #666;
   background-color: #ddf;
 }
 
@@ -555,6 +539,13 @@ div.clearall {
 
 .curs-content {
   margin-top: 1em;
+}
+
+.curs-top-help {
+  font-weight: bold;
+  font-size: 105%;
+  padding-left: 20px;
+  padding-bottom: 10px;
 }
 
 .annotation-start {
@@ -607,13 +598,17 @@ div.clearall {
   margin: 10px;
 }
 
-.gene-list .gene-list-instructions {
+.gene-list .gene-list-instructions, .genotype-list .curs-genotype-list-instructions {
   font-size: 95%;
   margin-bottom: 10px;
 }
 
-.gene-list .view-edit {
-  font-size: 85%;
+.curs-genotype-edit-gene-list {
+  margin-top: 20px;
+}
+
+.feature-list-action {
+  font-size: 90%;
   margin: 12px 2px 0px 2px;
 }
 
@@ -706,10 +701,10 @@ div.clearall {
   margin-bottom: 25px;
 }
 
-.curs-definition-table {
+.curs-definition-table, .curs-allele-list {
   table-layout: fixed;
   border-collapse: collapse;
-  margin: 15px;
+  margin: 10px;
 }
 
 .curs-definition-table tbody {
@@ -769,6 +764,15 @@ div.clearall {
   font-size: 90%;
 }
 
+#curs-interaction .curs-multi-feature-chooser {
+  width: 80%;
+}
+
+#curs-interaction .curs-multi-feature-chooser-element {
+  width: 12em;
+  float: left;
+}
+
 .curs-box {
   border: 1px solid #ddd;
   -moz-border-radius: 4px;
@@ -794,7 +798,7 @@ div.clearall {
 
 .curs-box-body {
   margin: 0px;
-  padding: 10px;
+  padding: 5px;
 }
 
 #ferret-accept-term-details {
@@ -887,11 +891,7 @@ div.clearall {
   background-color:#0b75b2;
 }
 
-form .checkboxgroup {
-  margin-top: 10px;
-
-}
-form .checkboxgroup span {
+fieldset.curs-genes span {
   display: block;
 }
 
@@ -925,16 +925,11 @@ span.canto-select-buttons {
   margin: 10px;
 }
 
-#curs-gene-list, #curs-annotation-actions {
+#curs-gene-list, #curs-genotype-list, #curs-front-page .pub-title, .curs-half-width-section {
   font-size: 90%;
   float: left;
-  width: 48%;
-}
-
-#curs-front-page .pub-title, #curs-gene-details {
-  font-size: 90%;
-  width: 48%;
-  float: right;
+  width: 45%;
+  margin: 5px 10px 5px 5px;
 }
 
 .curs-finish-buttons {
@@ -954,11 +949,13 @@ span.canto-select-buttons {
 .curs-back-button {
   float: left;
   margin-top: 10px;
+  margin-bottom: 5px;
   margin-right: 8px;
 }
 
 .ui-dialog {
    font-size: 80%;
+   z-index: 2000 !important; /* in front of AngularJS modal */
 }
 .ui-dialog .ui-dialog-titlebar, .curs-ui-dialog-subheading .ui-dialog-title {
    padding: .2em 1em .1em;
@@ -1085,6 +1082,10 @@ input[readonly="1"] {
   clear: left;
 }
 
+.curs-allele-edit-dialog td {
+  padding-right: 1em;
+}
+
 .curs-allele-evidence-select {
   width: 22em;
 }
@@ -1166,20 +1167,23 @@ a.curs-editable-table-field img, a.curs-editable-table-long-field img
   z-index: 1000;
 }
 
-.faded-overlay {
+.faded-overlay, .edit-pending {
+  opacity: 0.5;
+  filter: alpha(opacity=50); /* For IE8 and earlier */
+}
+
+.curs-annotation-quick-add a:hover, .annotation-start .curs-inline-help-icon:hover {
+  opacity: 1.0;
+}
+
+.curs-annotation-quick-add a, .annotation-start .curs-inline-help-icon {
+  padding-left: 10px;
+  font-size: 80%;
   opacity: 0.5;
 }
 
-a.curs-quick-add-annotation:hover, .annotation-start .curs-inline-help-icon:hover {
-  opacity: 1.0;
-  filter: alpha(opacity=100); /* For IE8 and earlier */
-}
-
-a.curs-quick-add-annotation, .annotation-start .curs-inline-help-icon {
-  padding-left: 10px;
-  font-size: 80%;
-  opacity: 0.3;
-  filter: alpha(opacity=30); /* For IE8 and earlier */
+.curs-annotation-quick-add {
+  display: inline;
 }
 
 /* initially hide links that only work with Javascript active */
@@ -1207,4 +1211,92 @@ a.curs-quick-add-annotation, .annotation-start .curs-inline-help-icon {
   border: 3px solid red;
   padding: 20px;
   background-color: white;
+}
+
+/* allow tooltips/titles to work on disabled buttons */
+.btn.disabled, .btn[disabled], fieldset[disabled] .btn {
+  pointer-events: auto !important;
+  background-color: grey;
+}
+
+.modal.fade .modal-dialog {
+  -webkit-transition: none;
+     -moz-transition: none;
+       -o-transition: none;
+          transition: none;
+   -webkit-transform: none;
+       -ms-transform: none;
+           transform: none;
+}
+
+.modal.fade {
+  opacity: 1;
+}
+
+.modal-backdrop.fade {
+  opacity: .5;
+  filter: alpha(opacity=50);
+}
+
+.form-control, .help-block {
+  width: auto;
+  display: inline;
+}
+
+.modal-dialog {
+/*  margin-top: 5%;*/
+}
+
+table tr td.curs-table-row-remove {
+  border-style: none;
+}
+
+table tr td.curs-table-row-remove a span {
+  color: red;
+}
+
+/* Bootstrap doesn't change the cursor if there is no href */
+a:not([href]) {
+  cursor:pointer;
+}
+
+#disabled-overlay, #ajax-loading-overlay {
+  position: fixed;
+  display: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1500;
+}
+
+#disabled-overlay {
+  background-color: rgba(0,0,0,0.2);
+}
+
+.inline-edit-active {
+  z-index: 3000;
+  position: relative;
+  background-color: white;
+}
+
+.curs-no-annotations-message {
+  margin: 10px 10px 10px 20px;
+  color: grey;
+}
+
+.voffset1 { margin-top: 5px; }
+.voffset2 { margin-top: 10px; }
+
+.checkbox-gene-list {
+  display: block;
+}
+
+.curs-right-info-message {
+  color: #722;
+  background-color: #bbf;
+  border: 1px solid #aae;
+  padding: 2px;
+  margin: 6px;
+  margin-bottom: 12px;
 }

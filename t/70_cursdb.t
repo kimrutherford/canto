@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-use Test::More tests => 23;
+use Test::More tests => 24;
+use Test::Deep;
 
 use Canto::TestUtil;
 use Canto::CursDB;
@@ -26,12 +27,53 @@ $schema->txn_do(
   });
 
 
-# get allele annotations
-my $allele = $schema->resultset('Allele')->find({ primary_identifier => 'SPAC27D7.13c:allele-1' });
-my @allele_annotations = $allele->allele_annotations();
+# get genotype annotations
+my $genotype = $schema->resultset('Genotype')->find({ identifier => 'aaaa0007-genotype-test-1' });
+my @genotype_annotations = $genotype->annotations();
 
-is (@allele_annotations, 1);
+is (@genotype_annotations, 1);
 
+my $genotype_0 = ($genotype_annotations[0]->genotypes())[0];
+
+my @alleles_0 =
+  sort {
+    $a->long_identifier()
+      cmp
+    $b->long_identifier()
+  } $genotype_0->alleles();
+
+cmp_deeply(
+  [
+    {
+      'name' => 'SPCC63.05delta',
+      'primary_identifier' => 'SPCC63.05:aaaa0007-1',
+      'description' => 'deletion',
+      'type' => 'deletion',
+      'expression' => undef,
+      'long_identifier' => 'SPCC63.05delta',
+      'display_name' => 'SPCC63.05delta',
+    },
+    {
+      'name' => 'ssm4delta',
+      'primary_identifier' => 'SPAC27D7.13c:aaaa0007-1',
+      'description' => 'deletion',
+      'type' => 'deletion',
+      'expression' => undef,
+      'long_identifier' => 'ssm4delta',
+      'display_name' => 'ssm4delta',
+    }
+   ],
+  [map {
+    {
+      primary_identifier => $_->primary_identifier(),
+      type => $_->type(),
+      description => $_->description(),
+      expression => $_->expression(),
+      name => $_->name(),
+      long_identifier => $_->long_identifier(),
+      display_name => $_->display_name()
+    };
+  } @alleles_0]);
 
 # test that a phenotype annotation exists and has the right type
 my $phenotype_annotation_rs =
@@ -68,10 +110,10 @@ is ($spbc14f5_07->all_annotations(include_with => 1)->count(), 2);
 my $annotation_2 = $spbc14f5_07->all_annotations(include_with => 1)->first();
 my $annotation_2_id = $annotation_2->annotation_id();
 
-my $spac27d7_13c_allele_1 = $schema->find_with_type('Allele', { primary_identifier => 'SPAC27D7.13c:allele-1' });
-ok (defined $spac27d7_13c_allele_1);
+my $genotype_1 = $schema->find_with_type('Genotype', { identifier => 'aaaa0007-genotype-test-2' });
+ok (defined $genotype_1);
 
-is ($spac27d7_13c_allele_1->annotations()->count(), 1);
+is ($genotype_1->annotations()->count(), 1);
 
 
 # delete gene and make sure the annotation goes too

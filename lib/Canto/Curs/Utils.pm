@@ -42,21 +42,35 @@ use warnings;
 use Carp;
 use Moose;
 use Clone qw(clone);
+use JSON;
 
 use Canto::Curs::GeneProxy;
+use Canto::Curs::ConditionUtil;
+use Canto::Curs::MetadataStorer;
 
-# retrieve annotation data from the CursDB
-sub _make_ontology_annotation
+=head2 make_ontology_annotation
+
+ Usage   : my $hash = Canto::Curs::Utils::make_ontology_annotation(...);
+ Function: Retrieve the details of an ontology annotation from the CursDB
+           as a hash
+ Args    : $config - a Config object
+           $schema - the CursDB schema
+           $annotation - the Annotation to dump as a hash
+
+=cut
+
+sub make_ontology_annotation
 {
   my $config = shift;
   my $schema = shift;
   my $annotation = shift;
-  my $ontology_lookup = shift;
+  my $ontology_lookup = shift //
+    Canto::Track::get_adaptor($config, 'ontology');
 
   my $data = $annotation->data();
   my $term_ontid = $data->{term_ontid};
 
-  die "no term_ontid for annotation"
+  die "no term_ontid for annotation " . $annotation->annotation_id()
     unless defined $term_ontid and length $term_ontid > 0;
 
   my $annotation_type = $annotation->type();
@@ -69,61 +83,107 @@ sub _make_ontology_annotation
 
   my %evidence_types = %{$config->{evidence_types}};
 
-  my $allele_display_name = undef;
-  my $expression_level = '';
-  my $conditions_string = '';
+  my $taxonid;
 
-  my $gene;
+  my %gene_details;
+  my %genotype_details;
 
-  my @alleles = $annotation->search_related('allele_annotations')
-    ->search_related('allele')->search({}, { prefetch => 'gene' });;
+  if ($annotation_type_config->{feature_type} eq 'genotype') {
+    my @annotation_genotypes = $annotation->genotypes();
 
-  if ($annotation_type_config->{needs_allele} && @alleles) {
-    if (@alleles > 1) {
-      die "more than one allele for annotation ", $annotation->annotation_id();
+    if (@annotation_genotypes > 1) {
+      warn "internal error, more than one genotype for annotation: ",
+        $annotation->annotation_id();
     }
 
-    my $allele = $alleles[0];
-
-    $allele_display_name = $allele->display_name();
-
-    $gene = $allele->gene();
-
-    $expression_level = $data->{expression} // 'null';
-
-    if ($data->{conditions}) {
-      $conditions_string = _get_conditions_string($ontology_lookup,
-                                                  $data->{conditions});
-    } else {
-      $conditions_string = '';
+    if (@annotation_genotypes == 0) {
+      die "no genotype for annotation: ", $annotation->annotation_id();
     }
+
+    my $genotype = $annotation_genotypes[0];
+
+    my @alleles = map {
+      my $gene_proxy = Canto::Curs::GeneProxy->new(config => $config,
+                                                   cursdb_gene => $_->gene());
+      {
+        allele_id => $_->allele_id(),
+        primary_identifier => $_->primary_identifier(),
+        type => $_->type(),
+        description => $_->description(),
+        expression => $_->expression(),
+        name => $_->name(),
+        gene_id => $_->gene()->gene_id(),
+        gene_display_name => $gene_proxy->display_name(),
+        long_display_name => $_->long_identifier(),
+      };
+    } $genotype->alleles()->search({}, { prefetch => 'gene' });
+
+    @alleles = sort {
+      my $a_gene = $a->{gene_display_name};
+      my $b_gene = $b->{gene_display_name};
+
+      # sort upper case last
+      if ($a_gene =~ /[A-Z]/) {
+        $a_gene = '~' . $a_gene;
+      }
+      if ($b_gene =~ /[A-Z]/) {
+        $b_gene = '~' . $b_gene;
+      }
+
+      $a_gene cmp $b_gene;
+    } @alleles;
+
+    %genotype_details = (
+      conditions => [Canto::Curs::ConditionUtil::get_conditions_with_names($ontology_lookup, $data->{conditions})],
+      genotype_id => $genotype->genotype_id(),
+      genotype_identifier => $genotype->identifier(),
+      genotype_name => $genotype->name(),
+      genotype_background => $genotype->background(),
+      genotype_display_name => $genotype->display_name(),
+      feature_type => 'genotype',
+      feature_display_name => $genotype->display_name(),
+      feature_id => $genotype->genotype_id(),
+      alleles => [@alleles],
+    );
   } else {
     my @annotation_genes = $annotation->genes();
 
     if (@annotation_genes > 1) {
-      die "internal error, more than one gene for annotation: ",
+      warn "internal error, more than one gene for annotation: ",
         $annotation->annotation_id();
     }
 
-    $gene = $annotation_genes[0];
+    my $gene = $annotation_genes[0];
+
+    my $gene_proxy = Canto::Curs::GeneProxy->new(config => $config,
+                                                 cursdb_gene => $gene);
+    my $gene_identifier = $gene_proxy->primary_identifier();
+    my $gene_primary_name = $gene_proxy->primary_name() || '';
+    my $gene_name_or_identifier = $gene_proxy->primary_name() || $gene_proxy->primary_identifier();
+    my $gene_product = $gene_proxy->product() || '',
+      my $gene_synonyms_string = join '|', $gene_proxy->synonyms();
+
+    $taxonid = $gene_proxy->taxonid();
+
+    %gene_details = (
+      gene_id => $gene->gene_id(),
+      gene_identifier => $gene_identifier,
+      gene_name => $gene_primary_name,
+      gene_name_or_identifier => $gene_name_or_identifier,
+      gene_product => $gene_product,
+      gene_synonyms_string => $gene_synonyms_string,
+      feature_type => 'gene',
+      feature_display_name => $gene_name_or_identifier,
+      feature_id => $gene->gene_id(),
+    );
   }
-
-  my $gene_proxy = Canto::Curs::GeneProxy->new(config => $config,
-                                                cursdb_gene => $gene);
-  my $gene_identifier = $gene_proxy->primary_identifier();
-  my $gene_primary_name = $gene_proxy->primary_name() || '';
-  my $gene_name_or_identifier = $gene_proxy->primary_name() || $gene_proxy->primary_identifier();
-  my $gene_product = $gene_proxy->product() || '',
-  my $gene_synonyms_string = join '|', $gene_proxy->synonyms();
-
-  my $taxonid = $gene_proxy->organism()->taxonid();
 
   my $pub_uniquename = $annotation->pub()->uniquename();
 
   my $term_lookup_result = $ontology_lookup->lookup_by_id(id => $term_ontid);
 
   if (! defined $term_lookup_result) {
-    die qq(internal error: can't find details for "$term_ontid" in "$annotation_type");
+    die qq(internal error: cannot find details for "$term_ontid" in "$annotation_type");
   }
 
   my $term_name = $term_lookup_result->{name};
@@ -144,6 +204,7 @@ sub _make_ontology_annotation
   }
 
   my $with_gene;
+  my $with_gene_id;
   my $with_gene_display_name;
 
   if ($with_gene_identifier) {
@@ -152,7 +213,8 @@ sub _make_ontology_annotation
                                              $with_gene_identifier });
     my $gene_proxy = Canto::Curs::GeneProxy->new(config => $config,
                                                   cursdb_gene => $with_gene);
-    $with_gene_display_name = $gene_proxy->display_name()
+    $with_gene_display_name = $gene_proxy->display_name();
+    $with_gene_id = $with_gene->gene_id();
   }
 
   (my $short_date = $annotation->creation_date()) =~ s/-//g;
@@ -160,15 +222,10 @@ sub _make_ontology_annotation
   my $completed = defined $evidence_code &&
     (!$needs_with || defined $with_gene_identifier);
 
-  return {
-    gene_id => $gene->gene_id(),
-    gene_identifier => $gene_identifier,
-    gene_name => $gene_primary_name,
-    gene_name_or_identifier => $gene_name_or_identifier,
-    gene_product => $gene_product,
-    gene_synonyms_string => $gene_synonyms_string,
-    allele_display_name => $allele_display_name,
-    qualifiers => '',
+  my $ret = {
+    %gene_details,
+    %genotype_details,
+    qualifiers => $data->{qualifiers} // [],
     annotation_type => $annotation_type,
     annotation_type_display_name => $annotation_type_display_name,
     annotation_type_abbreviation => $annotation_type_abbreviation // '',
@@ -177,26 +234,39 @@ sub _make_ontology_annotation
     term_ontid => $term_ontid,
     term_name => $term_name,
     evidence_code => $evidence_code,
-    expression_level => $expression_level,
-    conditions => $conditions_string,
     creation_date => $annotation->creation_date(),
     creation_date_short => $short_date,
-    comment => $data->{submitter_comment},
-    term_suggestion => $data->{term_suggestion},
+    submitter_comment => $data->{submitter_comment},
+    term_suggestion_name => $data->{term_suggestion}->{name},
+    term_suggestion_definition => $data->{term_suggestion}->{definition},
     needs_with => $needs_with,
     with_or_from_identifier => $with_gene_identifier,
     with_or_from_display_name => $with_gene_display_name,
+    with_gene_id => $with_gene_id,
     taxonid => $taxonid,
     completed => $completed,
     annotation_extension => $data->{annotation_extension} // '',
     is_obsolete_term => $is_obsolete_term,
     curator => $curator,
     status => $annotation->status(),
-    is_not => 0,
+    is_not => JSON::false,
   };
+
+  return $ret;
 }
 
-sub _make_interaction_annotation
+=head2 make_interaction_annotation
+
+ Usage   : my $hash = Canto::Curs::Utils::make_interaction_annotation(...);
+ Function: Retrieve the details of an interaction annotation from the CursDB as
+           a hash
+ Args    : $config - a Config object
+           $schema - the CursDB schema
+           $annotation - the Annotation to dump as a hash
+
+=cut
+
+sub make_interaction_annotation
 {
   my $config = shift;
   my $schema = shift;
@@ -234,78 +304,88 @@ sub _make_interaction_annotation
 
   my @interacting_genes = @{$data->{interacting_genes}};
 
+  if (@interacting_genes > 1) {
+    die "more than one interacting gene in annotation with ID: ",
+      $annotation->annotation_id(), " - update the database\n";
+  }
+
   my @results = ();
 
-  for my $interacting_gene_info (@interacting_genes) {
-    my $interacting_gene_primary_identifier =
-      $interacting_gene_info->{primary_identifier};
-    my $interacting_gene =
-      $schema->find_with_type('Gene',
-                              { primary_identifier =>
+  my $interacting_gene_info = $interacting_genes[0];
+
+  my $interacting_gene_primary_identifier =
+    $interacting_gene_info->{primary_identifier};
+  my $interacting_gene =
+    $schema->find_with_type('Gene',
+                            { primary_identifier =>
                                 $interacting_gene_primary_identifier});
-    my $interacting_gene_proxy =
-      Canto::Curs::GeneProxy->new(config => $config,
-                                   cursdb_gene => $interacting_gene);
+  my $interacting_gene_proxy =
+    Canto::Curs::GeneProxy->new(config => $config,
+                                cursdb_gene => $interacting_gene);
 
-    my $interacting_gene_display_name =
-      $interacting_gene_proxy->display_name();
+  my $interacting_gene_display_name =
+    $interacting_gene_proxy->display_name();
 
-    if (defined $constrain_gene) {
-      if ($constrain_gene->gene_id() != $gene->gene_id()) {
-        if ($interacting_gene->gene_id() == $constrain_gene->gene_id()) {
-          $is_inferred_annotation = 1;
-        } else {
-          # ignore bait or prey from this annotation if it isn't the
-          # current gene (on a gene page)
-          next;
-        }
+  if (defined $constrain_gene) {
+    if ($constrain_gene->gene_id() != $gene->gene_id()) {
+      if ($interacting_gene->gene_id() == $constrain_gene->gene_id()) {
+        $is_inferred_annotation = 1;
+      } else {
+        # ignore bait or prey from this annotation if it isn't the
+        # current gene (on a gene page)
+        next;
       }
     }
+  }
 
-    my $entry =
-          {
-            gene_identifier => $gene_proxy->primary_identifier(),
-            gene_display_name => $gene_proxy->display_name(),
-            gene_taxonid => $gene_proxy->organism()->taxonid(),
-            gene_id => $gene_proxy->gene_id(),
-            publication_uniquename => $pub_uniquename,
-            evidence_code => $evidence_code,
-            interacting_gene_identifier =>
-              $interacting_gene_primary_identifier,
-            interacting_gene_display_name =>
-              $interacting_gene_display_name,
-            interacting_gene_taxonid =>
-              $interacting_gene_info->{organism_taxon}
-                // $gene_proxy->organism()->taxonid(),
-            interacting_gene_id => $interacting_gene_proxy->gene_id(),
-            score => '',  # for biogrid format output
-            phenotypes => '',
-            comment => '',
-            completed => 1,
-            annotation_id => $annotation->annotation_id(),
-            annotation_type => $annotation_type,
-            status => $annotation->status(),
-            curator => $curator,
-            is_inferred_annotation => $is_inferred_annotation,
-          };
-    push @results, $entry;
-  };
+  my $entry =
+    {
+      annotation_type => $annotation_type,
+      annotation_type_display_name => $annotation_type_display_name,
+      gene_identifier => $gene_proxy->primary_identifier(),
+      gene_display_name => $gene_proxy->display_name(),
+      gene_taxonid => $gene_proxy->taxonid(),
+      gene_id => $gene_proxy->gene_id(),
+      feature_display_name => $gene_proxy->display_name(),
+      feature_id => $gene_proxy->gene_id(),
+      publication_uniquename => $pub_uniquename,
+      evidence_code => $evidence_code,
+      interacting_gene_identifier =>
+        $interacting_gene_primary_identifier,
+      interacting_gene_display_name =>
+        $interacting_gene_display_name,
+      interacting_gene_taxonid =>
+        $interacting_gene_info->{organism_taxon}
+          // $gene_proxy->taxonid(),
+      interacting_gene_id => $interacting_gene_proxy->gene_id(),
+      score => '',  # for biogrid format output
+      phenotypes => '',
+      submitter_comment => '',
+      completed => 1,
+      annotation_id => $annotation->annotation_id(),
+      annotation_type => $annotation_type,
+      status => $annotation->status(),
+      curator => $curator,
+      is_inferred_annotation => $is_inferred_annotation,
+    };
 
-  return @results;
+  return $entry;
 };
 
 =head2 get_annotation_table
 
  Usage   : my @annotations =
              Canto::Curs::Utils::get_annotation_table($config, $schema,
-                                                       $annotation_type_name);
+                                                      $annotation_type_name,
+                                                      $constrain_annotations,
+                                                      $constrain_target);
  Function: Return a table of the current annotations
  Args    : $config - the Canto::Config object
            $schema - a Canto::CursDB object
            $annotation_type_name - the type of annotation to show (eg.
                                    biological_process, phenotype)
            $constrain_annotations - restrict the table to these annotations
-           $constrain_gene        - the gene to show annotations for
+           $constrain_target      - the gene or genotype to show annotations for
  Returns : ($completed_count, $table)
            where:
              $completed_count - a count of the annotations that are incomplete
@@ -382,11 +462,11 @@ sub get_annotation_table
   while (defined (my $annotation = $annotation_rs->next())) {
     my @entries;
     if ($annotation_type_category eq 'ontology') {
-      @entries = _make_ontology_annotation($config, $schema, $annotation,
-                                            $ontology_lookup);
+      @entries = make_ontology_annotation($config, $schema, $annotation,
+                                          $ontology_lookup);
     } else {
       if ($annotation_type_category eq 'interaction') {
-        @entries = _make_interaction_annotation($config, $schema, $annotation, $constrain_gene);
+        @entries = make_interaction_annotation($config, $schema, $annotation, $constrain_gene);
       } else {
         die "unknown annotation type category: $annotation_type_category\n";
       }
@@ -398,40 +478,25 @@ sub get_annotation_table
   return ($completed_count, [@annotations])
 }
 
-sub _get_conditions_string
-{
-  my $ontology_lookup = shift;
-  my $conditions = shift;
-
-  return '' unless defined $conditions;
-
-  my @condition_names = map {
-    my $ret_val;
-    my $term_id = $_;
-    if ($term_id =~ /^[A-Z]+:/) {
-      my $result = $ontology_lookup->lookup_by_id(id => $term_id);
-      if (defined $result) {
-        $ret_val = $result->{name} . " ($term_id)";
-      }
-    }
-    if (defined $ret_val) {
-      $ret_val;
-    } else {
-      # some conditions are just free text if the user couldn't find the
-      # appropriate PECO term
-      "$term_id (NEW)";
-    }
-  } @$conditions;
-
-  return join ', ', @condition_names;
-}
-
 sub _process_existing_db_ontology
 {
+  my $config = shift;
+  my $curs_schema = shift;
   my $ontology_lookup = shift;
   my $row = shift;
 
+  my $feature = $row->{gene} // $row->{genotype};
   my $gene = $row->{gene};
+  my $genotype = $row->{genotype};
+  my $feature_type;
+
+  if ($gene) {
+    $feature_type = 'gene';
+  } else {
+    $feature_type = 'genotype';
+  }
+
+
   my $ontology_term = $row->{ontology_term};
   my $publication = $row->{publication};
   my $evidence_code = $row->{evidence_code};
@@ -442,51 +507,113 @@ sub _process_existing_db_ontology
 
   my $term_ontid = $ontology_term->{ontid};
 
-  my $is_not = $row->{is_not} // 0;
-  if ($is_not eq 'false') {
-    $is_not = 0;
+  my $is_not;
+
+  if ($row->{is_not}) {
+    $is_not = JSON::true;
+  } else {
+    $is_not = JSON::false;
   }
 
-  my $allele_display_name =
-    Canto::Curs::Utils::make_allele_display_name($row->{allele}->{name},
-                                                  $row->{allele}->{description});
+  my $annotation_type_config =
+    $config->{annotation_types_by_namespace}->{$ontology_name} //
+    $config->{annotation_types}->{$ontology_name};
 
+  my $annotation_type = $annotation_type_config->{name};
 
-  my $conditions_string = _get_conditions_string($ontology_lookup, $row->{conditions});
-  my $qualifier_string = '';
+  my $with_or_from_identifier = $row->{with} // $row->{from};
 
-  if (defined $row->{qualifiers}) {
-    $qualifier_string = join ', ', @{$row->{qualifiers}};
+  my $gene_id = undef;
+  my $with_gene_id = undef;
+
+  my $genotype_id = undef;
+
+  if (defined $curs_schema) {
+    if ($gene) {
+      my $db_gene = $curs_schema->resultset('Gene')->find({ primary_identifier => $gene->{identifier} });
+
+      if (defined $db_gene) {
+        $gene_id = $db_gene->gene_id();
+      }
+
+      # disabled for now - no linking for with identifiers in existing annotations
+      if (0 && defined $with_or_from_identifier) {
+        my $db_with_gene = $curs_schema->resultset('Gene')->find({
+          primary_identifier => $with_or_from_identifier,
+        });
+
+        if (!defined $db_with_gene && $with_or_from_identifier =~ /.*:(\S+)/) {
+          $db_with_gene = $curs_schema->resultset('Gene')->find({
+            primary_identifier => $1,
+          });
+        }
+
+        if (defined $db_with_gene) {
+          $with_gene_id = $db_with_gene->gene_id();
+        }
+      }
+    } else {
+      my $db_genotype = $curs_schema->resultset('Genotype')->find({ identifier => $genotype->{identifier} });
+
+      if (defined $db_genotype) {
+        $genotype_id = $db_genotype->genotype_id();
+      }
+    }
   }
 
-  return {
+  my %ret = (
     annotation_id => $row->{annotation_id},
-    gene_identifier => $gene->{identifier},
-    gene_name => $gene->{name} || '',
-    gene_name_or_identifier =>
-      $gene->{name} || $gene->{identifier},
-    gene_product => $gene->{product} || '',
-    allele_display_name => $allele_display_name,
-    expression_level => $row->{expression} // '',
-    conditions => $conditions_string,
-    qualifiers => $qualifier_string,
-    annotation_type => $ontology_name,
+    feature_type => $feature_type,
+    feature_display_name =>
+      $feature->{name} || $feature->{identifier},
+    feature_id => $gene_id // $genotype_id,
+    conditions => [Canto::Curs::ConditionUtil::get_conditions_with_names($ontology_lookup, $row->{conditions})],
+    qualifiers => $row->{qualifiers} // [],
+    annotation_type => $annotation_type,
     term_ontid => $term_ontid,
     term_name => $term_name,
     evidence_code => $evidence_code,
-    with_or_from_identifier => $row->{with} // $row->{from},
-    with_or_from_display_name => $row->{with} // $row->{from},
-    taxonid => $gene->{organism_taxonid},
     status => 'existing',
     is_not => $is_not,
-  };
+  );
+
+  if ($gene) {
+    $ret{gene_identifier} = $gene->{identifier};
+    $ret{gene_name} = $gene->{name} || '';
+    $ret{gene_name_or_identifier} = $gene->{name} || $gene->{identifier};
+    $ret{gene_product} = $gene->{product} || '';
+    $ret{gene_id} = $gene_id;
+    $ret{taxonid} = $gene->{organism_taxonid};
+    $ret{with_or_from_identifier} = $with_or_from_identifier;
+    $ret{with_or_from_display_name} = $with_or_from_identifier;
+    $ret{with_gene_id} = $with_gene_id;
+  } else {
+    $ret{genotype_identifier} = $genotype->{identifier};
+    $ret{genotype_name} = $genotype->{name} || '';
+    $ret{genotype_name_or_identifier} = $genotype->{name} || $genotype->{identifier};
+    $ret{genotype_id} = $genotype_id;
+    $ret{alleles} = [map {
+      my %ret = %$_;
+      $ret{long_display_name} =
+        ($_->{name} || $_->{primary_identifier} || 'unknown') .
+        '(' . ($_->{description} || 'unknown') . ')';
+
+      if ($_->{expression}) {
+        $ret{long_display_name} .= '[' . $_->{expression} . ']';
+      }
+
+      \%ret;
+    } @{$genotype->{alleles}}]
+  }
+
+  return \%ret;
 }
 
 =head2 get_existing_ontology_annotations
 
  Usage   :
    my ($all_annotations_count, $annotations) =
-     Canto::Curs::Utils::get_existing_ontology_annotations($config, $options);
+     Canto::Curs::Utils::get_existing_ontology_annotations($config, $curs_schema, $options);
  Function: Return a count of the all the matching annotations and table of the
            existing ontology annotations from the database with at most
            max_results rows
@@ -506,6 +633,7 @@ sub _process_existing_db_ontology
 sub get_existing_ontology_annotations
 {
   my $config = shift;
+  my $curs_schema = shift;
   my $options = shift;
 
   my $pub_uniquename = $options->{pub_uniquename};
@@ -535,7 +663,7 @@ sub get_existing_ontology_annotations
       $annotation_lookup->lookup($args);
 
     @res = map {
-      my $res = _process_existing_db_ontology($ontology_lookup, $_);
+      my $res = _process_existing_db_ontology($config, $curs_schema, $ontology_lookup, $_);
       if (defined $res) {
         ($res);
       } else {
@@ -549,23 +677,45 @@ sub get_existing_ontology_annotations
 
 sub _process_interaction
 {
+  my $curs_schema = shift;
   my $ontology_lookup = shift;
   my $row = shift;
+  my $annotation_type = shift;
 
   my $gene = $row->{gene};
   my $interacting_gene = $row->{interacting_gene};
   my $publication = $row->{publication};
 
+  my $gene_id = undef;
+  my $interacting_gene_id = undef;
+
+  if (defined $curs_schema) {
+    my $db_gene = $curs_schema->resultset('Gene')->find({ primary_identifier => $gene->{identifier} });
+
+    if (defined $db_gene) {
+      $gene_id = $db_gene->gene_id();
+    }
+
+    my $db_interacting_gene = $curs_schema->resultset('Gene')->find({ primary_identifier => $interacting_gene->{identifier} });
+
+    if (defined $db_interacting_gene) {
+      $interacting_gene_id = $db_interacting_gene->gene_id();
+    }
+  }
+
   return {
+    annotation_type => $row->{annotation_type},
     gene_identifier => $gene->{identifier},
     gene_display_name => $gene->{name} // $gene->{identifier},
     gene_taxonid => $gene->{taxonid},
+    gene_id => $gene_id,
     publication_uniquename => $publication->{uniquename},
     evidence_code => $row->{evidence_code},
     interacting_gene_identifier => $interacting_gene->{identifier},
     interacting_gene_display_name =>
       $interacting_gene->{name} // $interacting_gene->{identifier},
     interacting_gene_taxonid => $interacting_gene->{taxonid},
+    interacting_gene_id => $interacting_gene_id,
     status => 'existing',
   };
 }
@@ -574,7 +724,7 @@ sub _process_interaction
 
  Usage   :
    my ($all_existing_annotations_count, $annotations) =
-      Canto::Curs::Utils::get_existing_interaction_annotations($config, $options);
+      Canto::Curs::Utils::get_existing_interaction_annotations($config, $curs_schema, $options);
  Function: Return a count of the all the matching interactions and table of the
            existing interactions from the database with at most max_results rows
  Args    : $config - the Canto::Config object
@@ -591,6 +741,7 @@ sub _process_interaction
 sub get_existing_interaction_annotations
 {
   my $config = shift;
+  my $curs_schema = shift;
   my $options = shift;
 
   my $pub_uniquename = $options->{pub_uniquename};
@@ -621,7 +772,7 @@ sub get_existing_interaction_annotations
         Dumper([$args]);
     }
     @res = map {
-      my $res = _process_interaction($annotation_lookup, $_);
+      my $res = _process_interaction($curs_schema, $annotation_lookup, $_);
       if (defined $res) {
         ($res);
       } else {
@@ -637,7 +788,7 @@ sub get_existing_interaction_annotations
 
  Usage   :
    my ($all_annotations_count, $annotations) =
-     Canto::Curs::Utils::get_existing_annotations($config, $options);
+     Canto::Curs::Utils::get_existing_annotations($config, $curs_schema, $options);
  Function: Return a table of the existing interaction annotations from the
            database
  Args    : $config - the Canto::Config object
@@ -652,18 +803,20 @@ sub get_existing_interaction_annotations
            database identifier for the annotation.
 
 =cut
+
 sub get_existing_annotations
 {
   my $config = shift;
+  my $curs_schema = shift;
   my $options = shift;
 
   my $annotation_type_category =
     $config->{annotation_types}->{$options->{annotation_type_name}}->{category};
 
   if ($annotation_type_category eq 'ontology') {
-    return get_existing_ontology_annotations($config, $options);
+    return get_existing_ontology_annotations($config, $curs_schema, $options);
   } else {
-    return get_existing_interaction_annotations($config, $options);
+    return get_existing_interaction_annotations($config, $curs_schema, $options);
   }
 }
 
@@ -678,9 +831,11 @@ sub get_existing_annotations
  Return  : the count
 
 =cut
+
 sub get_existing_annotation_count
 {
   my $config = shift;
+  my $curs_schema = shift;
   my $arg_options = shift;
 
   my $count = 0;
@@ -689,7 +844,7 @@ sub get_existing_annotation_count
     my $options = clone $arg_options;
     $options->{annotation_type_name} = $annotation_type->{name};
     my ($all_annotations_count, $annotations) =
-      Canto::Curs::Utils::get_existing_annotations($config, $options);
+      Canto::Curs::Utils::get_existing_annotations($config, $curs_schema, $options);
     $count += $all_annotations_count;
   }
 
@@ -705,18 +860,73 @@ sub get_existing_annotation_count
  Returns :
 
 =cut
+
 sub store_all_statuses
 {
   my $config = shift;
   my $track_schema = shift;
 
-  my $state = Canto::Curs::State->new(config => $config);
+  my $metadata_storer =
+   Canto::Curs::MetadataStorer->new(config => $config);
 
   my $iter = Canto::Track::curs_iterator($config, $track_schema);
   while (my ($curs, $cursdb) = $iter->()) {
-    $state->store_statuses($cursdb);
+    $metadata_storer->store_counts($cursdb);
   }
 }
+
+=head2 canto_allele_type
+
+ Usage   : my $type_name =
+             Canto::Curs::Utils::canto_allele_type($chado_type, $allele_description);
+ Function:
+    Return the Canto allele type given a Chado (or "export") allele
+    type and the allele description - Canto has different types for a
+    single amino acid residue change and a multi amino acid change but
+    Chado just has "amino_acid_mutation".  We use the
+    export_type_reverse_map config field from the allele_type YAML config
+    to map the Chado type to the Canto type.
+ Args    : $config - the Config object
+           $chado_type - the allele_type of the allele from the featureprop
+                         table
+           $allele_description - the allele description from the featureprop
+                                 table
+ Return  : a allele type for the Canto interface
+
+=cut
+
+sub canto_allele_type
+{
+  my $config = shift;
+  my $chado_type = shift;
+  my $allele_description = shift;
+
+  my @canto_allele_types = @{$config->{export_type_to_allele_type}->{$chado_type}};
+
+  if (@canto_allele_types == 0) {
+    warn qq(no allele type found for Chado allele_type "$chado_type"\n);
+    return $chado_type;
+  } else {
+    if (@canto_allele_types == 1) {
+      return $canto_allele_types[0]->{name};
+    } else {
+      for my $allele_type (@canto_allele_types) {
+        my $export_type_reverse_map_re =
+          $allele_type->{export_type_reverse_map_re};
+        if (!defined $export_type_reverse_map_re) {
+          die "no export_type_reverse_map_re config found for ", $allele_type->{name};
+        }
+        if ($allele_description =~ /$export_type_reverse_map_re/) {
+          return $allele_type->{name};
+        }
+      }
+
+      die "no Canto allele type found for: $chado_type";
+    }
+  }
+}
+
+
 
 =head2 make_allele_display_name
 
@@ -724,13 +934,24 @@ sub store_all_statuses
  Function: make an allele display name from a name and description
  Args    : $name - the allele name (can be undef)
            $description - the allele description (can be undef)
- Returns : a display name of the form "name(description)"
+           $type - the allele type (deletion, unknown, ...)
+ Returns : a display name of the form "name(description)" or "name" (if the
+           description is "deletion" or "wild type")
 
 =cut
+
 sub make_allele_display_name
 {
-  my $name = shift // 'noname';
-  my $description = shift // 'unknown';
+  my $name = shift || 'noname';
+  my $description = shift;
+  my $type = shift;
+
+  $description ||= $type || 'unknown';
+
+  if ($type && ($type eq 'deletion' || $type =~ /^wild[\s_]?type$/)
+      && $name ne 'noname') {
+    return $name;
+  }
 
   return "$name($description)";
 }
@@ -747,6 +968,7 @@ sub make_allele_display_name
  Returns : 1 if the annotation was deleted, 0 otherwise
 
 =cut
+
 sub delete_interactor
 {
   my $annotation = shift;
@@ -765,7 +987,6 @@ sub delete_interactor
   }
 
 }
-
 
 my $iso_date_template = "%4d-%02d-%02d";
 

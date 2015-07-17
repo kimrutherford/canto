@@ -1,0 +1,46 @@
+<tr>
+  <td>
+    <a ng-if="annotation.status === 'new'" href="{{curs_root_uri + '/feature/gene/view/' + annotation.feature_id + (read_only_curs ? '/ro' : '')}}">
+      {{annotation.gene_display_name}}
+    </a>
+    <span ng-if="annotation.status === 'existing'">
+      {{annotation.gene_display_name}}
+    </span>
+  </td>
+  <td>
+    {{annotation.gene_taxonid}}
+  </td>
+  <td>
+    <a ng-if="annotation.status === 'new'" href="{{curs_root_uri + '/feature/gene/view/' + annotation.interacting_gene_id + (read_only_curs ? '/ro' : '')}}">
+      {{annotation.interacting_gene_display_name}}
+    </a>
+    <span ng-if="annotation.status === 'existing'">
+      {{annotation.interacting_gene_display_name}}
+    </span>
+  </td>
+  <td>
+    {{annotation.interacting_gene_taxonid}}
+  </td>
+  <td>
+    {{annotation.evidence_code}}
+  </td>
+  <td ng-if="!data.hideColumns.submitter_comment">
+    {{annotation.submitter_comment}}
+  </td>
+  <td ng-if="!data.hideColumns.curator">
+    {{annotation.curator}}
+  </td>
+  <td class="table-row-actions">
+    <div ng-if="annotationType && featureStatusFilter === 'new' && !read_only_curs">
+      <div>
+        <a ng-click="edit()">Edit</a>
+      </div>
+      <div>
+        <a ng-click="duplicate()">Duplicate</a>
+      </div>
+      <div>
+        <a ng-click="delete()">Delete</a>
+      </div>
+    </div>
+  </td>
+</tr>

@@ -1,0 +1,73 @@
+<div ng-show="data.filteredAnnotations.length > 0">
+    <span ng-if="featureStatusFilter === 'new'" class="title sect-title">
+      <span ng-if="!alleleCountFilter">
+        New annotations from this session
+      </span>
+      <span ng-if="alleleCountFilter">
+        New {{alleleCountFilter}} allele annotations
+      </span>
+      <span ng-show="featureFilterDisplayName">
+        for {{featureFilterDisplayName}}
+      </span>
+      <span ng-show="data.publicationUniquename">
+        for {{data.publicationUniquename}}
+      </span>
+    </span>
+    <span ng-if="featureStatusFilter === 'existing' && data.annotations !== null && data.annotations.length > 0"
+          class="title sect-title">
+      Existing annotations
+      <span ng-show="featureFilterDisplayName">
+        for {{featureFilterDisplayName}}
+      </span>
+      <span ng-show="data.publicationUniquename">
+        for {{data.publicationUniquename}}
+      </span>
+    </span>
+    <div class="annotation-table sect-content">
+      <div class="list" ng-switch="annotationType.category">
+        <table ng-switch-when="ontology" class="list">
+          <thead>
+            <tr>
+              <th ng-if="annotationType.feature_type == 'genotype'">Genes</th>
+              <th ng-if="annotationType.feature_type == 'genotype' && !data.hideColumns.genotype_background">Background</th>
+              <th ng-if="annotationType.feature_type == 'genotype' && !data.hideColumns.genotype_name">Genotype name</th>
+              <th ng-if="annotationType.feature_type == 'genotype' || !featureIdFilter">{{displayAnnotationFeatureType}}</th>
+              <th>Term ID</th>
+              <th>Term name</th>
+              <th>Evidence code</th>
+              <th ng-if="annotationType.can_have_with && !data.hideColumns.with_or_from_identifier">With</th>
+              <th ng-if="annotationType.can_have_conditions">Conditions</th>
+              <th ng-if="!data.hideColumns.qualifiers">Qualifiers</th>
+              <th ng-if="!data.hideColumns.term_suggestion">Term suggestion</th>
+              <th ng-if="!data.hideColumns.submitter_comment">Comment</th>
+              <th ng-if="!data.hideColumns.annotation_extension">Annotation extension</th>
+              <th ng-if="!data.hideColumns.curator">Curator</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr annotation-table-row annotation-type="ontology"
+                ng-repeat="annotation in data.filteredAnnotations">
+            </tr>
+          </tbody>
+        </table>
+        <table ng-switch-when="interaction" class="list">
+          <thead>
+            <tr>
+              <th>Interactor A</th>
+              <th>Taxon Id A</th>
+              <th>Interactor B</th>
+              <th>Taxon Id B</th>
+              <th>Evidence code</th>
+              <th ng-if="!data.hideColumns.submitter_comment">Comment</th>
+              <th ng-if="!data.hideColumns.curator">Curator</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr annotation-table-row annotation-type="interaction"
+                ng-repeat="annotation in data.filteredAnnotations">
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

@@ -49,37 +49,8 @@ use Canto::Cache;
 
 with 'Canto::Role::Configurable';
 with 'Canto::Chado::ChadoLookup';
-
-has cache => (is => 'ro', init_arg => undef, lazy_build => 1);
-
-sub _build_cache
-{
-  my $self = shift;
-
-  my $cache = Canto::Cache::get_cache($self->config(), __PACKAGE__);
-
-  return $cache;
-}
-
-sub _get_taxonid
-{
-  my $cache = shift;
-  my $organism = shift;
-
-  if (exists $cache->{$organism->organism_id()}) {
-    return $cache->{$organism->organism_id()};
-  } else {
-    my $prop = $organism->organismprops()
-      ->search({ 'type.name' => 'taxon_id' }, { join => 'type' })->first();
-
-    my $taxonid = $prop->value();
-
-    die "no taxon_id for ", $organism->full_name() unless defined $taxonid;
-
-    $cache->{$organism->organism_id()} = $taxonid;
-    return $taxonid;
-  }
-}
+with 'Canto::Role::SimpleCache';
+with 'Canto::Role::ChadoFeatureCache';
 
 # if the $feature is an mRNA, return it's gene feature, otherwise return
 # the $feature
@@ -185,9 +156,6 @@ sub lookup
   my $cached_value = $self->cache->get($cache_key);
 
   if (defined $cached_value) {
-use Data::Dumper;
-warn qq(returning cached result from Chado ontology lookup using key "$cache_key": ), Dumper([$cached_value]);
-
     return @{$cached_value};
   }
 
@@ -284,7 +252,6 @@ warn qq(returning cached result from Chado ontology lookup using key "$cache_key
                                   { cvterm => [ 'cv', { dbxref => 'db' } ] } ],
                     join => ['cvterm', 'feature'] };
     my $rs = $schema->resultset('FeatureCvterm')->search($constraint, $options);
-    my $taxonid_cache = {};
 
     my $all_annotations_count = $rs->count();
 
@@ -297,7 +264,6 @@ warn qq(returning cached result from Chado ontology lookup using key "$cache_key
     while (defined (my $row = $rs->next())) {
       my $feature = $self->_gene_of_feature($row->feature());
       my $cvterm = $row->cvterm();
-      my $organism = $feature->organism();
       my @props = $row->feature_cvtermprops()->all();
       my %prop_type_values = (evidence => 'Unknown',
                               with => undef,
@@ -366,43 +332,11 @@ warn qq(returning cached result from Chado ontology lookup using key "$cache_key
           annotation_id => $row->feature_cvterm_id(),
         };
 
-      my $taxonid = _get_taxonid($taxonid_cache, $organism);
-
-      if ($feature->type()->name() eq 'allele') {
-        my $feature_rels = $feature->feature_relationship_subjects();
-        my $gene;
-        while (defined (my $rel = $feature_rels->next())) {
-          if ($rel->type()->name() eq 'instance_of') {
-            $gene = $rel->object();
-          }
-        }
-        if (defined $gene) {
-          $new_res->{gene} = {
-            identifier => $gene->uniquename(),
-            name => $gene->name(),
-            organism_taxonid => $taxonid,
-          };
-        } else {
-          $new_res->{gene} = {
-            identifier => 'not_found',
-            organism_taxonid => $taxonid,
-          },
-        }
-        my $allele_description_prop =
-          $feature->featureprops()
-          ->search({ 'type.name' => 'description' }, { join => 'type' })->first();
-        my $allele_description = undef;
-        if (defined $allele_description_prop) {
-          $allele_description = $allele_description_prop->value();
-        }
-
-        $new_res->{allele} = {
-          identifier => $feature->uniquename(),
-          name => $feature->name(),
-          description => $allele_description,
-          organism_taxonid => $taxonid,
-        };
+      if ($feature->type()->name() eq 'genotype') {
+        $new_res->{genotype} = $self->get_cached_genotype_details($feature);
       } else {
+        my $taxonid = $self->get_cached_taxonid($feature->organism_id());
+
         $new_res->{gene} = {
           identifier => $feature->uniquename(),
           name => $feature->name(),
@@ -421,10 +355,6 @@ warn qq(returning cached result from Chado ontology lookup using key "$cache_key
   } else {
     $ret_val = [0, []];
   }
-
-use Data::Dumper;
-warn qq(adding result to cache in Chado ontology lookup with cache key "$cache_key": ),
-  Dumper([$ret_val]);
 
   $self->cache()->set($cache_key, $ret_val, "2 hours");
 

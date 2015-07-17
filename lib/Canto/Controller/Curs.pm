@@ -44,21 +44,24 @@ use Moose;
 
 use Canto::Curs::State qw/:all/;
 
-with 'Canto::Role::MetadataAccess';
-with 'Canto::Role::GAFFormatter';
-with 'Canto::Curs::Role::GeneResultSet';
-
 use IO::String;
 use Clone qw(clone);
 use Hash::Merge;
 use Carp qw(cluck);
+use JSON;
+use List::MoreUtils;
+use Try::Tiny;
 
 use Canto::Track;
 use Canto::Curs::Utils;
 use Canto::Curs::MetadataStorer;
+use Canto::Curs::AlleleManager;
+use Canto::Curs::GeneManager;
+use Canto::Curs::GenotypeManager;
 use Canto::MailSender;
 use Canto::EmailUtil;
 use Canto::Curs::State;
+use Canto::Curs::ServiceUtils;
 use Canto::Util qw(trim);
 
 use constant {
@@ -88,6 +91,11 @@ has metadata_storer => (is => 'rw', init_arg => undef,
 
 has curator_manager => (is => 'rw', init_arg => undef,
                         isa => 'Canto::Track::CuratorManager');
+
+with 'Canto::Role::MetadataAccess';
+with 'Canto::Role::GAFFormatter';
+with 'Canto::Curs::Role::GeneResultSet';
+with 'Canto::Curs::Role::CuratorSet';
 
 =head2 top
 
@@ -189,9 +197,35 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
   # enabled by default and disabled on /session_reassigned page
   $st->{show_curator_in_title} = 1;
 
-  $st->{gene_count} = $self->get_ordered_gene_rs($schema)->count();
+  $st->{gene_count} = $schema->resultset('Gene')->count();
+  $st->{genotype_count} = $schema->resultset('Genotype')->count();
+
+  if ($path =~ m!/ro/?$!) {
+    $st->{read_only_curs} = 1;
+    if ($state eq EXPORTED) {
+      $st->{message} =
+        ["Review only - this session has been exported so no changes are possible"];
+    } else {
+      if ($state eq NEEDS_APPROVAL || $state eq APPROVAL_IN_PROGRESS) {
+        $st->{message} =
+          ["Review only - this session has been submitted for approval so no changes are possible"];
+      } else {
+        $st->{message} =
+          ["Review only - this session can be viewed but not edited"];
+      }
+    }
+  }
 
   my $use_dispatch = 1;
+
+  my $current_user = $c->user();
+
+  if ($config->{canto_offline} && !$st->{read_only_curs} &&
+        (!defined $current_user || !$current_user->is_admin()) &&
+        $path !~ m:/(ws/\w+/list):) {
+    $c->detach('offline_message');
+    $use_dispatch = 0;
+  }
 
   if ($state eq APPROVAL_IN_PROGRESS) {
     if ($c->user_exists() && $c->user()->role()->name() eq 'admin') {
@@ -204,11 +238,12 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
   }
 
   if ($state eq SESSION_ACCEPTED &&
-      $path =~ m:/(gene_upload|edit_genes|confirm_genes|finish_form):) {
+      $path =~ m:/(gene_upload|edit_genes|genotype_manage|confirm_genes|finish_form):) {
     $use_dispatch = 0;
   }
+
   if (($state eq NEEDS_APPROVAL || $state eq APPROVED) &&
-      $path =~ m:/(ro|finish_form|reactivate_session|begin_approval|restart_approval|annotation/zipexport):) {
+      $path =~ m:/(ro|finish_form|reactivate_session|begin_approval|restart_approval|annotation/zipexport|ws/\w+/list):) {
     $use_dispatch = 0;
   }
 
@@ -332,16 +367,7 @@ sub read_only_summary : Chained('top') PathPart('ro') Args(0)
 
   # use only in header, not in body:
   $st->{show_title} = 1;
-  $st->{read_only_curs} = 1;
   $st->{template} = 'curs/front.mhtml';
-
-  if ($st->{state} eq EXPORTED) {
-    $st->{message} =
-      ["Review only - this session has been exported so no changes are possible"];
-  } else {
-    $st->{message} =
-      ["Review only - this session has been submitted for approval so no changes are possible"];
-  }
 
   my $schema = $c->stash()->{schema};
 
@@ -382,134 +408,6 @@ sub store_statuses : Chained('top') Args(0) Form
 
 my $gene_list_textarea_name = 'gene_identifiers';
 
-# return a list of only those genes which aren't already in the database
-sub _filter_existing_genes
-{
-  my $self = shift;
-  my $schema = shift;
-  my @genes = @_;
-
-  my @gene_primary_identifiers = map { $_->{primary_identifier} } @genes;
-
-  my $gene_rs = $self->get_ordered_gene_rs($schema);
-  my $rs = $gene_rs->search({
-    primary_identifier => {
-      -in => [@gene_primary_identifiers],
-    }
-  });
-
-  my %found_genes = ();
-  while (defined (my $gene = $rs->next())) {
-    $found_genes{$gene->primary_identifier()} = 1;
-  }
-
-  return grep { !exists $found_genes{ $_->{primary_identifier} } } @genes;
-}
-
-# create genes in the Curs database from a lookup() result
-sub _create_genes
-{
-  my $self = shift;
-  my $schema = shift;
-  my $result = shift;
-
-  my %ret = ();
-
-  my $_create_curs_genes = sub
-      {
-        my @genes = @{$result->{found}};
-
-        @genes = $self->_filter_existing_genes($schema, @genes);
-
-        for my $gene (@genes) {
-          my $org_full_name = $gene->{organism_full_name};
-          my $org_taxonid = $gene->{organism_taxonid};
-          my $curs_org =
-            Canto::CursDB::Organism::get_organism($schema, $org_full_name,
-                                                   $org_taxonid);
-
-          my $primary_identifier = $gene->{primary_identifier};
-
-          my $new_gene = $schema->create_with_type('Gene', {
-            primary_identifier => $primary_identifier,
-            organism => $curs_org
-          });
-
-          $ret{$primary_identifier} = $new_gene
-        }
-      };
-
-  $schema->txn_do($_create_curs_genes);
-
-  return %ret;
-}
-
-sub _find_and_create_genes
-{
-  my ($self, $schema, $config, $search_terms_ref, $create_when_missing) = @_;
-
-  my @search_terms = @$search_terms_ref;
-  my $adaptor = Canto::Track::get_adaptor($config, 'gene');
-
-  my $result;
-
-  if (exists $config->{instance_organism}) {
-    $result = $adaptor->lookup(
-      {
-        search_organism => {
-          genus => $config->{instance_organism}->{genus},
-          species => $config->{instance_organism}->{species},
-        }
-      },
-      [@search_terms]);
-  } else {
-    $result = $adaptor->lookup([@search_terms]);
-  }
-
-
-  my %identifiers_matching_more_than_once = ();
-  my %genes_matched_more_than_once = ();
-
-  map {
-    my $match = $_;
-    my $primary_identifier = $match->{primary_identifier};
-    map {
-      my $identifier = $_;
-      $identifiers_matching_more_than_once{$identifier}->{$primary_identifier} = 1;
-      $genes_matched_more_than_once{$primary_identifier}->{$identifier} = 1;
-    } (@{$match->{match_types}->{synonym} // []},
-       $match->{match_types}->{primary_identifier} // (),
-       $match->{match_types}->{primary_name} // ());
-  } @{$result->{found}};
-
-  sub _remove_single_matches {
-    my $hash = shift;
-    map {
-      my $identifier = $_;
-
-      if (keys %{$hash->{$identifier}} == 1) {
-        delete $hash->{$identifier};
-      } else {
-        $hash->{$identifier} = [sort keys %{$hash->{$identifier}}];
-      }
-    } keys %$hash;
-  }
-
-  _remove_single_matches(\%identifiers_matching_more_than_once);
-  _remove_single_matches(\%genes_matched_more_than_once);
-
-  if (@{$result->{missing}} || keys %identifiers_matching_more_than_once > 0 ||
-      keys %genes_matched_more_than_once > 0) {
-    if ($create_when_missing) {
-      $self->_create_genes($schema, $result);
-    }
-
-    return ($result, \%identifiers_matching_more_than_once, \%genes_matched_more_than_once);
-  } else {
-    return ({ $self->_create_genes($schema, $result) });
-  }
-}
-
 # $confirm_genes will be true if we have just uploaded some genes
 sub _edit_genes_helper
 {
@@ -520,15 +418,13 @@ sub _edit_genes_helper
   my $schema = $st->{schema};
 
   my $form = $self->form();
+  $form->attributes({ action => '?' });
 
   my @all_elements = (
       {
         name => 'gene-select', label => 'gene-select',
+        label_tag => 'formfu-label',
         type => 'Checkbox', default_empty_value => 1
-      },
-      {
-        name => 'submit', type => 'Submit', value => 'Remove selected',
-        name => 'continue', type => 'Submit', value => 'Continue',
       },
     );
 
@@ -639,6 +535,7 @@ sub gene_upload : Chained('top') Args(0) Form
       {
         name => 'no-genes', type => 'Checkbox',
         label => 'This paper does not contain any gene-specific information',
+        label_tag => 'formfu-label',
         default_empty_value => 1,
         attributes => { 'ng-model' => 'data.noAnnotation',
                         'ng-disabled' => 'data.geneIdentifiers.length > 0'  },
@@ -674,14 +571,17 @@ sub gene_upload : Chained('top') Args(0) Form
       { name => 'return_path_input', type => 'Hidden',
         value => $return_path // '' },
       (map {
-          {
+          my $ret = {
             name => $_, type => 'Submit', value => $_,
             attributes => {
-              class => 'button',
+              class => 'btn btn-primary curs-finish-button button',
               title => "{{ isValid() ? '' : '$not_valid_message' }}",
-              'ng-disabled' => '!isValid()',
             },
+          };
+          if ($_ eq 'Continue') {
+            $ret->{attributes}->{'ng-disabled'} = '!isValid()';
           }
+          $ret;
         } @submit_buttons),
       @no_genes_elements,
     );
@@ -731,7 +631,11 @@ sub gene_upload : Chained('top') Args(0) Form
 
     $st->{search_terms_text} = $search_terms_text;
 
-    my @res_list = $self->_find_and_create_genes($schema, $c->config(), \@search_terms);
+    my $gene_manager =
+      Canto::Curs::GeneManager->new(config => $c->config(),
+                                    curs_schema => $schema);
+
+    my @res_list = $gene_manager->find_and_create_genes(\@search_terms);
 
     if (@res_list > 1) {
       # there was a problem
@@ -822,6 +726,16 @@ sub gene_upload : Chained('top') Args(0) Form
   }
 }
 
+sub genotype_manage : Chained('top') Args(0)
+{
+  my ($self, $c) = @_;
+
+  my $st = $c->stash();
+
+  $st->{title} = 'Genotypes for: ' . $st->{pub}->uniquename();
+  $st->{template} = 'curs/genotype_manage.mhtml';
+}
+
 sub _delete_annotation : Private
 {
   my ($self, $c, $annotation_id, $other_gene_identifier) = @_;
@@ -838,20 +752,22 @@ sub _delete_annotation : Private
   } else {
     $annotation->delete();
   }
+
+  $c->flash()->{message} = "Annotation deleted";
 }
 
-sub annotation_delete : Chained('top') PathPart('annotation/delete')
+sub annotation_delete : Chained('annotation') PathPart('delete')
 {
-  my ($self, $c, $annotation_id, $other_gene_identifier) = @_;
+  my ($self, $c, $other_gene_identifier) = @_;
 
   my $config = $c->config();
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  $self->_check_annotation_exists($c, $annotation_id);
+  my $annotation = $st->{annotation};
 
   my $delete_sub = sub {
-    $self->_delete_annotation($c, $annotation_id, $other_gene_identifier);
+    $self->_delete_annotation($c, $annotation->annotation_id(), $other_gene_identifier);
     $self->metadata_storer()->store_counts($schema);
   };
 
@@ -860,18 +776,17 @@ sub annotation_delete : Chained('top') PathPart('annotation/delete')
   _redirect_and_detach($c);
 }
 
-sub annotation_delete_suggestion : Chained('top') PathPart('annotation/delete_suggestion')
+sub annotation_delete_suggestion : Chained('annotation') PathPart('delete_suggestion')
 {
-  my ($self, $c, $annotation_id) = @_;
+  my ($self, $c) = @_;
 
   my $config = $c->config();
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  $self->_check_annotation_exists($c, $annotation_id);
+  my $annotation = $st->{annotation};
 
   my $delete_sub = sub {
-    my $annotation = $schema->resultset('Annotation')->find($annotation_id);
     my $data = $annotation->data();
     delete $data->{term_suggestion};
     $annotation->data($data);
@@ -884,34 +799,12 @@ sub annotation_delete_suggestion : Chained('top') PathPart('annotation/delete_su
   _redirect_and_detach($c);
 }
 
-sub annotation_undelete : Chained('top') PathPart('annotation/undelete') Args(1)
-{
-  my ($self, $c, $annotation_id) = @_;
-
-  my $config = $c->config();
-  my $st = $c->stash();
-  my $schema = $st->{schema};
-
-  $self->_check_annotation_exists($c, $annotation_id);
-
-  my $delete_sub = sub {
-    my $annotation = $schema->resultset('Annotation')->find($annotation_id);
-    $annotation->status('new');
-    $annotation->update();
-  };
-
-  $schema->txn_do($delete_sub);
-
-  $self->state()->store_statuses($schema);
-
-  _redirect_and_detach($c);
-}
-
 sub _field_edit_internal
 {
-  my ($self, $c, $annotation_id, $field_name) = @_;
+  my ($self, $c, $field_name) = @_;
 
-  my $annotation = $self->_check_annotation_exists($c, $annotation_id);
+  my $st = $c->stash();
+  my $annotation = $st->{annotation};
   my $data = $annotation->data();
 
   my $params = $c->req()->params();
@@ -928,24 +821,14 @@ sub _field_edit_internal
   $c->forward('View::JSON');
 }
 
-sub annotation_comment_edit : Chained('top') PathPart('annotation/comment_edit') Args(1)
+sub annotation_comment_edit : Chained('annotation') PathPart('comment_edit') Args(1)
 {
-  my ($self, $c, $annotation_id) = @_;
-
   _field_edit_internal(@_, 'submitter_comment');
 }
 
-sub annotation_extension_edit : Chained('top') PathPart('annotation/extension_edit') Args(1)
+sub annotation_extension_edit : Chained('annotation') PathPart('extension_edit') Args(1)
 {
   _field_edit_internal(@_, 'annotation_extension');
-}
-
-my $iso_date_template = "%4d-%02d-%02d";
-
-sub _get_iso_date
-{
-  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime(time);
-  return sprintf "$iso_date_template", 1900+$year, $mon+1, $mday
 }
 
 # change the annotation data of an existing annotation
@@ -965,57 +848,6 @@ sub _re_edit_annotation
                                            });
   my $data = $annotation->data();
 
-  my @alleles = $annotation->alleles();
-
-  if ($annotation_config->{needs_allele} && !exists $data->{alleles_in_progress} &&
-      @alleles > 0) {
-    # undo the work of annotation_process_alleles()
-    my %in_progress_data = ( id => 0 );
-    if (@alleles > 1) {
-      croak "can't handle multi-allele phenotypes";
-    }
-
-    my $allele = $alleles[0];
-
-    $in_progress_data{allele_type} = $allele->type();
-
-    if (defined $allele->name()) {
-      $in_progress_data{name} = $allele->name();
-    }
-    if (defined $allele->description()) {
-      $in_progress_data{description} = $allele->description();
-    }
-
-    $in_progress_data{evidence} = delete $data->{evidence_code};
-
-    if (defined $data->{expression}) {
-      $in_progress_data{expression} = $data->{expression};
-    }
-    delete $data->{expression};
-
-    if (defined $data->{conditions}) {
-      $in_progress_data{conditions} = $data->{conditions};
-    } else {
-      $in_progress_data{conditions} = [];
-    }
-    delete $data->{conditions};
-
-    $schema->resultset('AlleleAnnotation')->search({ allele => $allele->allele_id(),
-                                                     annotation => $annotation->annotation_id() })
-      ->delete();
-
-    if ($schema->resultset('AlleleAnnotation')
-        ->search({ allele => $allele->allele_id() })->count() == 0) {
-      # unreferenced so delete
-      $allele->delete();
-    }
-
-    $schema->resultset('GeneAnnotation')->create({ gene => $allele->gene()->gene_id(),
-                                                   annotation => $annotation->annotation_id() });
-
-    $new_annotation_data->{alleles_in_progress}->{0} = \%in_progress_data;
-  }
-
   my $merge = Hash::Merge->new('RIGHT_PRECEDENT');
   my $new_data = $merge->merge($data, $new_annotation_data);
 
@@ -1025,138 +857,59 @@ sub _re_edit_annotation
   return $annotation;
 }
 
-sub annotation_quick_add : Chained('top') PathPart('annotation/quick_add') Args(2)
+sub _create_annotation
 {
-  my ($self, $c, $gene_id, $annotation_type_name) = @_;
+  my ($self, $c, $annotation_type_name, $feature_type,
+      $features, $annotation_data) = @_;
 
   my $config = $c->config();
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  my $params = $c->req()->params();
+  my $annotation_config = $config->{annotation_types}->{$annotation_type_name};
 
-  my $evidence_types = $config->{evidence_types};
-
-  my $_fail = sub {
-    my $message = shift;
-
-    $c->flash()->{error} = $message;
-    $c->stash->{json_data} = {
-      error => $message,
-    };
-    $c->forward('View::JSON');
-  };
-
-  my $evidence_code = $params->{'ferret-quick-add-evidence'};
-  if (!defined $evidence_code ||
-      !exists $config->{evidence_types}->{$evidence_code}) {
-    $_fail->("Adding annotation failed - invalid evidence code");
-    return;
+  if ($annotation_config->{category} eq 'ontology' &&
+      !$annotation_data->{term_ontid}) {
+    die "internal error: no term ontology ID (term_ontid) passed to _create_annotation()";
   }
 
-  my $termid = $params->{'ferret-quick-add-term-id'};
-  if (!defined $termid || !defined _term_name_from_id($config, $termid)) {
-    $_fail->("Adding annotation failed - invalid term name");
-    return;
-  }
+  my $guard = $schema->txn_scope_guard;
 
-  my $gene = $schema->find_with_type('Gene', $gene_id);
+  my $annotation =
+      $schema->create_with_type('Annotation',
+                                {
+                                  type => $annotation_type_name,
+                                  status => 'new',
+                                  pub => $st->{pub},
+                                  creation_date => Canto::Curs::Utils::get_iso_date(),
+                                  data => clone $annotation_data,
+                                });
 
-  my %annotation_data = (
-    term_ontid => $termid,
-    evidence_code => $evidence_code,
-  );
+  if ($feature_type eq 'gene') {
+    my @genes = map {
+      $_->cursdb_gene();
+    } @$features;
 
-  my $extension = $params->{'ferret-quick-add-extension'};
-
-  $extension = trim($extension);
-
-  if (length $extension > 0) {
-    $annotation_data{annotation_extension} = $extension;
-  }
-
-  my $needs_with_gene = $evidence_types->{$evidence_code}->{with_gene};
-  if ($needs_with_gene) {
-    my $with_gene = $params->{'ferret-quick-add-with-gene'};
-
-    my $with_gene_object;
-
-    if (defined $with_gene) {
-      eval {
-        $with_gene_object = $schema->find_with_type('Gene', { gene_id => $with_gene });
-      };
-    }
-
-    if (defined $with_gene_object) {
-      $annotation_data{with_gene} = $with_gene_object->primary_identifier();
-    } else {
-      $_fail->("Adding annotation failed - missing 'with' gene");
-      return;
-    }
-  }
-
-  my $new_annotation =
-    $schema->create_with_type('Annotation',
-                              {
-                                type => $annotation_type_name,
-                                status => 'new',
-                                pub => $st->{pub},
-                                creation_date => _get_iso_date(),
-                                data => { %annotation_data }
-                              });
-
-  $self->_set_annotation_curator($c, $new_annotation);
-
-  $new_annotation->set_genes($gene);
-
-  $c->stash->{json_data} = {
-    new_annotation_id => $new_annotation->annotation_id(),
-  };
-  $c->forward('View::JSON');
-}
-
-# Set the "curator" field of the data blob of an Annotation to be the current
-# curator.
-# The current curator will be the reviewer if approval is in progress.
-sub _set_annotation_curator
-{
-  my $self = shift;
-  my $c = shift;
-  my $annotation = shift;
-
-  my $st = $c->stash();
-  my $curs_key = $st->{curs_key};
-
-  my $curator_email;
-  my $curator_name;
-  my $curator_known_as;
-  my $accepted_date;
-  my $community_curated;
-
-  if ($st->{state} eq APPROVAL_IN_PROGRESS) {
-    my $schema = $st->{schema};
-    $curator_name = $self->get_metadata($schema, 'approver_name');
-    $curator_email = $self->get_metadata($schema, 'approver_email');
+    $annotation->set_genes(@genes);
   } else {
-    ($curator_email, $curator_name, $curator_known_as,
-     $accepted_date, $community_curated) =
-      $self->curator_manager()->current_curator($curs_key);
+    $annotation->set_genotypes(@$features);
   }
 
-  my $data = $annotation->data();
-  $data->{curator} = {
-    email => $curator_email,
-    name => $curator_name,
-    community_curated => $community_curated // 0,
-  };
+  $self->set_annotation_curator($annotation);
+  $guard->commit();
 
-  $annotation->data($data);
-  $annotation->update();
+  $self->metadata_storer()->store_counts($schema);
+
+  $_debug_annotation_ids = [$annotation->annotation_id()];
+
+  $self->state()->store_statuses($schema);
+
+  return $annotation;
 }
 
 sub annotation_ontology_edit
 {
-  my ($self, $c, $gene_proxy, $annotation_config, $annotation_id) = @_;
+  my ($self, $c, $feature, $annotation_config) = @_;
 
   my $module_display_name = $annotation_config->{display_name};
 
@@ -1165,9 +918,18 @@ sub annotation_ontology_edit
   my $st = $c->stash();
   my $schema = $st->{schema};
 
+  my $feature_type = $st->{feature_type};
+
+  my $feature_id;
+
+  if ($feature_type eq 'gene') {
+    $feature_id = $feature->gene_id();
+  } else {
+    $feature_id = $feature->genotype_id();
+  }
+
   my $module_category = $annotation_config->{category};
 
-  # don't set stash title - use default
   $st->{current_component} = $annotation_type_name;
   $st->{annotation_type_config} = $annotation_config;
   $st->{annotation_namespace} = $annotation_config->{namespace};
@@ -1191,146 +953,6 @@ sub annotation_ontology_edit
   my $annotation_extra_help_text = $annotation_config->{extra_help_text};
   $st->{annotation_extra_help_text} = $annotation_extra_help_text;
   $st->{template} = "curs/modules/$module_category.mhtml";
-
-  my $form = $self->form();
-
-  my @all_elements = (
-      {
-        name => 'ferret-term-id', label => 'ferret-term-id',
-        type => 'Hidden',
-      },
-      {
-        name => 'ferret-suggest-name', label => 'ferret-suggest-name',
-        type => 'Text',
-      },
-      {
-        name =>'ferret-suggest-definition',
-        label => 'ferret-suggest-definition',
-        type => 'Text',
-      },
-      {
-        name => 'ferret-submit', type => 'Submit',
-      }
-    );
-
-  $form->elements([@all_elements]);
-  $form->process();
-  $st->{form} = $form;
-
-  if ($form->submitted_and_valid()) {
-    my $term_ontid = $form->param_value('ferret-term-id');
-    my $submit_value = $form->param_value('ferret-submit');
-
-    my $guard = $schema->txn_scope_guard;
-
-    my %annotation_data = (term_ontid => $term_ontid);
-
-    if ($submit_value eq 'Submit suggestion') {
-      my $suggested_name = $form->param_value('ferret-suggest-name');
-      my $suggested_definition =
-        $form->param_value('ferret-suggest-definition');
-
-      $suggested_name = trim($suggested_name);
-      $suggested_definition = trim($suggested_definition);
-
-      $annotation_data{term_suggestion} = {
-        name => $suggested_name,
-        definition => $suggested_definition
-      };
-
-      $c->flash()->{message} = 'Note that your term suggestion has been '
-        . 'stored, but the gene will be temporarily '
-        . 'annotated with the parent of your suggested new term';
-    }
-
-    my $is_new_annotation = 0;
-
-    my $annotation;
-
-    if (defined $annotation_id) {
-      # change an existing annotation
-      my $orig_annotation = $schema->find_with_type('Annotation',
-                                                    {
-                                                      annotation_id => $annotation_id,
-                                                    });
-      my %current_data = %{$orig_annotation->data()};
-      @current_data{keys %annotation_data} = values %annotation_data;
-
-      my $state = $st->{state};
-      if ($state eq APPROVAL_IN_PROGRESS) {
-        # during approval add the approver details to the annotation if they
-        # make a change
-        my $curator_name = $self->get_metadata($schema, 'approver_name');
-        my $curator_email = $self->get_metadata($schema, 'approver_email');
-
-        push @{$current_data{changed_by}}, {
-          curator_name => $curator_name,
-          curator_email => $curator_email,
-          change_date => _get_iso_date(),
-        }
-      }
-
-      $annotation = $orig_annotation;
-      $annotation->data(\%current_data);
-      $annotation->update();
-   } else {
-      $annotation =
-        $schema->create_with_type('Annotation',
-                                  {
-                                    type => $annotation_type_name,
-                                    status => 'new',
-                                    pub => $st->{pub},
-                                    creation_date => _get_iso_date(),
-                                    data => { %annotation_data }
-                                  });
-
-      $annotation->set_genes($gene_proxy->cursdb_gene());
-
-      $annotation_id = $annotation->annotation_id();
-
-      $self->_set_annotation_curator($c, $annotation);
-
-      $is_new_annotation = 1;
-    }
-
-    $guard->commit();
-
-    $self->metadata_storer()->store_counts($schema);
-
-    $_debug_annotation_ids = [$annotation_id];
-
-    $self->state()->store_statuses($schema);
-
-    if ($is_new_annotation) {
-      if ($annotation_config->{needs_allele}) {
-        _redirect_and_detach($c, 'annotation', 'allele_select', $annotation_id);
-      } else {
-        _redirect_and_detach($c, 'annotation', 'evidence', $annotation_id);
-      }
-    } else {
-      _redirect_and_detach($c, 'gene', $gene_proxy->gene_id());
-    }
-  } else {
-    if (defined $annotation_id) {
-      my $annotation = $schema->find_with_type('Annotation',
-                                               {
-                                                 annotation_id => $annotation_id
-                                               });
-      my $data = $annotation->data();
-      my @genes = $annotation->genes();
-
-      if (@genes) {
-        my $gene = $genes[0];
-        my $gene_proxy = _get_gene_proxy($c->config(), $gene);
-        $c->stash()->{message} = 'Editing annotation of ' .
-          $gene_proxy->display_name() . ' with ' . $data->{term_ontid};
-      } else {
-        my $allele = ($annotation->alleles())[0];
-        $c->stash()->{message} = 'Editing annotation of ' .
-          $allele->display_name() . ' with ' . $data->{term_ontid};
-      }
-    }
-  }
 }
 
 sub annotation_interaction_edit
@@ -1350,86 +972,6 @@ sub annotation_interaction_edit
   $st->{current_component} = $annotation_type_name;
   $st->{current_component_display_name} = $annotation_config->{display_name};
   $st->{template} = "curs/modules/$module_category.mhtml";
-
-  my $form = $self->form();
-
-  $form->auto_fieldset(0);
-
-  my $genes_rs = $self->get_ordered_gene_rs($schema, 'primary_identifier');
-
-  my @options = ();
-
-  while (defined (my $g = $genes_rs->next())) {
-    my $g_proxy = _get_gene_proxy($config, $g);
-    push @options, { value => $g_proxy->gene_id(),
-                     label => $g_proxy->long_display_name() };
-  }
-
-  my @all_elements = (
-      {
-        name => 'prey', label => 'prey',
-        type => 'Checkboxgroup',
-        container_tag => 'div',
-        label => '',
-        options => [@options],
-      },
-      {
-        name => 'interaction-submit', type => 'Submit',
-        attributes => { class => 'curs-finish-button', },
-        value => 'Proceed ->',
-      }
-    );
-
-  $form->elements([@all_elements]);
-  $form->process();
-  $st->{form} = $form;
-
-  if ($form->submitted_and_valid()) {
-    my $submit_value = $form->param_value('interaction-submit');
-
-    my @prey_params = @{$form->param_array('prey')};
-
-    if (!@prey_params) {
-      $st->{message} = 'You must select at least one gene that interacts with ' .
-        $st->{gene}->display_name();
-      return;
-    }
-
-    my $guard = $schema->txn_scope_guard;
-
-    my @prey_identifiers =
-      map {
-        my $prey_gene = $schema->find_with_type('Gene', $_);
-        {
-          primary_identifier => $prey_gene->primary_identifier(),
-        }
-      } @prey_params;
-
-    my %annotation_data = (interacting_genes => [@prey_identifiers]);
-
-    my $annotation =
-      $schema->create_with_type('Annotation',
-                                {
-                                  type => $annotation_type_name,
-                                  status => 'new',
-                                  pub => $st->{pub},
-                                  creation_date => _get_iso_date(),
-                                  data => { %annotation_data }
-                                });
-
-    $self->_set_annotation_curator($c, $annotation);
-
-    $annotation->set_genes($gene_proxy->cursdb_gene());
-
-    $guard->commit();
-
-    my $annotation_id = $annotation->annotation_id();
-    $_debug_annotation_ids = [$annotation_id];
-
-    $self->state()->store_statuses($schema);
-
-    _redirect_and_detach($c, 'annotation', 'evidence', $annotation_id);
-  }
 }
 
 sub _get_gene_proxy
@@ -1438,34 +980,55 @@ sub _get_gene_proxy
   my $gene = shift;
 
   if (!defined $gene) {
-    croak "no gene passed to _get_gene_proxy()";
+    confess "no gene passed to _get_gene_proxy()";
   }
 
   return Canto::Curs::GeneProxy->new(config => $config,
                                       cursdb_gene => $gene);
 }
 
-sub _annotation_edit
+
+sub annotate : Chained('feature') CaptureArgs(1)
 {
-  my ($self, $c, $gene_id, $annotation_type_name, $annotation_id) = @_;
+  my ($self, $c, $id) = @_;
+
+  my $st = $c->stash();
+  my $config = $c->config();
+
+  my $feature_type = $st->{feature_type};
+
+  my $feature = $st->{schema}->find_with_type($feature_type, $feature_type . "_id", $id);
+
+  if ($feature_type eq 'gene') {
+    $feature = _get_gene_proxy($config, $feature);
+  }
+
+  $st->{feature} = $feature;
+  $st->{features} = [$feature];
+}
+
+sub start_annotation : Chained('annotate') PathPart('start') Args(1)
+{
+  my ($self, $c, $annotation_type_name) = @_;
 
   my $config = $c->config();
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  my $gene = $schema->find_with_type('Gene', $gene_id);
-
-  my $gene_proxy = _get_gene_proxy($config, $gene);
-  $st->{gene} = $gene_proxy;
+  my $feature = $st->{feature};
+  my @features = @{$st->{features}};
 
   my $annotation_config = $config->{annotation_types}->{$annotation_type_name};
-
   $st->{annotation_type_config} = $annotation_config;
+  $st->{annotation_type_name} = $annotation_type_name;
 
   my $annotation_display_name = $annotation_config->{display_name};
-  my $gene_display_name = $gene_proxy->display_name();
 
-  $st->{title} = "Curating $annotation_display_name for $gene_display_name\n";
+  my $display_names = join ',', map {
+    $_->display_name();
+  } @features;
+
+  $st->{title} = "Curating $annotation_display_name for $display_names\n";
   $st->{show_title} = 0;
 
   my %type_dispatch = (
@@ -1475,47 +1038,46 @@ sub _annotation_edit
 
   $self->state()->store_statuses($schema);
 
-  &{$type_dispatch{$annotation_config->{category}}}($self, $c, $gene_proxy,
-                                                    $annotation_config, $annotation_id);
+  &{$type_dispatch{$annotation_config->{category}}}($self, $c, $feature,
+                                                    $annotation_config);
 }
 
-sub new_annotation : Chained('top') PathPart('annotation/new') Args(2) Form
+sub annotation : Chained('top') CaptureArgs(1)
 {
-  my ($self, $c, $gene_id, $annotation_type_name) = @_;
-
-  _annotation_edit($self, $c, $gene_id, $annotation_type_name);
-}
-
-sub existing_annotation_edit : Chained('top') PathPart('annotation/edit') Args(3) Form
-{
-  my ($self, $c, $gene_id, $annotation_type_name, $annotation_id) = @_;
-
-  _annotation_edit($self, $c, $gene_id, $annotation_type_name, $annotation_id);
-}
-
-# redirect to the annotation transfer page only if we've just created an
-# ontology annotation and we have more than one gene
-sub _maybe_transfer_annotation
-{
-  my $c = shift;
-  my $annotation_ids = shift;
-  my $annotation_config = shift;
+  my ($self, $c, $annotation_ids) = @_;
 
   my $st = $c->stash();
-  my $schema = $st->{schema};
 
-  my $gene_count = $schema->resultset('Gene')->count();
+  my @annotations = $self->_check_annotation_exists($c, $annotation_ids);
 
-  my $gene = $st->{gene};
+  $st->{annotations} = \@annotations;
 
-  my $current_user = $c->user();
+  $st->{annotation} = $annotations[0];
+}
 
-  if ($annotation_config->{category} eq 'ontology') {
-    _redirect_and_detach($c, 'annotation', 'transfer', (join ',', @$annotation_ids));
+=head2 annotation_features
+
+ Usage   : my ($feature_type, @features) =
+             annotation_features($config, $annotation);
+ Function: Return the features and type of features for an annotation
+ Args    : $config - an Canto::Config object
+           $annotation - an Annotation object
+ Return  : $feature_type - "gene" or "genotype"
+           @features - the features of an annotation
+
+=cut
+
+sub annotation_features
+{
+  my $config = shift;
+  my $annotation = shift;
+
+  my @genes = $annotation->genes();
+
+  if (@genes) {
+    return ('gene', map { _get_gene_proxy($config, $_); } @genes);
   } else {
-    if (defined $gene) {
-      _redirect_and_detach($c, 'gene', $gene->gene_id());
-    }
+    return ('genotype', $annotation->genotypes());
   }
 }
 
@@ -1523,22 +1085,31 @@ sub _check_annotation_exists
 {
   my $self = shift;
   my $c = shift;
-  my $annotation_id = shift;
+  my $annotation_ids = shift;
 
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  my $annotation =
-    $schema->resultset('Annotation')->find($annotation_id);
+  my @annotation_ids = split /,/, $annotation_ids;
 
-  if (defined $annotation) {
-    $c->stash()->{annotation} = $annotation;
+  my @annotations = ();
 
-    return $annotation;
-  } else {
-    $c->flash()->{error} = qq|No annotation found with id "$annotation_id" |;
-    _redirect_and_detach($c);
+  for my $annotation_id (@annotation_ids) {
+    my $annotation =
+      $schema->resultset('Annotation')->find($annotation_id);
+
+    if (defined $annotation) {
+      $c->stash()->{annotation} = $annotation;
+
+      push @annotations, $annotation;
+    } else {
+      $c->flash()->{error} = qq|No annotation found with id "$annotation_id" |;
+      _redirect_and_detach($c);
+      return ();
+    }
   }
+
+  return @annotations;
 }
 
 sub _generate_evidence_options
@@ -1565,195 +1136,133 @@ sub _generate_evidence_options
   return @codes;
 }
 
-sub annotation_evidence : Chained('top') PathPart('annotation/evidence') Args(1) Form
+sub annotation_set_term : Chained('annotate') PathPart('set_term') Args(1)
 {
-  my ($self, $c, $annotation_id) = @_;
+  my ($self, $c, $annotation_type_name) = @_;
 
   my $config = $c->config();
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  $self->_check_annotation_exists($c, $annotation_id);
+  my $body_data = _decode_json_content($c);
 
-  my $annotation = $schema->find_with_type('Annotation', $annotation_id);
-  my $annotation_type_name = $annotation->type();
+  my $term_ontid = $body_data->{term_ontid};
+  my $evidence_code = $body_data->{evidence_code};
 
-  my $gene = $annotation->genes()->first();
-  if (!defined $gene) {
-    $gene = $annotation->alleles()->first()->gene();
+  my @conditions = ();
+
+  if (defined $body_data->{conditions}) {
+    my $lookup = Canto::Track::get_adaptor($config, 'ontology');
+
+    my @condition_names = map {
+      $_->{name};
+    } @{$body_data->{conditions}};
+
+    my @conditions_with_ids =
+      Canto::Curs::ConditionUtil::get_conditions_from_names($lookup,
+                                                            \@condition_names);
+    @conditions =
+      map { $_->{term_id} // $_->{name} } @conditions_with_ids;
   }
 
-  if (!defined $gene) {
-    die "could not find a gene for annotation: " . $annotation_id;
-  };
-
-  my $gene_proxy = _get_gene_proxy($config, $gene);
-  $st->{gene} = $gene_proxy;
-  my $gene_display_name = $gene_proxy->display_name();
-
-  my $annotation_config = $config->{annotation_types}->{$annotation_type_name};
+  my $annotation_config = $st->{annotation_type_config};
+  my $feature_type = $st->{feature_type};
+  my $feature = $st->{feature};
 
   my $module_category = $annotation_config->{category};
 
-  my $annotation_data = $annotation->data();
-  my $term_ontid = $annotation_data->{term_ontid};
+  $st->{annotation_config} = $annotation_config;
+  $st->{annotation_category} = $module_category;
 
-  if (defined $term_ontid) {
-    $st->{title} = "Evidence for annotating $gene_display_name with $term_ontid";
-  } else {
-    $st->{title} = "Evidence for annotating $gene_display_name";
+  my %annotation_data = (term_ontid => $term_ontid,
+                         evidence_code => $evidence_code,
+                         conditions => \@conditions,
+                       );
+
+  my $suggested_name = trim($body_data->{term_suggestion}->{name});
+  my $suggested_definition = trim($body_data->{term_suggestion}->{definition});
+
+  $annotation_data{term_suggestion} = {
+    name => $suggested_name,
+    definition => $suggested_definition
+  };
+
+  if ($body_data->{with_gene_id}) {
+    my $with_gene = $schema->find_with_type('Gene', $body_data->{with_gene_id});
+
+    $annotation_data{with_gene} = $with_gene->primary_identifier();
   }
 
   $st->{show_title} = 0;
 
-  $st->{gene_display_name} = $gene_display_name;
-
   $st->{current_component} = $annotation_type_name;
   $st->{current_component_display_name} = $annotation_config->{display_name};
-  $st->{template} = "curs/modules/${module_category}_evidence.mhtml";
-  $st->{annotation} = $annotation;
 
   my $annotation_type_config = $config->{annotation_types}->{$annotation_type_name};
   my $evidence_types = $config->{evidence_types};
 
-  my @codes = _generate_evidence_options($evidence_types, $annotation_type_config);
-  my $form = $self->form();
+  my $annotation =
+    $self->_create_annotation($c, $annotation_type_name,
+                                  $feature_type, [$feature], \%annotation_data);
 
-  my $form_back_string = '<- Back';
-  my $form_proceed_string = 'Proceed ->';
 
-  my @all_elements = (
-      {
-        name => 'evidence-select',
-        type => 'Select', options => [ @codes ],
-        default => $annotation_data->{evidence_code},
-      },
-      {
-        type => 'Block',
-        tag => 'div',
-        attributes => { class => 'clearall', },
-      },
-      {
-        name => 'evidence-submit-back', type => 'Submit', value => $form_back_string,
-        attributes => { class => 'curs-back-button', },
-      },
-      {
-        name => 'evidence-submit-proceed', type => 'Submit', value => $form_proceed_string,
-        attributes => { class => 'curs-finish-button', },
-      },
-    );
+  $c->stash->{json_data} = {
+    status => "success",
+    location => $st->{curs_root_uri} . "/annotation/" .
+      $annotation->annotation_id() . "/transfer",
+  };
 
-  $form->elements([@all_elements]);
-
-  $form->process();
-
-  $st->{form} = $form;
-
-  if ($form->submitted_and_valid()) {
-    my $data = $annotation->data();
-    my $evidence_select = $form->param_value('evidence-select');
-
-    if ($evidence_select eq '') {
-      $c->flash()->{error} = 'Please choose an evidence type to continue';
-      _redirect_and_detach($c, 'annotation', 'evidence', $annotation_id);
-    }
-
-    my $evidence_submit_back = $c->req->params->{'evidence-submit-back'};
-    my $evidence_submit_proceed = $c->req->params->{'evidence-submit-proceed'};
-    if (!defined $evidence_submit_proceed && !defined $evidence_submit_back) {
-      _redirect_and_detach($c, 'annotation', 'evidence', $annotation_id);
-    }
-
-    my $existing_evidence_code = $data->{evidence_code};
-
-    my $gene_id = $gene->gene_id();
-
-    if (defined $evidence_submit_back) {
-      if (defined $existing_evidence_code) {
-         _redirect_and_detach($c, 'gene', $gene_id);
-     } else {
-        $self->_delete_annotation($c, $annotation_id);
-        _redirect_and_detach($c, 'annotation', 'new', $gene_id, $annotation_type_name);
-      }
-    }
-
-    $data->{evidence_code} = $evidence_select;
-
-    my $needs_with_gene = $evidence_types->{$evidence_select}->{with_gene};
-
-    if (!$needs_with_gene) {
-      delete $data->{with_gene};
-    }
-
-    $annotation->data($data);
-    $annotation->update();
-
-    my @annotation_ids = ($annotation->annotation_id());
-
-    # Hack to cope with interactions: at this stage we potentially
-    # have one Annotation object for multiple interactions (one bait,
-    # multi prey) because the user can choose more than one prey.
-    # After choosing the evidence, delete the original Annotation and
-    # create one per prey.
-    if ($module_category eq 'interaction') {
-      my @interacting_genes = @{$data->{interacting_genes}};
-
-      if (@interacting_genes > 1) {
-        my $bait_gene = $annotation->genes()->first();
-        delete $data->{interacting_genes};
-
-        my @new_annotations =
-          map {
-            my $data_clone = clone $data;
-
-            $data_clone->{interacting_genes} = [$_];
-
-            my $new_annotation =
-              $schema->create_with_type('Annotation',
-                                        {
-                                          type => $annotation->type(),
-                                          status => $annotation->status(),
-                                          pub => $annotation->pub(),
-                                          creation_date => _get_iso_date(),
-                                          data => $data_clone,
-                                        });
-
-            $new_annotation->set_genes($bait_gene);
-
-            $new_annotation;
-          } @interacting_genes;
-
-        $annotation->delete();
-
-        @annotation_ids = map{ $_->annotation_id(); } @new_annotations;
-
-        $_debug_annotation_ids = [@annotation_ids];
-      }
-    }
-
-    $self->state()->store_statuses($schema);
-
-    if ($needs_with_gene) {
-      my @parts = ('annotation', 'with_gene', $annotation_id);
-      if (defined $existing_evidence_code) {
-        push @parts, 'edit';
-      }
-      _redirect_and_detach($c, @parts);
-    } else {
-      if ($annotation_config->{needs_allele} || defined $existing_evidence_code) {
-        _redirect_and_detach($c, 'gene', $gene_id);
-      } else {
-        _maybe_transfer_annotation($c, [@annotation_ids], $annotation_config);
-      }
-    }
-  }
+  $c->forward('View::JSON');
 }
 
-sub allele_remove_action : Chained('top') PathPart('annotation/remove_allele_action') Args(2)
+sub annotation_add_interaction : Chained('annotate') PathPart('add_interaction') Args(1)
 {
-  my ($self, $c, $annotation_id, $allele_id) = @_;
+  my ($self, $c, $annotation_type_name) = @_;
 
-  my $annotation = $self->_check_annotation_exists($c, $annotation_id);
+  my $config = $c->config();
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $body_data = _decode_json_content($c);
+
+  my $evidence_code = $body_data->{evidence_code};
+  my @prey_gene_ids = @{$body_data->{prey_gene_ids}};
+
+  my $annotation_config = $st->{annotation_type_config};
+  my $feature_type = $st->{feature_type};
+  my $feature = $st->{feature};
+
+  my $module_category = $annotation_config->{category};
+
+  my $annotation_type_config = $config->{annotation_types}->{$annotation_type_name};
+  my $evidence_types = $config->{evidence_types};
+
+  for my $prey_gene_id (@prey_gene_ids) {
+    my $prey_gene = $schema->find_with_type('Gene', $prey_gene_id);
+
+    my %annotation_data = (evidence_code => $evidence_code,
+                           interacting_genes =>
+                             [{ primary_identifier => $prey_gene->primary_identifier() }]);
+
+    my $annotation =
+      $self->_create_annotation($c, $annotation_type_name,
+                                $feature_type, [$feature], \%annotation_data);
+  }
+
+  $c->stash->{json_data} = {
+    status => "success",
+    location => $st->{curs_root_uri} . "/feature/$feature_type/view/" .
+      $feature->feature_id(),
+  };
+
+  $c->forward('View::JSON');
+}
+
+sub allele_remove_action : Chained('annotation') PathPart('remove_allele_action') Args(1)
+{
+  my ($self, $c, $allele_id) = @_;
+
+  my $annotation = $c->stash()->{annotation};
 
   my $data = $annotation->data();
   my $alleles_in_progress = $data->{alleles_in_progress} // { };
@@ -1766,134 +1275,21 @@ sub allele_remove_action : Chained('top') PathPart('annotation/remove_allele_act
 
   $c->stash->{json_data} = {
     allele_id => $allele_id,
-    annotation_id => $annotation_id,
+    annotation_id => $annotation->annotation_id(),
   };
   $c->forward('View::JSON');
 }
 
-# add a new blob of allele data to alleles_in_progress in the annotation
-sub _allele_add_action_internal
+sub _trim
 {
-  my $config = shift;
-  my $schema = shift;
-  my $annotation = shift;
-  my $allele_data_ref = shift;
+  my $str = shift;
 
-  my $data = $annotation->data();
-  my $alleles_in_progress = $data->{alleles_in_progress} // { };
-  my $max_id = -1;
+  return undef unless defined $str;
 
-  map {
-    if ($_ > $max_id) {
-      $max_id = $_;
-    }
-  } keys %$alleles_in_progress;
+  $str =~ s/\s+$//;
+  $str =~ s/^\s+//;
 
-  my $new_allele_id = $max_id + 1;
-
-  my $new_allele_data = {
-    id => $new_allele_id,
-    %$allele_data_ref,
-  };
-
-  my $lookup = Canto::Track::get_adaptor($config, 'ontology');
-
-  my $return_allele_data = clone $new_allele_data;
-
-  if (exists $new_allele_data->{conditions}) {
-    # replace term names with the ID if we know it otherwise assume that the
-    # user has made up a condition
-    map { my $name = $_;
-          my $res = $lookup->lookup_by_name(ontology_name => 'phenotype_condition',
-                                            term_name => $name);
-          if (defined $res) {
-            $_ = $res->{id};
-          }
-        } @{$new_allele_data->{conditions}};
-  }
-
-  $alleles_in_progress->{$new_allele_id} = $new_allele_data;
-  $data->{alleles_in_progress} = $alleles_in_progress;
-  $annotation->data($data);
-  $annotation->update();
-
-  my $allele_display_name =
-    Canto::Curs::Utils::make_allele_display_name($allele_data_ref->{name},
-                                                  $allele_data_ref->{description});
-
-  $return_allele_data->{display_name} = $allele_display_name;
-
-  return $return_allele_data;
-}
-
-sub allele_add_action : Chained('top') PathPart('annotation/add_allele_action') Args(1)
-{
-  my ($self, $c, $annotation_id) = @_;
-
-  my $config = $c->config();
-  my $st = $c->stash();
-  my $schema = $st->{schema};
-
-  my $annotation = $self->_check_annotation_exists($c, $annotation_id);
-
-  my $params = $c->req()->params();
-
-  my $condition_list = $params->{'curs-allele-condition-names'};
-
-  if (defined $condition_list) {
-    if (ref $condition_list) {
-      # it's already a list
-    } else {
-      $condition_list = [$condition_list];
-    }
-  } else {
-    $condition_list = [];
-  }
-
-  my $allele_name = $params->{'curs-allele-name'};
-  if (defined $allele_name && length $allele_name == 0) {
-    $allele_name = undef;
-  }
-
-  if (defined $allele_name) {
-    $allele_name = trim($allele_name);
-  }
-
-  my $description = $params->{'curs-allele-description-input'};
-
-  my $allele_type = $params->{'curs-allele-type'};
-  my $allele_type_config = $config->{allele_types}->{$allele_type};
-
-  if (!defined $description || length $description == 0) {
-    $description = $params->{'curs-allele-type'};
-  }
-
-  $description = trim($description);
-
-  if (exists $allele_type_config->{pre_store_substitution}) {
-    local $_ = $description;
-    eval $allele_type_config->{pre_store_substitution};
-    if ($@) {
-      die "internal error: pre_store_substitution for $allele_type has error: $@";
-    }
-  }
-
-  my %allele_data = (name => $allele_name,
-                     description => $description,
-                     allele_type => $allele_type,
-                     evidence => $params->{'curs-allele-evidence-select'},
-                     conditions => $condition_list);
-
-  if (defined $params->{'curs-allele-expression'}) {
-    $allele_data{expression} = $params->{'curs-allele-expression'};
-  }
-
-  my $new_allele_data =
-    _allele_add_action_internal($config, $schema, $annotation,
-                                \%allele_data);
-
-  $c->stash->{json_data} = $new_allele_data;
-  $c->forward('View::JSON');
+  return $str;
 }
 
 sub _get_all_alleles
@@ -1919,344 +1315,50 @@ sub _get_all_alleles
     };
   }
 
-  my $ann_rs = $gene->direct_annotations();
-
-  while (defined (my $annotation = $ann_rs->next())) {
-    my $data = $annotation->data();
-
-    if (exists $data->{alleles_in_progress}) {
-      for my $allele_data (values %{$data->{alleles_in_progress}}) {
-        my $allele_display_name =
-          Canto::Curs::Utils::make_allele_display_name($allele_data->{name},
-                                                        $allele_data->{description});
-        if (!exists $results{$allele_display_name}) {
-          $results{$allele_display_name} = {
-            name => $allele_data->{name},
-            description => $allele_data->{description},
-            allele_type => $allele_data->{allele_type},
-          };
-        }
-      }
-    }
-  }
-
   return %results;
 }
 
-sub _term_name_from_id : Private
+sub _set_allele_select_stash
 {
-  my $config = shift;
-  my $term_id = shift;
-
-  my $lookup = Canto::Track::get_adaptor($config, 'ontology');
-  my $res = $lookup->lookup_by_id(id => $term_id);
-
-  if (defined $res) {
-    return $res->{name};
-  } else {
-    return undef;
-  }
-}
-
-sub _get_name_of_condition
-{
-  my $ontology_lookup = shift;
-  my $termid = shift;
-
-  eval {
-    my $result = $ontology_lookup->lookup_by_id(id => $termid);
-    if (defined $result) {
-      $termid = $result->{name};
-    } else {
-      # user has made up a condition and there is no ontology term for it yet
-    }
-  };
-  if ($@) {
-    # probably not in the form DB:ACCESSION - user made it up
-  }
-
-  return $termid
-}
-
-
-sub _get_all_conditions
-{
-  my $config = shift;
-  my $schema = shift;
-
-  my $ontology_lookup = Canto::Track::get_adaptor($config, 'ontology');
-  my $an_rs = $schema->resultset('Annotation');
-
-  my %conditions = ();
-
-  while (defined (my $an = $an_rs->next())) {
-    my $data = $an->data();
-
-    if (exists $data->{conditions}) {
-      for my $condition (@{$data->{conditions}}) {
-        $conditions{_get_name_of_condition($ontology_lookup, $condition)} = 1
-      }
-    }
-
-    if (exists $data->{alleles_in_progress}) {
-      while (my ($id, $allele_data) = each %{$data->{alleles_in_progress}}) {
-        if (defined $allele_data->{conditions}) {
-          map {
-            $conditions{_get_name_of_condition($ontology_lookup, $_)} = 1;
-          } @{$allele_data->{conditions}};
-        }
-      }
-    }
-  }
-
-  return \%conditions;
-}
-
-sub _allele_data_for_js : Private
-{
-  my $config = shift;
-  my $annotation = shift;
-
-  my $alleles_in_progress = $annotation->data()->{alleles_in_progress};
-
-  if (defined $alleles_in_progress) {
-    my $ontology_lookup =
-      Canto::Track::get_adaptor($config, 'ontology');
-
-    my $ret = clone $alleles_in_progress;
-    while (my ($id, $data) = each %$ret) {
-      if (defined $data->{conditions}) {
-        map {
-          my $termid = $_;
-          $_ = _get_name_of_condition($ontology_lookup, $termid);
-        } @{$data->{conditions}};
-      }
-    }
-    return $ret;
-  } else {
-    return {};
-  }
-}
-
-sub _annotation_allele_select_internal
-{
-  my ($self, $c, $annotation_id, $editing) = @_;
+  my ($c, $annotation_type_name) = @_;
 
   my $config = $c->config();
   my $st = $c->stash();
-  my $schema = $st->{schema};
-
-  $self->_check_annotation_exists($c, $annotation_id);
-
-  my $guard = $schema->txn_scope_guard;
-  my $annotation = $schema->find_with_type('Annotation', $annotation_id);
-
-  my $annotation_type_name = $annotation->type();
-  my $annotation_config = $config->{annotation_types}->{$annotation_type_name};
-  if ($editing) {
-    $annotation = _re_edit_annotation($c, $annotation_config, $annotation_id);
-  }
-
-  my $gene = $annotation->genes()->first();
-  my $gene_proxy = _get_gene_proxy($config, $gene);
-  $st->{gene} = $gene_proxy;
-  my $gene_display_name = $gene_proxy->display_name();
-
-  my $module_category = $annotation_config->{category};
-
-  my $annotation_data = $annotation->data();
-  my $term_ontid = $annotation_data->{term_ontid};
-
-  my $term_name = _term_name_from_id($config, $term_ontid);
-
-  $st->{title} = "Choose allele(s) for $gene_display_name with $term_ontid ($term_name)";
-  $st->{show_title} = 0;
-
-  $st->{gene_display_name} = $gene_display_name;
-  $st->{gene_id} = $gene->gene_id();
-  $st->{annotation} = $annotation;
 
   $st->{allele_type_config} = $config->{allele_types};
 
-  my @allele_type_options = map {
-    [ $_->{name}, $_->{name} ];
-  } @{$config->{allele_type_list}};
+  $st->{allele_type_names} = [
+    map {
+      $_->{name};
+    } @{$config->{allele_type_list}}
+  ];
 
-  $st->{allele_type_options} = \@allele_type_options;
+  if (defined $annotation_type_name) {
+    my $evidence_types = $config->{evidence_types};
 
-  my $evidence_types = $config->{evidence_types};
-  my $annotation_type_config = $config->{annotation_types}->{$annotation_type_name};
-  my @evidence_codes = _generate_evidence_options($evidence_types, $annotation_type_config);
+    my $annotation_type_config = $config->{annotation_types}->{$annotation_type_name};
+    my @evidence_codes = _generate_evidence_options($evidence_types, $annotation_type_config);
 
-  $st->{evidence_select_options} = \@evidence_codes;
-
-  my %existing_alleles_by_name = _get_all_alleles($config, $schema, $gene);
-  $st->{existing_alleles_by_name} =
-    [
-      map {
-        {
-          value => $existing_alleles_by_name{$_}->{name},
-          description => $existing_alleles_by_name{$_}->{description},
-          allele_type => $existing_alleles_by_name{$_}->{allele_type},
-          display_name => $_,
-        }
-      } keys %existing_alleles_by_name
-    ];
-
-  $st->{alleles_in_progress} = _allele_data_for_js($config, $annotation);
-  $st->{current_conditions} = _get_all_conditions($config, $schema);
-
-  $guard->commit();
-
-  $st->{editing} = $editing;
-  $st->{template} = "curs/modules/${module_category}_allele_select.mhtml";
-}
-
-sub annotation_allele_select : Chained('top') PathPart('annotation/allele_select') Args(1)
-{
-  _annotation_allele_select_internal(@_, 0);
-}
-
-sub annotation_allele_select_edit : Chained('top') PathPart('annotation/allele_select') Args(2)
-{
-  my ($self, $c, $annotation_id, $editing) = @_;
-
-  if ($editing eq 'edit') {
-    _annotation_allele_select_internal(@_, 1);
-  } else {
-    $self->not_found($c);
+    $st->{evidence_select_options} = \@evidence_codes;
   }
 }
 
-sub _annotation_process_alleles_internal
+sub annotation_transfer : Chained('annotation') PathPart('transfer') Form
 {
-  my ($self, $c, $annotation_id, $editing) = @_;
+  my ($self, $c) = @_;
 
   my $config = $c->config();
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  my $annotation = $self->_check_annotation_exists($c, $annotation_id);
+  my @annotations = @{$st->{annotations}};
 
-  my $annotation_type_name = $annotation->type();
-  my $annotation_config = $config->{annotation_types}->{$annotation_type_name};
-
-  my $data = $annotation->data();
-  my $alleles_in_progress = $data->{alleles_in_progress};
-
-  if (!defined $alleles_in_progress) {
-    die "internal error: no alleles defined";
-  }
-
-  my @new_annotation_ids = ();
-
-  my $gene = $annotation->genes()->first();
-
-  my $process = sub {
-    # create an annotation for each allele
-    while (my ($id, $allele) = each %$alleles_in_progress) {
-      my $name = $allele->{name};
-      my $description = $allele->{description};
-      my $allele_type = $allele->{allele_type};
-      my $expression = $allele->{expression};
-      my $evidence = $allele->{evidence};
-      my $conditions = $allele->{conditions};
-
-      my $new_data = {
-        expression => $expression,
-        evidence_code => $evidence,
-        conditions => $conditions,
-        term_ontid => $data->{term_ontid},
-        annotation_extension => $data->{annotation_extension},
-        curator => $data->{curator},
-      };
-
-      if (defined $data->{term_suggestion}) {
-        $new_data->{term_suggestion} = $data->{term_suggestion};
-      }
-
-      my $annotation_create_args = {
-        status => $annotation->status(),
-        pub => $annotation->pub(),
-        type => $annotation->type(),
-        creation_date => $annotation->creation_date(),
-        data => $new_data,
-      };
-
-      my $new_annotation =
-        $schema->create_with_type('Annotation',
-                                  $annotation_create_args);
-
-      push @new_annotation_ids, $new_annotation->annotation_id();
-
-      my %create_args = (
-        type => $allele_type,
-        description => $description,
-        name => $name,
-        gene => $gene->gene_id(),
-      );
-
-      my $new_allele =
-        $schema->create_with_type('Allele', \%create_args);
-
-      $schema->create_with_type('AlleleAnnotation',
-                                {
-                                  allele => $new_allele->allele_id(),
-                                  annotation => $new_annotation->annotation_id(),
-                                });
-    }
-
-    # delete the original annotation now it's been split
-    $annotation->delete();
-  };
-
-  $schema->txn_do($process);
-
-  $self->metadata_storer()->store_counts($schema);
-
-  if (!$editing) {
-    _maybe_transfer_annotation($c, \@new_annotation_ids, $annotation_config);
-  } else {
-    _redirect_and_detach($c, 'gene', $gene->gene_id());
-  }
-}
-
-sub annotation_process_alleles : Chained('top') PathPart('annotation/process_alleles') Args(1)
-{
-  _annotation_process_alleles_internal(@_, 0);
-}
-
-sub annotation_process_alleles_edit : Chained('top') PathPart('annotation/process_alleles') Args(2)
-{
-  my ($self, $c, $annotation_id, $editing) = @_;
-
-  if (defined $editing && $editing eq 'edit') {
-    _annotation_process_alleles_internal(@_, 1);
-  } else {
-    $self->not_found($c);
-  }
-}
-
-sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1) Form
-{
-  my ($self, $c, $annotation_ids) = @_;
-
-  my $config = $c->config();
-  my $st = $c->stash();
-  my $schema = $st->{schema};
-
-  my @annotation_ids = split /,/, $annotation_ids;
   my %annotation_by_id = ();
 
   map {
-    $self->_check_annotation_exists($c, $_);
-  } @annotation_ids;
-
-  my @annotations = map {
-    my $annotation = $schema->find_with_type('Annotation', $_);
+    my $annotation = $_;
     $annotation_by_id{$annotation->annotation_id()} = $annotation;
-    $annotation;
-  } @annotation_ids;
+  } @annotations;
 
   my $annotation_type_name = $annotations[0]->type();
 
@@ -2272,28 +1374,30 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
 
   my $display_name = undef;
 
-  my $gene;
+  my ($feature_type, $feature) = annotation_features($config, $annotations[0]);
 
-  my @genes = $annotations[0]->genes();
-  if (@genes) {
-    $gene = $genes[0];
-  } else {
-    $gene = $annotations[0]->alleles()->first()->gene();
-  }
-
-  my $gene_proxy = _get_gene_proxy($config, $gene);
+  $st->{feature} = $feature;
+  $st->{feature_type} = $feature_type;
 
   my $genes_rs = $self->get_ordered_gene_rs($schema, 'primary_identifier');
 
   my @options = ();
 
-  while (defined (my $other_gene = $genes_rs->next())) {
-    next if $gene->gene_id() == $other_gene->gene_id();
+  if ($feature_type eq 'gene') {
+    while (defined (my $other_gene = $genes_rs->next())) {
+      next if $feature->gene_id() == $other_gene->gene_id();
 
-    my $other_gene_proxy = _get_gene_proxy($config, $other_gene);
+      my $other_gene_proxy = _get_gene_proxy($config, $other_gene);
 
-    push @options, { value => $other_gene_proxy->gene_id(),
-                     label => $other_gene_proxy->long_display_name() };
+      push @options, { value => $other_gene_proxy->gene_id(),
+                       label => $other_gene_proxy->long_display_name(),
+                       container_attributes => {
+                         class => 'checkbox-gene-list',
+                       }
+                     };
+    }
+
+    @options = sort { $a->{label} cmp $b->{label} } @options;
   }
 
   $st->{title} = "Finalise annotation";
@@ -2301,28 +1405,22 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
   $st->{template} = "curs/modules/${module_category}_transfer.mhtml";
 
   my $form = $self->form();
+  $form->attributes({ action => '?' });
 
   $form->auto_fieldset(0);
 
   my $gene_count = $genes_rs->count();
 
   my $annotation_0_data = $annotations[0]->data();
-  my $evidence_or_term;
-  if ($annotation_config->{needs_allele}) {
-    my $term_ontid = $annotation_0_data->{term_ontid};
-    $evidence_or_term = "($term_ontid)";
-  } else {
-    $evidence_or_term = "and evidence";
-  }
   my $transfer_select_genes_text;
 
   if ($gene_count > 1) {
     $transfer_select_genes_text =
       'You can annotate other genes from your list with the '
-        . "same term $evidence_or_term by selecting genes below:";
+        . "same term and evidence by selecting genes below:";
   } else {
     $transfer_select_genes_text =
-      "You can annotate other genes with the same term $evidence_or_term "
+      "You can annotate other genes with the same term and evidence "
         . 'by adding more genes from the publication:';
   }
 
@@ -2337,6 +1435,7 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
     my %comment_def = (
       name => 'annotation-comment-0',
       label => 'Optional comment:',
+      label_tag => 'formfu-label',
       type => 'Textarea',
       container_tag => 'div',
       container_attributes => {
@@ -2365,7 +1464,8 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
 
       my %extension_def = (
         name => 'annotation-extension-0',
-        label => 'Annotation extension:',
+        label => 'Optional annotation extension:',
+        label_tag => 'formfu-label',
         type => 'Textarea',
         container_tag => 'div',
         container_attributes => {
@@ -2396,7 +1496,7 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
         content => $transfer_select_genes_text,
       },
       {
-        name => 'dest', label => 'dest',
+        name => 'dest',
         type => 'Checkboxgroup',
         container_tag => 'div',
         label => '',
@@ -2406,7 +1506,9 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
   }
 
   push @all_elements, {
-    name => 'transfer-submit', type => 'Submit', value => 'Finish',
+    name => 'transfer-submit', type => 'Submit',
+    attributes => { class => 'btn btn-primary curs-finish-button', },
+    value => 'Finish',
   };
 
   $form->elements([@all_elements]);
@@ -2453,10 +1555,6 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
       delete $new_data->{annotation_extension};
       delete $new_data->{conditions};
       delete $new_data->{expression};
-      if ($annotation_config->{needs_allele}) {
-        # only transfer the term to the new annotation
-        delete $new_data->{evidence_code};
-      }
 
       my @dest_gene_identifiers = ();
 
@@ -2469,7 +1567,7 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
                                       type => $annotation_type_name,
                                       status => 'new',
                                       pub => $annotations[0]->pub(),
-                                      creation_date => _get_iso_date(),
+                                      creation_date => Canto::Curs::Utils::get_iso_date(),
                                       data => $new_data,
                                     });
         $new_annotation->set_genes($dest_gene);
@@ -2487,149 +1585,296 @@ sub annotation_transfer : Chained('top') PathPart('annotation/transfer') Args(1)
 
     $self->state()->store_statuses($schema);
 
-    _redirect_and_detach($c, 'gene', $gene->gene_id());
+    _redirect_and_detach($c, 'feature', $feature_type, 'view', $feature->feature_id());
   }
 }
 
-sub _annotation_with_gene_internal
+sub feature : Chained('top') CaptureArgs(1)
 {
-  my ($self, $c, $annotation_id, $editing) = @_;
-
-  my $config = $c->config();
-  my $st = $c->stash();
-  my $schema = $st->{schema};
-
-  $self->_check_annotation_exists($c, $annotation_id);
-
-  my $annotation = $schema->find_with_type('Annotation', $annotation_id);
-  my $annotation_type_name = $annotation->type();
-
-  my $gene = $annotation->genes()->first();
-  my $gene_proxy = _get_gene_proxy($config, $gene);
-  my $gene_display_name = $gene_proxy->display_name();
-
-  my $annotation_config = $config->{annotation_types}->{$annotation_type_name};
-
-  my $annotation_data = $annotation->data();
-  my $evidence_code = $annotation_data->{evidence_code};
-  my $term_ontid = $annotation_data->{term_ontid};
-
-  my $module_category = $annotation_config->{category};
-
-  $st->{title} = "Annotating $gene_display_name";
-  $st->{show_title} = 0;
-  $st->{current_component} = $annotation_type_name;
-  $st->{current_component_display_name} = $annotation_config->{display_name};
-  $st->{template} = "curs/modules/${module_category}_with_gene.mhtml";
-  $st->{gene_display_name} = $gene_display_name;
-
-  $st->{term_ontid} = $term_ontid;
-  $st->{evidence_code} = $evidence_code;
-
-  my @genes = ();
-
-  my $gene_rs = $self->get_ordered_gene_rs($schema, 'primary_identifier');
-
-  while (defined (my $gene = $gene_rs->next())) {
-    my $gene_proxy = _get_gene_proxy($config, $gene);
-    push @genes, [$gene->primary_identifier(), $gene_proxy->display_name()];
-  }
-
-  unshift @genes, [ '', 'Choose a gene ...' ];
-
-  my $form = $self->form();
-
-  my @all_elements = (
-      {
-        name => 'with-gene-select',
-        type => 'Select', options => [ @genes ],
-        default => $annotation_data->{with_gene},
-      },
-      {
-        name => 'with-gene-proceed', type => 'Submit', value => 'Proceed ->',
-      },
-    );
-
-  $form->elements([@all_elements]);
-
-  $form->process();
-
-  $st->{form} = $form;
-
-  if ($form->submitted_and_valid()) {
-    my $with_gene_select = $form->param_value('with-gene-select');
-
-    if ($with_gene_select eq '') {
-      $c->flash()->{error} = 'Please choose a gene to continue';
-      my @args = ($c, 'annotation', 'with_gene', $annotation_id);
-      if ($editing) {
-        push @args, 'edit';
-      }
-      _redirect_and_detach(@args);
-    }
-
-    $annotation_data->{with_gene} = $with_gene_select;
-
-    $annotation->data($annotation_data);
-    $annotation->update();
-
-    if ($editing) {
-      _redirect_and_detach($c, 'gene', $gene->gene_id())
-    } else {
-      _maybe_transfer_annotation($c, [$annotation->annotation_id()], $annotation_config);
-    }
-  }
-
-  $self->state()->store_statuses($schema);
-
-}
-
-sub annotation_with_gene_edit : Chained('top') PathPart('annotation/with_gene') Args(2) Form
-{
-  my ($self, $c, $annotation_id, $edit) = @_;
-
-  if ($edit eq 'edit') {
-    _annotation_with_gene_internal(@_, 1);
-  } else {
-    $self->not_found($c);
-  }
-}
-
-sub annotation_with_gene : Chained('top') PathPart('annotation/with_gene') Args(1) Form
-{
-  _annotation_with_gene_internal(@_, 0);
-}
-
-sub gene : Chained('top') Args(1)
-{
-  my ($self, $c, $gene_id) = @_;
+  my ($self, $c, $feature_type) = @_;
 
   my $st = $c->stash();
-  my $schema = $st->{schema};
-  my $config = $c->config();
 
-  my $gene = $schema->find_with_type('Gene', $gene_id);
-  my $gene_proxy = _get_gene_proxy($config, $gene);
+  $st->{feature_type} = $feature_type;
+}
 
-  _set_genes_in_session($c);
+sub feature_view : Chained('feature') PathPart('view')
+{
+  my ($self, $c, $ids, $flag) = @_;
 
-  $st->{gene} = $gene_proxy;
-
-  my $total_annotation_count = $schema->resultset('Annotation')->count();
-
-  if ($total_annotation_count == 0 && $st->{state} eq CURATION_IN_PROGRESS) {
-    $st->{message} =
-      [qq|If you do not know which annotation type to use to describe your | .
-        qq|experiment, please contact the helpdesk using the "Contact curators" link|];
-  }
-
-  $st->{title} = 'Gene: ' . $gene_proxy->display_name();
-  # use only in header, not in body:
+  my $st = $c->stash();
   $st->{show_title} = 1;
-  $st->{template} = 'curs/gene_page.mhtml';
+  my $feature_type = $st->{feature_type};
+  my $schema = $st->{schema};
+  my $config = $c->config();
+
+  if (defined $flag && $flag eq 'ro') {
+    $st->{read_only_curs} = 1;
+  }
+
+  my @ids = split /,/, $ids;
+
+  if ($feature_type eq 'gene') {
+    my @gene_proxies = map {
+      my $gene = $schema->find_with_type('Gene', $_);
+      _get_gene_proxy($config, $gene);
+    } @ids;
+
+    my $first_gene_proxy = $gene_proxies[0];
+
+    _set_genes_in_session($c);
+
+    $st->{gene} = $first_gene_proxy;
+    $st->{genes} = [@gene_proxies];
+
+    $st->{feature} = $st->{gene};
+    $st->{features} = $st->{genes};
+ } else {
+    if ($feature_type eq 'genotype') {
+      my $genotype;
+
+      my $genotype_id = $ids[0];
+
+      # a bit hacky: if the ID is an integer assume it's CursDB Genotype,
+      # otherwise it's an identifier of a Genotype from Chado
+      if ($genotype_id =~ /^\d+$/) {
+        $genotype = $schema->find_with_type('Genotype', $genotype_id);
+      } else {
+        my $genotype_manager =
+          Canto::Curs::GenotypeManager->new(config => $c->config(),
+                                            curs_schema => $schema);
+
+
+        # pull from Chado and store in CursDB, $genotype_id is an
+        # identifier/uniquename
+        $genotype =
+          $genotype_manager->find_and_create_genotype($genotype_id);
+      }
+
+      $st->{genotype} = $genotype;
+      $st->{annotation_count} = $genotype->annotations()->count();
+
+      $st->{feature} = $genotype;
+      $st->{features} = [$genotype];
+    } else {
+      die "no such feature type: $feature_type\n";
+    }
+  }
+
+  my $display_name = $st->{feature}->display_name();
+
+  $st->{title} = ucfirst $feature_type . ": $display_name";
+  $st->{template} = "curs/${feature_type}_page.mhtml";
 }
 
-sub annotation_export : Chained('top') PathPart('annotation/export') Args(1)
+sub feature_add : Chained('feature') PathPart('add')
+{
+  my ($self, $c) = @_;
+
+  my $st = $c->stash();
+
+  $st->{show_title} = 1;
+
+  my $feature_type = $st->{feature_type};
+
+  if ($feature_type eq 'genotype') {
+    _set_allele_select_stash($c);
+  }
+
+  $st->{annotation_count} = 0;
+
+  $st->{title} = "Add a $feature_type";
+  $st->{template} = "curs/${feature_type}_edit.mhtml";
+}
+
+sub feature_edit : Chained('feature') PathPart('edit')
+{
+  my ($self, $c, $genotype_id) = @_;
+
+  my $st = $c->stash();
+  $st->{show_title} = 1;
+  my $feature_type = $st->{feature_type};
+
+  my $schema = $st->{schema};
+
+  if ($feature_type eq 'genotype') {
+    my $genotype = $schema->find_with_type('Genotype', $genotype_id);
+
+    if ($c->req()->method() eq 'POST') {
+      # store the changes
+      my $body_data = _decode_json_content($c);
+
+      my @alleles_data = @{$body_data->{alleles}};
+      my $genotype_name = $body_data->{genotype_name};
+      my $genotype_background = $body_data->{genotype_background};
+
+      try {
+        my $guard = $schema->txn_scope_guard();
+
+        my $allele_manager =
+          Canto::Curs::AlleleManager->new(config => $c->config(),
+                                          curs_schema => $schema);
+
+        my @alleles = ();
+
+        my $curs_key = $st->{curs_key};
+
+        for my $allele_data (@alleles_data) {
+          my $allele = $allele_manager->allele_from_json($allele_data, $curs_key,
+                                                         \@alleles);
+
+          push @alleles, $allele;
+        }
+
+        my $genotype_manager =
+          Canto::Curs::GenotypeManager->new(config => $c->config(),
+                                            curs_schema => $schema);
+
+        $genotype_manager->store_genotype_changes($curs_key, $genotype,
+                                                  $genotype_name, $genotype_background,
+                                                  \@alleles);
+
+        $guard->commit();
+
+        $c->stash->{json_data} = {
+          status => "success",
+          location => $st->{curs_root_uri} . "/feature/genotype/view/" . $genotype->genotype_id(),
+        };
+      } catch {
+        $c->stash->{json_data} = {
+          status => "error",
+          message => "Storing changes to genotype failed: internal error - " .
+            "please report this to the Canto developers",
+        };
+        warn $_;
+      };
+
+      $c->forward('View::JSON');
+    } else {
+      $st->{genotype_id} = $genotype->id();
+
+      _set_allele_select_stash($c);
+
+      $st->{feature} = $genotype;
+      $st->{features} = [$genotype];
+
+      $st->{annotation_count} = $genotype->annotations()->count();
+
+      my $display_name = $st->{feature}->display_name();
+
+      $st->{title} = "Editing genotype: $display_name";
+      $st->{template} = "curs/${feature_type}_edit.mhtml";
+    }
+  } else {
+    die "can't edit feature type: $feature_type\n";
+  }
+}
+
+sub _decode_json_content
+{
+  my $c = shift;
+
+  my $content_file = $c->req()->body();
+  my $json_content;
+
+  # FIXME
+  # body() returns a file name, so read the contents into a string - there
+  # must be a better way
+  {
+    local $/;
+    open my $fh, '<', $content_file or die "can't open $content_file\n";
+    $json_content = <$fh>;
+  }
+
+  return decode_json($json_content);
+}
+
+sub genotype_store : Chained('feature') PathPart('store')
+{
+
+  my ($self, $c) = @_;
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $config = $c->config();
+
+  my $body_data = _decode_json_content($c);
+
+  my @alleles_data = @{$body_data->{alleles}};
+  my $genotype_name = $body_data->{genotype_name};
+  my $genotype_background = $body_data->{genotype_background};
+
+  my @alleles = ();
+
+  if ($genotype_name && $schema->resultset('Genotype')->find( { name => $genotype_name } )) {
+    $c->stash->{json_data} = {
+      status => "error",
+      message => qq(A genotype already exists with the name "$genotype_name" - ) .
+        "please choose another",
+    };
+  } else {
+    try {
+      my $curs_key = $st->{curs_key};
+
+      my $allele_manager =
+        Canto::Curs::AlleleManager->new(config => $c->config(),
+                                        curs_schema => $schema);
+
+      for my $allele_data (@alleles_data) {
+        my $allele = $allele_manager->allele_from_json($allele_data, $curs_key,
+                                                               \@alleles);
+
+        push @alleles, $allele;
+      }
+
+      my $genotype_manager =
+        Canto::Curs::GenotypeManager->new(config => $c->config(),
+                                          curs_schema => $schema);
+
+      my $existing_genotype = $genotype_manager->find_with_alleles(\@alleles);
+
+      if ($existing_genotype) {
+        if (defined $existing_genotype->name()) {
+          $c->flash()->{message} = 'Using existing genotype with the same alleles: ' .
+            $existing_genotype->name();
+        } else {
+          $c->flash()->{message} = 'Using existing genotype with the same alleles';
+        }
+
+        $c->stash->{json_data} = {
+          status => "success",
+          location => $st->{curs_root_uri} . "/feature/genotype/view/" . $existing_genotype->genotype_id(),
+        };
+      } else {
+        my $guard = $schema->txn_scope_guard();
+
+        my $genotype = $genotype_manager->make_genotype($curs_key,
+                                                        $genotype_name, $genotype_background, \@alleles);
+
+        $guard->commit();
+
+        $c->flash()->{message} = 'Created new genotype';
+
+        $c->stash->{json_data} = {
+          status => "success",
+          location => $st->{curs_root_uri} . "/feature/genotype/view/" . $genotype->genotype_id(),
+        };
+      }
+    } catch {
+      $c->stash->{json_data} = {
+        status => "error",
+        message => "Storing new genotype failed: internal error - " .
+          "please report this to the Canto developers",
+      };
+      warn $_;
+    };
+  }
+
+  $c->forward('View::JSON');
+}
+
+
+sub annotation_export : Chained('top') PathPart('annotation_export') Args(1)
 {
   my ($self, $c, $annotation_type_name) = @_;
 
@@ -2642,7 +1887,7 @@ sub annotation_export : Chained('top') PathPart('annotation/export') Args(1)
   $c->res->body($results);
 }
 
-sub annotation_zipexport : Chained('top') PathPart('annotation/zipexport') Args(0)
+sub annotation_zipexport : Chained('top') PathPart('annotation_zipexport') Args(0)
 {
   my ($self, $c) = @_;
 
@@ -2731,6 +1976,7 @@ sub finish_form : Chained('top') Args(0)
   $st->{finish_help} = $c->config()->{messages}->{finish_form};
 
   my $form = $self->form();
+  $form->attributes({ action => '?' });
   my @submit_buttons = ("Finish", "Back");
 
   my $finish_textarea = 'finish_textarea';
@@ -2743,7 +1989,9 @@ sub finish_form : Chained('top') Args(0)
       map {
           {
             name => $_, type => 'Submit', value => $_,
-              attributes => { class => 'button', },
+              attributes => {
+                class => 'btn btn-primary curs-' . lc $_ . '-button',
+              },
             }
         } @submit_buttons,
     );
@@ -2760,7 +2008,7 @@ sub finish_form : Chained('top') Args(0)
       $text = trim($text);
 
       if (length $text > 0) {
-        $self->set_metadata($schema, MESSAGE_FOR_CURATORS_KEY, $text);
+         $self->set_metadata($schema, MESSAGE_FOR_CURATORS_KEY, $text);
       } else {
         $self->unset_metadata($schema, MESSAGE_FOR_CURATORS_KEY);
       }
@@ -2802,6 +2050,17 @@ sub finished_publication : Chained('top') Args(0)
   if (defined $no_annotation_reason) {
     $st->{no_annotation_reason} = $no_annotation_reason;
   }
+}
+
+sub offline_message : Chained('top') Args(0)
+{
+  my ($self, $c) = @_;
+
+  my $st = $c->stash();
+
+  $st->{title} = 'Canto preview';
+  $st->{show_title} = 0;
+  $st->{template} = 'curs/offline_message.mhtml';
 }
 
 sub session_exported : Chained('top') Args(0)
@@ -2862,7 +2121,7 @@ sub _assign_session :Private
   $st->{current_submitter_email} = $current_submitter_email;
 
   my $form = $self->form();
-  $form->attributes({ autocomplete => 'on' });
+  $form->attributes({ autocomplete => 'on', action => '?' });
 
   my @all_elements = ();
 
@@ -2890,11 +2149,13 @@ sub _assign_session :Private
       },
       {
         name => 'reassigner_name', label => 'Your name', type => 'Text', size => 40,
+        label_tag => 'formfu-label',
         constraints => [ { type => 'Length',  min => 1 }, 'Required' ],
         default => $last_reassigner_name,
       },
       {
         name => 'reassigner_email', label => 'Your email address', type => 'Text', size => 40,
+        label_tag => 'formfu-label',
         constraints => [ { type => 'Length',  min => 1 }, 'Required', 'Email' ],
         default => $last_reassigner_email_address,
       },
@@ -2918,6 +2179,7 @@ sub _assign_session :Private
       {
         name => 'submitter_name',
         label => ucfirst (($reassign ? 'new curator ' : '') . 'name'),
+        label_tag => 'formfu-label',
         type => 'Text', size => 40,
         constraints => [ { type => 'Length',  min => 1 }, 'Required' ],
         default => $default_submitter_name,
@@ -2925,13 +2187,14 @@ sub _assign_session :Private
       {
         name => 'submitter_email',
         label => ucfirst (($reassign ? 'new curator ' : '') . 'email'),
+        label_tag => 'formfu-label',
         type => 'Text', size => 40,
         constraints => [ { type => 'Length',  min => 1 }, 'Required', 'Email' ],
         default => $default_submitter_email,
      },
       {
         name => 'submit', type => 'Submit', value => 'Continue',
-        attributes => { class => 'button', },
+        attributes => { class => 'btn btn-primary curs-finish-button', },
       },
     );
 
@@ -3226,13 +2489,13 @@ sub complete_approval : Chained('top') Args(0)
         if (defined $term_details) {
           if ($term_details->{is_obsolete}) {
             push @messages, {
-              title => qq|Session can't be approved as there an obsolete term: $term_ontid|,
+              title => "Session can't be approved as there an obsolete term: $term_ontid",
             };
             last ANNOTATION;
           }
         } else {
           push @messages, {
-            title => qq|Session can't be approved as a term ID is not in the database: $term_ontid|,
+            title => "Session can't be approved as a term ID is not in the database: $term_ontid",
           };
           last ANNOTATION;
         }
@@ -3267,6 +2530,205 @@ sub complete_approval : Chained('top') Args(0)
   }
 
   _redirect_and_detach($c);
+}
+
+
+sub ws : Chained('top') CaptureArgs(1)
+{
+  my ($self, $c, $type) = @_;
+
+  $c->stash()->{ws_type} = $type;
+}
+
+=head2 ws_list
+
+ Function: Web service for returning the data from a Curs as lists
+ Args    : None - the $type comes from the stash
+
+=cut
+
+sub ws_list : Chained('ws') PathPart('list')
+{
+  my ($self, $c, @args) = @_;
+
+  my $type = $c->stash()->{ws_type};
+  my $schema = $c->stash()->{schema};
+  my $service_utils = Canto::Curs::ServiceUtils->new(curs_schema => $schema,
+                                                     config => $c->config());
+
+  my $json_data = $c->req()->body_data();
+
+  if ($json_data) {
+    push @args, $json_data;
+  }
+
+  $c->stash->{json_data} = $service_utils->list_for_service($type, @args);
+
+  $c->forward('View::JSON');
+}
+
+=head2 ws_details
+
+ Function: Web service for returning information about a Curs object
+ Args    : $ws_type - object type from the stash (from sub ws)
+           $id   - the object id (eg. geneotype_id)
+
+=cut
+
+sub ws_details : Chained('ws') PathPart('details')
+{
+  my ($self, $c, @args) = @_;
+
+  my $type = $c->stash()->{ws_type};
+  my $schema = $c->stash()->{schema};
+  my $service_utils = Canto::Curs::ServiceUtils->new(curs_schema => $schema,
+                                                     config => $c->config());
+
+  my $json_data = $c->req()->body_data();
+
+  if ($json_data) {
+    push @args, $json_data;
+  }
+
+  $c->stash->{json_data} = $service_utils->details_for_service($type, @args);
+
+  $c->forward('View::JSON');
+}
+
+sub ws_annotation : Chained('top') PathPart('ws/annotation') CaptureArgs(2)
+{
+  my ($self, $c, $annotation_id, $status) = @_;
+
+  $c->stash()->{annotation_id} = $annotation_id;
+  $c->stash()->{annotation_status} = $status;
+}
+
+sub ws_change_annotation : Chained('ws_annotation') PathPart('change')
+{
+  my ($self, $c) = @_;
+
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $annotation_id = $st->{annotation_id};
+  my $status = $st->{annotation_status};
+
+  my $service_utils = Canto::Curs::ServiceUtils->new(curs_schema => $schema,
+                                                     config => $c->config());
+
+  my $json_data = $c->req()->body_data();
+
+  $c->stash->{json_data} =
+    $service_utils->change_annotation($annotation_id, $status, $json_data);
+
+  $c->forward('View::JSON');
+}
+
+sub ws_annotation_create : Chained('top') PathPart('ws/annotation/create')
+{
+  my ($self, $c) = @_;
+
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $service_utils = Canto::Curs::ServiceUtils->new(curs_schema => $schema,
+                                                     config => $c->config());
+
+  my $json_data = $c->req()->body_data();
+
+  $c->stash->{json_data} = $service_utils->create_annotation($json_data);
+
+  $c->forward('View::JSON');
+}
+
+sub ws_annotation_delete : Chained('top') PathPart('ws/annotation/delete')
+{
+  my ($self, $c) = @_;
+
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $service_utils = Canto::Curs::ServiceUtils->new(curs_schema => $schema,
+                                                     config => $c->config());
+
+  my $json_data = $c->req()->body_data();
+
+  $c->stash->{json_data} = $service_utils->delete_annotation($json_data);
+
+  $c->forward('View::JSON');
+}
+
+sub ws_genotype_delete : Chained('top') PathPart('ws/genotype/delete')
+{
+  my ($self, $c, $feature_id) = @_;
+
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $service_utils = Canto::Curs::ServiceUtils->new(curs_schema => $schema,
+                                                     config => $c->config());
+
+  my $json_data = $c->req()->body_data();
+
+  $c->stash->{json_data} = $service_utils->delete_genotype($feature_id, $json_data);
+
+  $c->forward('View::JSON');
+}
+
+sub ws_add_gene : Chained('top') PathPart('ws/gene/add')
+{
+  my ($self, $c, $gene_identifier) = @_;
+
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $service_utils = Canto::Curs::ServiceUtils->new(curs_schema => $schema,
+                                                     config => $c->config());
+
+  $st->{json_data} = $service_utils->add_gene_by_identifier($gene_identifier);
+
+  $c->forward('View::JSON');
+}
+
+sub ws_settings_get_all : Chained('top') PathPart('ws/settings/get_all')
+{
+  my ($self, $c) = @_;
+
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $data = {
+    $self->all_metadata($schema),
+  };
+
+  $st->{json_data} = $data;
+
+  $c->forward('View::JSON');
+}
+
+sub ws_settings_set : Chained('top') PathPart('ws/settings/set')
+{
+  my ($self, $c, $key, $value) = @_;
+
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $allowed_keys = $c->config()->{curs_settings_service}->{allowed_keys};
+
+  if ($allowed_keys->{$key}) {
+    $self->set_metadata($schema, $key, $value);
+
+    $st->{json_data} = {
+      status => 'success',
+    }
+  } else {
+    $st->{json_data} = {
+      status => 'error',
+      message => qq(setting with key "$key" not allowed),
+    }
+  }
+
+  $c->forward('View::JSON');
 }
 
 sub cancel_approval : Chained('top') Args(0)

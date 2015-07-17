@@ -62,7 +62,6 @@ sub _get_metadata
 {
   my $track_schema = shift;
   my $curs_schema = shift;
-  my $curs_key = shift;
 
   confess() unless defined $curs_schema;
 
@@ -76,7 +75,7 @@ sub _get_metadata
   } @results;
 
   my $cursprops_rs =
-    $track_schema->resultset('Curs')->find({ curs_key => $curs_key })
+    $track_schema->resultset('Curs')->find({ curs_key => $ret{canto_session} })
                  ->cursprops();
 
   while (defined (my $prop = $cursprops_rs->next())) {
@@ -89,7 +88,10 @@ sub _get_metadata
 sub _get_annotations
 {
   my $config = shift;
+  my $track_schema = shift;
   my $schema = shift;
+
+  die "no schema" unless $schema;
 
   my $rs = $schema->resultset('Annotation');
 
@@ -97,6 +99,21 @@ sub _get_annotations
 
   while (defined (my $annotation = $rs->next())) {
     my %extra_data = %{clone $annotation->data()};
+
+    if (defined $extra_data{interacting_genes}) {
+      $extra_data{interacting_genes} =
+        [
+          map {
+            my $interacting_gene =
+              $schema->resultset('Gene')->find({
+                primary_identifier => $_->{primary_identifier},
+              });
+
+            $interacting_gene->organism()->full_name() . ' ' .
+              $_->{primary_identifier};
+          } @{$extra_data{interacting_genes}}
+        ]
+    }
 
     my $term_ontid = delete $extra_data{term_ontid};
     if ($term_ontid) {
@@ -120,26 +137,26 @@ sub _get_annotations
           $data{curator}->{community_curated} = JSON::false;
         }
       } else {
-        my %metadata = _get_metadata($schema);
+        my $metadata = _get_metadata($track_schema, $schema);
         die "community_curated not set for annotation ",
           $annotation->annotation_id(), " in session ",
-          $metadata{curs_key};
+          $metadata->{curs_key};
       }
     } else {
-      my %metadata = _get_metadata($schema);
+      my $metadata = _get_metadata($track_schema, $schema);
       die "community_curated not set for annotation ",
         $annotation->annotation_id(), " in session ",
-        $metadata{curs_key};
+        $metadata->{curs_key};
     }
 
-    my $genes = _get_genes($schema, $annotation);
-    my @alleles = _get_alleles($config, $schema, $annotation);
+    my $gene = _get_annotation_gene($schema, $annotation);
+    my $genotype = _get_annotation_genotype($schema, $annotation);
 
-    if (keys %$genes) {
-      $data{genes} = $genes;
+   if ($gene) {
+      $data{gene} = $gene;
     }
-    if (@alleles) {
-      $data{alleles} = \@alleles;
+    if ($genotype) {
+      $data{genotype} = $genotype;
     }
 
     rmap_hash {
@@ -148,9 +165,14 @@ sub _get_annotations
         # this is a curator section - don't modify
         cut();
       }
-      while (my ($key, $value) = each %$current) {
-        if (!ref $value) {
-          $current->{$key} =~ s/[[:^ascii:]]//g;
+      for my $key (keys %$current) {
+        my $value = $current->{$key};
+        if (defined $value) {
+          if (!ref $value) {
+            $current->{$key} =~ s/[[:^ascii:]]//g;
+          }
+        } else {
+          $current->{$key} = '';
         }
       }
     } %data;
@@ -161,12 +183,33 @@ sub _get_annotations
   return \@ret;
 }
 
-sub _get_genes
+sub _get_annotation_gene
 {
   my $schema = shift;
   my $annotation = shift;
 
   my $rs = $annotation->genes();
+  my @ret = ();
+
+  while (defined (my $gene = $rs->next())) {
+    my $organism_full_name = $gene->organism()->full_name();
+    push @ret, $organism_full_name . ' ' . $gene->primary_identifier();
+  }
+
+  if (@ret > 1) {
+    die "internal error during export: annotation ",
+      $annotation->annotation_id(),
+      " has more than one gene";
+  } else {
+    return $ret[0];
+  }
+}
+
+sub _get_genes
+{
+  my $schema = shift;
+
+  my $rs = $schema->resultset('Gene');
   my %ret = ();
 
   while (defined (my $gene = $rs->next())) {
@@ -180,25 +223,56 @@ sub _get_genes
     $ret{$gene_key} = { %gene_data };
   }
 
-  return \%ret;
+  return %ret;
+}
+
+sub _get_genotype_alleles
+{
+  my $config = shift;
+  my $schema = shift;
+  my $genotype = shift;
+
+  my $rs = $genotype->alleles();
+
+  my @ret = ();
+
+  while (defined (my $allele = $rs->next())) {
+    my $gene = $allele->gene();
+    my $organism_full_name = $gene->organism()->full_name();
+
+    if (!defined $allele->primary_identifier()) {
+      warn "undefined primary_identifier: ", $allele->name(), "\n";
+    }
+
+    my %ret_hash = (
+      id => "$organism_full_name " . $allele->primary_identifier(),
+    );
+
+    if ($allele->expression()) {
+      $ret_hash{expression} = $allele->expression();
+    }
+
+    push @ret, \%ret_hash;
+  }
+
+  return @ret;
 }
 
 sub _get_alleles
 {
   my $config = shift;
   my $schema = shift;
-  my $annotation = shift;
 
-  my $rs = $annotation->alleles();
-  my @ret = ();
+  my $rs = $schema->resultset('Allele');
+
+  my %ret = ();
 
   while (defined (my $allele = $rs->next())) {
     my $gene = $allele->gene();
     my $organism_full_name = $gene->organism()->full_name();
-    my %gene_data = (
-      organism => $organism_full_name,
-      uniquename => $gene->primary_identifier(),
-    );
+
+    my $key = "$organism_full_name " . $allele->primary_identifier();
+    my $gene_key = "$organism_full_name " . $gene->primary_identifier();
 
     my $export_type =
       $config->{allele_types}->{$allele->type()}->{export_type};
@@ -211,7 +285,7 @@ sub _get_alleles
 
     my %allele_data = (
       allele_type => $export_type,
-      gene => \%gene_data,
+      gene => $gene_key,
     );
     if (defined $allele->primary_identifier()) {
       $allele_data{primary_identifier} = $allele->primary_identifier();
@@ -222,10 +296,50 @@ sub _get_alleles
     if (defined $allele->name()) {
       $allele_data{name} = $allele->name();
     }
-    push @ret, \%allele_data;
+
+    $ret{$key} = \%allele_data;
   }
 
-  return @ret;
+  return %ret;
+}
+
+sub _get_annotation_genotype
+{
+  my $schema = shift;
+  my $annotation = shift;
+
+  my @ret = map {
+    $_->identifier();
+  } $annotation->genotypes()->all();
+
+  if (@ret > 1) {
+    die "internal error during export: annotation ",
+      $annotation->annotation_id(),
+      " has more than one genotype";
+  } else {
+    return $ret[0];
+  }
+}
+
+sub _get_genotypes
+{
+  my $config = shift;
+  my $schema = shift;
+
+  my $rs = $schema->resultset('Genotype');
+  my %ret = ();
+
+  while (defined (my $genotype = $rs->next())) {
+    $ret{$genotype->identifier()} = {
+      alleles => [_get_genotype_alleles($config, $schema, $genotype)]
+    };
+
+    if ($genotype->name()) {
+      $ret{$genotype->identifier()}->{name} = $genotype->name(),
+    }
+  }
+
+  return %ret;
 }
 
 sub _get_organisms
@@ -235,7 +349,7 @@ sub _get_organisms
   my $rs = $schema->resultset('Organism');
   my %ret = ();
 
-  while (defined (my $organism = $rs->next())) {
+  while (defined (my $organism= $rs->next())) {
     $ret{$organism->taxonid()} = { full_name => $organism->full_name() };
   }
 
@@ -316,12 +430,30 @@ sub perl
                                       cache_connection => 0,
                                     });
 
-  return {
-    metadata => _get_metadata($track_schema, $curs_schema, $curs_key),
-    annotations => _get_annotations($config, $curs_schema),
+  my %ret = (
+    metadata => _get_metadata($track_schema, $curs_schema),
+    annotations => _get_annotations($config, $track_schema, $curs_schema),
     organisms => _get_organisms($curs_schema, $options),
     publications => _get_pubs($curs_schema, $options)
-  };
+  );
+
+  my %genes = _get_genes($curs_schema);
+  if (keys %genes) {
+    $ret{genes} = \%genes;
+  }
+
+  my %alleles = _get_alleles($config, $curs_schema);
+  if (keys %alleles) {
+    $ret{alleles} = \%alleles;
+  }
+
+  my %genotypes = _get_genotypes($config, $curs_schema);
+
+  if (%genotypes) {
+    $ret{genotypes} = \%genotypes;
+  }
+
+  return \%ret;
 }
 
 1;

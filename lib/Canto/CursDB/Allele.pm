@@ -35,7 +35,7 @@ __PACKAGE__->table("allele");
 =head2 primary_identifier
 
   data_type: 'text'
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 type
 
@@ -43,6 +43,11 @@ __PACKAGE__->table("allele");
   is_nullable: 0
 
 =head2 description
+
+  data_type: 'text'
+  is_nullable: 1
+
+=head2 expression
 
   data_type: 'text'
   is_nullable: 1
@@ -64,10 +69,12 @@ __PACKAGE__->add_columns(
   "allele_id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "primary_identifier",
-  { data_type => "text", is_nullable => 1 },
+  { data_type => "text", is_nullable => 0 },
   "type",
   { data_type => "text", is_nullable => 0 },
   "description",
+  { data_type => "text", is_nullable => 1 },
+  "expression",
   { data_type => "text", is_nullable => 1 },
   "name",
   { data_type => "text", is_nullable => 1 },
@@ -87,19 +94,33 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("allele_id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<primary_identifier_unique>
+
+=over 4
+
+=item * L</primary_identifier>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("primary_identifier_unique", ["primary_identifier"]);
+
 =head1 RELATIONS
 
-=head2 allele_annotations
+=head2 allele_genotypes
 
 Type: has_many
 
-Related object: L<Canto::CursDB::AlleleAnnotation>
+Related object: L<Canto::CursDB::AlleleGenotype>
 
 =cut
 
 __PACKAGE__->has_many(
-  "allele_annotations",
-  "Canto::CursDB::AlleleAnnotation",
+  "allele_genotypes",
+  "Canto::CursDB::AlleleGenotype",
   { "foreign.allele" => "self.allele_id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -120,11 +141,11 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-10-13 23:27:25
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pTJltMHsmB7sGMRZipuWmg
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-09-22 16:57:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iDIJM2amH5SeS7cGqF331w
 
-__PACKAGE__->many_to_many('annotations' => 'allele_annotations',
-                          'annotation');
+__PACKAGE__->many_to_many('genotypes' => 'allele_genotypes',
+                          'genotype');
 
 use Canto::Curs::Utils;
 
@@ -136,14 +157,34 @@ use Canto::Curs::Utils;
  Args    : none
 
 =cut
+
 sub display_name
 {
   my $self = shift;
 
   return Canto::Curs::Utils::make_allele_display_name($self->name(),
-                                                       $self->description());
+                                                      $self->description(),
+                                                      $self->type());
 }
 
+=head2 long_identifier
+
+ Usage   : my $long_identifier = $allele->long_identifier();
+ Function: Return a long display string for this allele that includes the expresion
+           eg. "ssm4KE(G40A,K43E)[overexpression]"
+
+=cut
+
+sub long_identifier
+{
+  my $self = shift;
+
+  my $ret = $self->display_name();
+
+  $ret .= ($self->expression() ? '[' . $self->expression() . ']' : '');
+
+  return $ret;
+}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

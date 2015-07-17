@@ -19,9 +19,9 @@ header_image: logos/curation_tool.png
 
 canto_url: http://localhost:5000/
 
-app_version: v798
+app_version: v856
 
-schema_version: 8
+schema_version: 9
 
 ## Set this to create a Canto instance for a particular organism.  If not set,
 ## all gene lookups with match genes from any organism (and will return the
@@ -1057,7 +1057,6 @@ export:
   gene_association_fields:
     db: "PomBase"
     assigned_by: "PomBase"
-    db_object_type: gene
 
 load:
   ontology:
@@ -1097,30 +1096,31 @@ implementation_classes:
 allele_type_list:
   - name: wild type
     export_type: wild_type
-    description_required: 0
-    allele_name_required: 1
-    allow_expression_change: 1
-    autopopulate_name: '@@gene_name@@+'
+    description_required: false
+    allele_name_required: true
+    allow_expression_change: true
+    expression_required: true
+    autopopulate_name: '@@gene_display_name@@+'
   - name: deletion
     export_type: deletion
-    description_required: 0
-    allele_name_required: 1
-    allow_expression_change: 0
-    autopopulate_name: '@@gene_name@@delta'
+    description_required: false
+    allele_name_required: true
+    allow_expression_change: false
+    autopopulate_name: '@@gene_display_name@@delta'
   - name: unknown
     export_type: unknown
-    description_required: 0
-    allele_name_required: 1
-    allow_expression_change: 1
+    description_required: false
+    allele_name_required: true
+    allow_expression_change: true
   - name: mutation of single amino acid residue
     export_type: amino_acid_mutation
     # all multi and single mutations map to "amino_acid_mutation" in Chado so
     # we use this to undo that mapping - if the RE matches the description
     # from Chado then we use this allele type
     export_type_reverse_map_re: "^[^,]+$"
-    description_required: 1
-    allele_name_required: 0
-    allow_expression_change: 1
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
     placeholder: eg. K132A
   - name: mutation of multiple amino acid residues
     export_type: amino_acid_mutation
@@ -1128,49 +1128,49 @@ allele_type_list:
     # we use this to undo that mapping - if the RE matches the description
     # from Chado then we use this allele type
     export_type_reverse_map_re: ","
-    description_required: 1
-    allele_name_required: 0
-    allow_expression_change: 1
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
     placeholder: eg. K132A,K144A
   - name: partial deletion, amino acid
     export_type: partial_amino_acid_deletion
-    description_required: 1
-    allele_name_required: 0
-    allow_expression_change: 1
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
     placeholder: eg. 100-200
   - name: partial deletion, nucleotide
     export_type: partial_nucleotide_deletion
-    description_required: 1
-    allele_name_required: 0
-    allow_expression_change: 1
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
     placeholder: eg. 100-200 OR -20--30 (for promoter region)
   - name: mutation of a single nucleotide
     export_type: nucleotide_mutation
     # see comment above:
     export_type_reverse_map_re: "^[^,]+$"
-    description_required: 1
-    allele_name_required: 0
-    allow_expression_change: 1
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
     placeholder: eg. A25G, OR A-25G (for promoter region)
   - name: mutation of multiple nucleotides
     export_type: nucleotide_mutation
     # see comment above:
     export_type_reverse_map_re: ","
-    description_required: 1
-    allele_name_required: 0
-    allow_expression_change: 1
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
     placeholder: eg. A25G,T40G
   - name: nonsense mutation
     export_type: nonsense_mutation
-    description_required: 1
-    allow_expression_change: 1
-    allele_name_required: 0
+    description_required: true
+    allow_expression_change: true
+    allele_name_required: false
     placeholder: 'AA123->stop, AA1299->amber'
   - name: other
     export_type: other
-    description_required: 1
-    allele_name_required: 0
-    allow_expression_change: 1
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
     placeholder: Please provide a description
 
 evidence_types:
@@ -1621,6 +1621,8 @@ available_annotation_type_list:
     very_short_display_name: 'function'
     short_display_name: 'molecular function'
     display_name: 'GO molecular function'
+    feature_type: 'gene'
+    can_have_with: 1
     evidence_codes:
       - IDA
       - IGI
@@ -1659,6 +1661,8 @@ available_annotation_type_list:
     very_short_display_name: 'process'
     short_display_name: 'biological process'
     display_name: 'GO biological process'
+    feature_type: 'gene'
+    can_have_with: 1
     evidence_codes:
       - IMP
       - IDA
@@ -1671,7 +1675,8 @@ available_annotation_type_list:
       pyrimidine metabolic process or alpha-glucoside transport
     help_text: >
       A biological process is series of events accomplished by one or more
-      ordered assemblies of molecular functions.
+      ordered assemblies of molecular functions, such as cell cycle, 
+      transport, or signal transduction.
     more_help_text: >
       It can be difficult to distinguish between a biological process
       and a molecular function, but the general rule is that a process must
@@ -1703,6 +1708,8 @@ available_annotation_type_list:
     very_short_display_name: 'component'
     short_display_name: 'cellular component'
     display_name: 'GO cellular component'
+    feature_type: 'gene'
+    can_have_with: 1
     evidence_codes:
       - IDA
       - IGI
@@ -2176,6 +2183,21 @@ webservices:
   uniprot_batch_lookup_url: 'http://www.uniprot.org/batch/'
   quickgo_annotation_lookup_url: 'http://www.ebi.ac.uk/QuickGO/GAnnotation?format=gaf&ref='
 
+config_service:
+  allowed_keys:
+    allele_types: 1
+    allele_type_list: 1
+    allele_type_names: 1
+    annotation_types: 1
+    annotation_type_list: 1
+    curs_config: 1
+    evidence_types: 1
+    ontology_external_links: 1
+
+curs_settings_service:
+  allowed_keys:
+    annotation_mode: 1
+
 ontology_external_links:
   cellular_component:
     - name: AmiGO
@@ -2220,7 +2242,7 @@ curator_manager:
 
 # if set to "yes", always prompt for an annotation extension on the
 # annotation transfer page
-always_show_extensions: yes
+always_show_extensions: no
 
 curs_config:
   # Possible reasons for a paper to have no genes, shown on the gene upload
@@ -2261,7 +2283,6 @@ curs_config:
       <p>
         Examples include:
         <ul>
-        <li> multi-gene phenotypes
         <li> substrates of gene products (e.g. protein substrates of kinases or protein transporters)
         <li> "targets" of localization dependencies (e.g. gene A localizes gene B) 
         <li> cell cycle phases when a process occurs (during)
@@ -2277,8 +2298,12 @@ curs_config:
         curation tool.
       </p>
 
+  genotype_config:
+    default_strain_name: 'h+'
+
 cache:
   default_timeout: "2 hours"
+  chado_gene_timeout: "24 hours"
 
 # the default DB name to use when loading ontologies in the case where the
 # termid doesn't have a DB name prefix

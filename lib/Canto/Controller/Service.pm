@@ -51,18 +51,33 @@ __PACKAGE__->config->{namespace} = 'ws';
 
 sub _ontology_results
 {
-  my ($c, $component_name, $search_string) = @_;
+  my ($c, $arg1, $arg2) = @_;
+
+  my ($component_name, $search_string);
+
+  if ($c->req()->param('term')) {
+    $component_name = $arg1;
+    $search_string = $c->req()->param('term');
+  } else {
+    if (defined $arg2) {
+      $component_name = $arg1;
+      $search_string = $arg2;
+    } else {
+      # lookup by id, no ontology needed
+      $search_string = $arg1;
+    }
+  }
 
   my $config = $c->config();
   my $lookup = Canto::Track::get_adaptor($config, 'ontology');
 
   my $max_results = $c->req()->param('max_results') || 15;
 
-  my $component_config = $config->{annotation_types}->{$component_name};
-
   my $ontology_name;
 
-  if (defined $component_config) {
+  if (defined $component_name &&
+      defined (my $component_config =
+                 $config->{annotation_types}->{$component_name})) {
     $ontology_name = $component_config->{namespace};
   } else {
     # allow looking up using the ontology name for those ontologies
@@ -70,23 +85,57 @@ sub _ontology_results
     $ontology_name = $component_name;
   }
 
-  $search_string ||= $c->req()->param('term');
-
   my $include_definition = $c->req()->param('def');
   my $include_children = $c->req()->param('children');
   my $include_exact_synonyms = $c->req()->param('exact_synonyms');
 
-  my $results =
-    $lookup->lookup(ontology_name => $ontology_name,
-                    search_string => $search_string,
-                    max_results => $max_results,
-                    include_definition => $include_definition,
-                    include_children => $include_children,
-                    include_exact_synonyms => $include_exact_synonyms);
+  if (defined $component_name) {
+    my $results =
+      $lookup->lookup(ontology_name => $ontology_name,
+                      search_string => $search_string,
+                      max_results => $max_results,
+                      include_definition => $include_definition,
+                      include_children => $include_children,
+                      include_exact_synonyms => $include_exact_synonyms);
 
-  map { $_->{value} = $_->{name} } @$results;
+    map { $_->{value} = $_->{name} } @$results;
 
-  return $results;
+    return $results;
+  } else {
+    my $result =
+      $lookup->lookup_by_id(id => $search_string,
+                            include_definition => $include_definition,
+                            include_children => $include_children,
+                            include_exact_synonyms => $include_exact_synonyms);
+
+    return $result;
+  }
+}
+
+sub _gene_results
+{
+  my ($c, $search_string) = @_;
+
+  my $config = $c->config();
+
+  my $adaptor = Canto::Track::get_adaptor($config, 'gene');
+
+  my $result;
+
+  if (exists $config->{instance_organism}) {
+    $result = $adaptor->lookup(
+      {
+        search_organism => {
+          genus => $config->{instance_organism}->{genus},
+          species => $config->{instance_organism}->{species},
+        }
+      },
+      [$search_string]);
+  } else {
+    $result = $adaptor->lookup([$search_string]);
+  }
+
+  return $result;
 }
 
 sub _allele_results
@@ -144,6 +193,7 @@ sub lookup : Local
   my $results;
 
   my %dispatch = (
+    gene => \&_gene_results,
     allele => \&_allele_results,
     ontology => \&_ontology_results,
     person => \&_person_results,
@@ -158,6 +208,45 @@ sub lookup : Local
   }
 
   $c->stash->{json_data} = $results;
+
+  # FIXME - this is a bit dodgy
+  $c->cache_page(100);
+
+  $c->forward('View::JSON');
+}
+
+sub canto_config : Local
+{
+  my $self = shift;
+  my $c = shift;
+  my $config_key = shift;
+
+  my $config = $c->config();
+
+  my $allowed_keys = $config->{config_service}->{allowed_keys};
+
+  if ($allowed_keys->{$config_key}) {
+    my $key_config = $config->for_json($config_key);
+    if (defined $key_config) {
+      $c->stash->{json_data} = $key_config;
+
+      # FIXME - the URL for canto_config should have a version number so
+      # we can have a far future expiry date
+      $c->cache_page(600);
+    } else {
+      $c->stash->{json_data} = {
+        status => 'error',
+        message => qq(no config for key "$config_key")
+      };
+      $c->response->status(400);
+    }
+  } else {
+    $c->stash->{json_data} = {
+      status => 'error',
+      message => qq(config key "$config_key" not allowed for this service),
+    };
+    $c->response->status(403);
+  }
 
   $c->forward('View::JSON');
 }

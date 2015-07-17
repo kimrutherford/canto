@@ -107,25 +107,39 @@ test_config:
            - "SPCC576.16c"
            - primary_identifier: "SPAC27D7.13c"
              alleles:
-               - primary_identifier: 'SPAC27D7.13c:allele-1'
+               - primary_identifier: 'SPAC27D7.13c:aaaa0007-1'
                  name: ssm4delta
                  description: deletion
                  type: deletion
-               - primary_identifier: 'SPAC27D7.13c:allele-2'
-                 name: R344A
-                 description: R344A
+               - primary_identifier: 'SPAC27D7.13c:aaaa0007-2'
+                 name: ssm4KE
+                 description: G40A,K43E
                  type: 'mutation of single amino acid residue'
-               - name: ssm4-D4
+               - primary_identifier: 'SPAC27D7.13c:aaaa0007-3'
+                 name: ssm4-D4
                  description: 'del_100-200'
                  type: 'partial deletion, nucleotide'
-               - description: 'del_200-300'
+                 expression: 'Knockdown'
+               - primary_identifier: 'SPAC27D7.13c:aaaa0007-4'
+                 description: 'del_200-300'
                  type: 'partial deletion, nucleotide'
            - "SPBC14F5.07"
            - primary_identifier: "SPCC63.05"
              alleles:
-               - name: SPCC63.05-unk
-                 description: unknown
-                 type: new
+               - primary_identifier: 'SPCC63.05:aaaa0007-1'
+                 name: SPCC63.05delta
+                 description: deletion
+                 type: deletion
+         genotypes:
+           - identifier: "aaaa0007-genotype-test-1"
+             name: "h+ SPCC63.05delta ssm4KE"
+             background: "h+"
+             alleles(Allele:primary_identifier):
+               - 'SPAC27D7.13c:aaaa0007-1'
+               - 'SPCC63.05:aaaa0007-1'
+           - identifier: "aaaa0007-genotype-test-2"
+             alleles(Allele:primary_identifier):
+               - "SPAC27D7.13c:aaaa0007-3"
          annotations:
            - type: biological_process
              status: new
@@ -151,7 +165,7 @@ test_config:
                evidence_code: IPI
                term_ontid: GO:0034763
                with_gene: SPCC576.16c
-               annotation_extension: "annotation_extension=exists_during(GO:0051329),annotation_extension=has_substrate(GeneDB_Spombe:SPBC1105.11c),annotation_extension=requires_feature(Pfam:PF00564),residue=T31,residue=T586(T586,X123),qualifier=NOT,condition=PECO:0000012,allele=SPAC9.02cdelta(deletion)|annotation_extension=exists_during(GO:0051329),has_substrate(GeneDB_Spombe:SPBC1105.11c)"
+               annotation_extension: "annotation_extension=exists_during(GO:0051329),annotation_extension=has_substrate(PomBase:SPBC1105.11c),annotation_extension=requires_feature(Pfam:PF00564),residue=T31,residue=T586(T586,X123),qualifier=NOT,condition=PECO:0000012,allele=SPAC9.02cdelta(deletion)|annotation_extension=exists_during(GO:0051329),has_substrate(PomBase:SPBC1105.11c)"
                curator:
                  email: "some.testperson@pombase.org"
                  name: "Some Testperson"
@@ -196,13 +210,12 @@ test_config:
                  community_curated: 0
            - type: phenotype
              status: new
-             alleles(Allele:description):
-               - deletion
+             genotypes(Genotype:identifier):
+               - "aaaa0007-genotype-test-1"
              pub(Pub:uniquename): PMID:19756689
              data:
                evidence_code: Epitope-tagged protein immunolocalization experiment data
                term_ontid: FYPO:0000013
-               expression: Overexpression
                conditions:
                  - 'PECO:0000137'
                  - 'rich medium'
@@ -212,8 +225,8 @@ test_config:
                  community_curated: 0
            - type: phenotype
              status: new
-             alleles(Allele:description):
-               - del_100-200
+             genotypes(Genotype:identifier):
+               - "aaaa0007-genotype-test-2"
              pub(Pub:uniquename): PMID:19756689
              data:
                evidence_code: Co-immunoprecipitation experiment
@@ -234,3 +247,12 @@ test_config:
                  email: "a.n.other.testperson@pombase.org"
                  name: "Another Testperson"
                  community_curated: 1
+implementation_classes:
+  ontology_annotation_adaptor: 'Canto::Chado::OntologyAnnotationLookup'
+  interaction_annotation_adaptor: 'Canto::Chado::InteractionAnnotationLookup'
+  allele_adaptor: 'Canto::Chado::AlleleLookup'
+
+chado_feature_implementation_classes:
+  allele_adaptor: 'Canto::Chado::AlleleLookup'
+  gene_adaptor: 'Canto::Chado::GeneLookup'
+  genotype_adaptor: 'Canto::Chado::GenotypeLookup'

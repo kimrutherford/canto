@@ -38,7 +38,7 @@ sub check_res {
                  ontology_name => 'cellular_component'
                },
                evidence_code => 'IMP',
-               with => 'GeneDB_Spombe:SPBC2G2.01c',
+               with => 'PomBase:SPBC2G2.01c',
                from => undef,
                is_not => 0,
                conditions => [],
@@ -46,43 +46,43 @@ sub check_res {
                qualifiers => [],
                annotation_id => 1,
                publication => {
-                 uniquename => 'PMID:10467002'
+                 uniquename => 'PMID:19756689'
                }
              });
 
 }
 
 my ($all_annotations_count, $res) =
-  $lookup->lookup({pub_uniquename => 'PMID:10467002',
+  $lookup->lookup({pub_uniquename => 'PMID:19756689',
                    ontology_name => 'cellular_component',
                  }
                 );
 check_res($all_annotations_count, $res);
-is($lookup->cache()->get_keys(), 1);
+is($lookup->cache()->get_keys(), 2);
 
 ($all_annotations_count, $res) =
-  $lookup->lookup({pub_uniquename => 'PMID:10467002',
+  $lookup->lookup({pub_uniquename => 'PMID:19756689',
                    ontology_name => 'cellular_component',
                    gene_identifier => 'SPBC12C2.02c',
                  }
                 );
 check_res($all_annotations_count, $res);
-is($lookup->cache()->get_keys(), 2);
+is($lookup->cache()->get_keys(), 3);
 
 
 # try the same thing again to check the cache
 ($all_annotations_count, $res) =
-  $lookup->lookup({pub_uniquename => 'PMID:10467002',
+  $lookup->lookup({pub_uniquename => 'PMID:19756689',
                    ontology_name => 'cellular_component',
                    gene_identifier => 'SPBC12C2.02c',
                  }
                 );
 check_res($all_annotations_count, $res);
-is($lookup->cache()->get_keys(), 2);
+is($lookup->cache()->get_keys(), 3);
 
 
 ($all_annotations_count, $res) =
-  $lookup->lookup({pub_uniquename => 'PMID:10467002',
+  $lookup->lookup({pub_uniquename => 'PMID:19756689',
                    ontology_name => 'cellular_component',
                    gene_identifier => 'unknown_id',
                  }
@@ -103,7 +103,7 @@ map { $_->is_not(1); $_->update(); } $fcs->all();
 $lookup->cache()->clear();
 
 ($all_annotations_count, $res) =
-  $lookup->lookup({pub_uniquename => 'PMID:10467002',
+  $lookup->lookup({pub_uniquename => 'PMID:19756689',
                    ontology_name => 'cellular_component',
                    gene_identifier => 'SPBC12C2.02c',
                  }
@@ -117,7 +117,7 @@ is ($res->[0]->{is_not}, 1);
 # check a annotation to a term from the "PomBase annotation extension
 # terms" cv - make sure we get the right name and ID back
 ($all_annotations_count, $res) =
-  $lookup->lookup({pub_uniquename => 'PMID:10467002',
+  $lookup->lookup({pub_uniquename => 'PMID:19756689',
                    ontology_name => 'biological_process',
                  }
                 );
@@ -143,7 +143,7 @@ cmp_deeply($res->[0],
              'expression' => undef,
              'qualifiers' => [],
              'publication' => {
-               'uniquename' => 'PMID:10467002'
+               'uniquename' => 'PMID:19756689'
              },
              'is_not' => 1,
              'with' => undef
@@ -154,39 +154,54 @@ cmp_deeply($res->[0],
 # check a phenotpe annotation for an allele
 ($all_annotations_count, $res) =
   $lookup->lookup({
-    pub_uniquename => 'PMID:10467002',
+    pub_uniquename => 'PMID:19756689',
     ontology_name => 'phenotype',
   });
 
 is(@$res, 1);
 
+my $cycloheximide_annotation_res = $Canto::TestUtil::shared_test_results{cycloheximide_annotation};
+
 cmp_deeply($res->[0],
            {
-             'gene' => {
-               'identifier' => 'SPBC12C2.02c',
-               'name' => 'ste20',
-               'organism_taxonid' => '4896'
-             },
-             'ontology_term' => {
-               'ontid' => 'FYPO:0000104',
-               'term_name' => 'sensitive to cycloheximide',
-               'ontology_name' => 'fission_yeast_phenotype'
-             },
-             'evidence_code' => 'UNK',
-             'annotation_id' => 3,
-             'from' => undef,
-             'is_not' => 'false',
-             'publication' => {
-               'uniquename' => 'PMID:10467002'
-             },
-             'conditions' => [],
-             'expression' => undef,
+             'with' => undef,
              'qualifiers' => [],
-             'allele' => {
-               'identifier' => 'SPBC12C2.02c:allele-1',
-               'name' => 'ste20delta',
-               'description' => 'del_x1',
-               'organism_taxonid' => '4896'
+             'is_not' => 'false',
+             'conditions' => [],
+             'ontology_term' => {
+               'ontology_name' => 'fission_yeast_phenotype',
+               'term_name' => 'sensitive to cycloheximide',
+               'ontid' => 'FYPO:0000104'
              },
-             'with' => undef
+             'publication' => {
+               'uniquename' => 'PMID:19756689'
+             },
+             'annotation_id' => 3,
+             'expression' => undef,
+             'from' => undef,
+             'evidence_code' => 'UNK',
+             'genotype' => {
+               'identifier' => 'aaaa0007-test-genotype-3',
+               'alleles' => [
+                 {
+                   'primary_identifier' => 'SPCC1739.11c:allele-1',
+                   'gene_display_name' => 'cdc11',
+                   'name' => 'cdc11-33',
+                   'type' => undef,
+                   'taxonid' => '4896',
+                   'description' => 'unknown',
+                   'gene_id' => 4,
+                 },
+                 {
+                   'taxonid' => '4896',
+                   'description' => 'deletion',
+                   'type' => undef,
+                   'name' => 'ssm4delta',
+                   'primary_identifier' => 'SPAC27D7.13c:allele-1',
+                   'gene_display_name' => 'ssm4',
+                   'gene_id' => 15,
+                 }
+               ],
+               'name' => 'cdc11-33 ssm4delta'
+             }
            });
