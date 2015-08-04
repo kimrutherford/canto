@@ -413,10 +413,13 @@ td.table-row-actions div {
 }
 
 .curs-evidence-conditions {
-  margin: 30px 0px 5px 0px;
+  padding: 20px 0px 0px 0px;
 }
 .curs-evidence-conditions .tagit {
   font-size: 80%;
+}
+.curs-evidence-conditions-help {
+  color: #111;
 }
 
 .sect .sect-title a {
@@ -1245,6 +1248,11 @@ a.curs-editable-table-field img, a.curs-editable-table-long-field img
 
 .modal-dialog {
 /*  margin-top: 5%;*/
+}
+
+.modal-dialog select {
+  text-overflow: ellipsis;
+  max-width: 600px;
 }
 
 table tr td.curs-table-row-remove {

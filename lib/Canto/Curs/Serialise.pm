@@ -120,6 +120,12 @@ sub _get_annotations
       $extra_data{term} = $term_ontid;
     }
 
+    if ($extra_data{term_suggestion} &&
+        !$extra_data{term_suggestion}->{name} &&
+        !$extra_data{term_suggestion}->{definition}) {
+      delete $extra_data{term_suggestion};
+    }
+
     my %data = (
       status => $annotation->status(),
       publication => $annotation->pub->uniquename(),
@@ -270,6 +276,10 @@ sub _get_alleles
   while (defined (my $allele = $rs->next())) {
     my $gene = $allele->gene();
     my $organism_full_name = $gene->organism()->full_name();
+
+    if (!$allele->primary_identifier()) {
+      die 'no primary_identifier for allele with ID: ', $allele->allele_id();
+    }
 
     my $key = "$organism_full_name " . $allele->primary_identifier();
     my $gene_key = "$organism_full_name " . $gene->primary_identifier();
@@ -452,6 +462,8 @@ sub perl
   if (%genotypes) {
     $ret{genotypes} = \%genotypes;
   }
+
+  $curs_schema->disconnect();
 
   return \%ret;
 }

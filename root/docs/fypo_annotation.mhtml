@@ -118,7 +118,10 @@ terms previously used in the session appear below the text box and can
 be re-used by clicking on them.
 </p>
 
-    <p>Examples include:</p>
+    <p>Conditions are aspects of the experimental setup that may be
+    relevant to various different methods, and are independent of what
+    cells, strain, organism, etc. are used. Examples include:</p>
+
     <ul>
       <li>
         Glucose minimal medium vs. glucose rich medium (synonyms for some
@@ -393,6 +396,29 @@ FAQ</a> for more information.
     not know which of these is decreased (typically if cells are grown
     on agar plates for a number of days and then observed) use
     "decreased cell population growth".
+    </p>
+
+    <h3>Cellular structures vs. processes affecting cellular structures</h3>
+    <p>
+FYPO includes many pairs of terms that refer to the same cellular or
+subcellular structure, where one describes the structure (as normal,
+abnormal, etc.) and the other describes a process affecting the
+structure. In each pair, the structural phenotype term uses a GO
+cellular component (CC) term in its logical definition, and the
+process phenotype term uses a GO biological process (BP) term. The
+terms will often be linked by a has_output relation. For example,
+"abnormal kinetochore morphology" (FYPO:0000050) refers to the GO CC
+term "kinetochore" (GO:0000776), and "abnormal kinetochore
+organization" (FYPO:0000807) refers to the GO BP term "kinetochore
+organization" (GO:0051383).
+    </p>
+
+    <p>
+Use the process phenotype term to annotate experiments in which the
+assay can monitor the process as it occurs (e.g. if you have movies,
+kymographs, a reconstituted system, or even a sufficiently detailed
+series of still pictures). Otherwise, use the structure or morphology
+phenotype terms (e.g. when you have only one or a few still pictures).
     </p>
 
     <h3>Translation vs. protein level</h3>
