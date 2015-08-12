@@ -1526,14 +1526,12 @@ function makeAlleleEditInstance($modal, allele, endogenousWildtypeAllowed)
 
 var genePageCtrl =
   function($scope, $modal, toaster, $http) {
-    $scope.singleAlleleQuick = function(gene_display_name, gene_systemtic_id, gene_id) {
+    $scope.singleAlleleQuick = function(gene_display_name, gene_systematic_id, gene_id) {
       var editInstance = makeAlleleEditInstance($modal,
                                                 {
-                                                  gene: {
-                                                    display_name: gene_display_name,
-                                                    systemtic_id: gene_systemtic_id,
-                                                    gene_id: gene_id
-                                                  }
+                                                  gene_display_name: gene_display_name,
+                                                  gene_systematic_id: gene_systematic_id,
+                                                  gene_id: gene_id,
                                                 });
 
       editInstance.result.then(function (alleleData) {
@@ -1717,7 +1715,7 @@ var multiAlleleCtrl =
 
       if (allele.gene) {
         allele.gene_display_name = allele.gene.display_name;
-        allele.gene_systemtic_id = allele.gene.systemtic_id;
+        allele.gene_systematic_id = allele.gene.primary_identifier;
         allele.gene_id = allele.gene.gene_id;
         delete allele.gene;
       }
@@ -1864,7 +1862,7 @@ canto.directive('geneSelector',
                   geneSelectorCtrl]);
 
 var genotypeSearchCtrl =
-  function(CursGenotypeList, CantoGlobals, toaster) {
+  function(CursGenotypeList, CantoGlobals) {
     return {
       scope: {
       },
@@ -1913,18 +1911,20 @@ var genotypeSearchCtrl =
                           }).then(function(results) {
                             scope.data.filteredCursGenotypes = results;
                             scope.data.waitingForServerCurs = false;
+                            delete scope.data.serverError;
                           }).catch(function() {
-                            toaster.pop('error', "couldn't read the genotype list from the server");
                             scope.data.waitingForServerCurs = false;
+                            scope.data.serverError = "couldn't read the genotype list from the server";
                           });
                           CursGenotypeList.filteredGenotypeList('external_only', {
                             gene_identifiers: geneIdentifiers
                           }).then(function(results) {
                             scope.data.filteredExternalGenotypes = results;
                             scope.data.waitingForServerExternal = false;
+                            delete scope.data.serverError;
                           }).catch(function() {
-                            toaster.pop('error', "couldn't read the genotype list from the server");
                             scope.data.waitingForServerExternal = false;
+                            scope.data.serverError = "couldn't read the genotype list from the server";
                           });
                         }
                       });
@@ -1933,7 +1933,7 @@ var genotypeSearchCtrl =
   };
 
 canto.directive('genotypeSearch',
-                 ['CursGenotypeList', 'CantoGlobals', 'toaster',
+                 ['CursGenotypeList', 'CantoGlobals',
                   genotypeSearchCtrl]);
 
 var genotypeListRowCtrl =
@@ -2001,7 +2001,7 @@ canto.directive('genotypeListView',
 
 
 var singleGeneGenotypeList =
-  function(CursGenotypeList, CantoGlobals, toaster) {
+  function(CursGenotypeList, CantoGlobals) {
     return {
       scope: {
         genePrimaryIdentifier: '=',
@@ -2038,9 +2038,10 @@ var singleGeneGenotypeList =
           if (results.length > 0 && results.length <= 5) {
             $scope.data.showAll = true;
           }
+          delete $scope.data.serverError;
         }).catch(function() {
-          toaster.pop('error', "couldn't read the genotype list from the server");
           $scope.data.waitingForServer = false;
+          $scope.data.serverError = "couldn't read the genotype list from the server";
         });
 
       },
@@ -2048,7 +2049,7 @@ var singleGeneGenotypeList =
   };
 
 canto.directive('singleGeneGenotypeList',
-                ['CursGenotypeList', 'CantoGlobals', 'toaster', singleGeneGenotypeList]);
+                ['CursGenotypeList', 'CantoGlobals', singleGeneGenotypeList]);
 
 
 var EditDialog = function($) {
@@ -2535,8 +2536,8 @@ function filterAnnotations(annotations, params) {
 
 
 var annotationTableCtrl =
-  function($modal, CantoGlobals, AnnotationProxy, AnnotationTypeConfig, CursGenotypeList,
-           CursSessionDetails, toaster) {
+  function(CantoGlobals, AnnotationProxy, AnnotationTypeConfig, CursGenotypeList,
+           CursSessionDetails) {
     return {
       scope: {
         featureIdFilter: '@',
@@ -2560,6 +2561,8 @@ var annotationTableCtrl =
           featureType: $scope.featureTypeFilter,
           alleleCount: $scope.alleleCountFilter,
         };
+
+        $scope.data = {};
 
         $scope.$watch('data.annotations',
                       function(newAnnotations) {
@@ -2629,7 +2632,7 @@ var annotationTableCtrl =
           .then(function(annotations) {
             scope.data.annotations = annotations;
           }).catch(function() {
-            toaster.pop('error', "couldn't read annotations from the server");
+            scope.data.serverError = "couldn't read annotations from the server";
           });
 
         AnnotationTypeConfig.getByName(scope.annotationTypeName).then(function(annotationType) {
@@ -2640,7 +2643,7 @@ var annotationTableCtrl =
             CursGenotypeList.cursGenotypeList().then(function(results) {
               scope.data.hasFeatures = (results.length > 0);
             }).catch(function() {
-              toaster.pop('error', "couldn't read the genotype list from the server");
+              scope.data.serverError = "couldn't read the genotype list from the server";
             });
           } else {
             // if we're here the user has some genes in their list
@@ -2652,13 +2655,13 @@ var annotationTableCtrl =
   };
 
 canto.directive('annotationTable',
-                ['$modal', 'CantoGlobals', 'AnnotationProxy',
-                 'AnnotationTypeConfig', 'CursGenotypeList', 'CursSessionDetails', 'toaster',
+                ['CantoGlobals', 'AnnotationProxy',
+                 'AnnotationTypeConfig', 'CursGenotypeList', 'CursSessionDetails',
                  annotationTableCtrl]);
 
 
 var annotationTableList =
-  function(toaster, AnnotationProxy, AnnotationTypeConfig, CantoGlobals) {
+  function(AnnotationProxy, AnnotationTypeConfig, CantoGlobals) {
     return {
       scope: {
         featureIdFilter: '@',
@@ -2672,6 +2675,9 @@ var annotationTableList =
         $scope.app_static_path = CantoGlobals.app_static_path;
         $scope.annotationTypes = [];
         $scope.annotationsByType = {};
+        $scope.serverErrorsByType = {};
+
+        $scope.data = {};
 
         AnnotationTypeConfig.getAll().then(function(response) {
           $scope.annotationTypes =
@@ -2696,15 +2702,18 @@ var annotationTableList =
                       $scope.annotationsByType[annotationType.name] =
                         filterAnnotations(annotations, params);
                     }).catch(function() {
-                      toaster.pop('error', "couldn't read annotations from the server");
+                      $scope.serverErrorsByType[annotationType.name] =
+                        "couldn't read annotations from the server - please contact the curators";
                     });
                 });
+        }).catch(function() {
+          $scope.data.serverError = "couldn't read annotation types from the server";
         });
       },
     };
   };
 
-canto.directive('annotationTableList', ['toaster', 'AnnotationProxy', 'AnnotationTypeConfig', 'CantoGlobals', annotationTableList]);
+canto.directive('annotationTableList', ['AnnotationProxy', 'AnnotationTypeConfig', 'CantoGlobals', annotationTableList]);
 
 
 var annotationTableRow =
