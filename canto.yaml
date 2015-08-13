@@ -1479,6 +1479,7 @@ available_annotation_type_list:
     very_short_display_name: 'phenotype'
     short_display_name: 'phenotypic outcome'
     display_name: 'Phenotypic outcome'
+    feature_type: 'genotype'
     show_synonyms: always
     evidence_codes:
 #      - Cell growth assay
@@ -1758,6 +1759,7 @@ available_annotation_type_list:
 #    very_short_display_name: 'phenotype'
 #    short_display_name: 'phenotype'
 #    display_name: 'phenotype'
+#    feature_type: 'genotype'
 #    show_synonyms: always
 #    evidence_codes:
 #      - Cell growth assay
