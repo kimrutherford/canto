@@ -1,65 +1,20 @@
 format-version: 1.2
-date: 03:08:2015 17:28
+date: 17:08:2015 16:21
 saved-by: irvinea
 auto-generated-by: OBO-Edit 2.3.1
-default-namespace: phenotype_outcome_ontology
-
-[Term]
-id: ID:0000000
-name: white
-def: "white pigmentation." []
-synonym: "albino." RELATED []
-is_a: PHIPO:0000303 ! variant colony color
-created_by: urbanm
-creation_date: 2015-07-31T17:04:46Z
-
-[Term]
-id: ID:0000001
-name: buff
-def: "buff/tan pigmentation" []
-is_a: PHIPO:0000303 ! variant colony color
-created_by: urbanm
-creation_date: 2015-07-31T17:05:53Z
-
-[Term]
-id: ID:0000002
-name: apoplastic effector
-namespace: PHI_phenotype_ontology
-def: "An effector that is secreted into and functions in the plant extracellular space." [DOI:10.1038/nrmicro3119]
-is_a: PHIPO:0000132 ! effector location in host
-created_by: irvinea
-creation_date: 2015-08-03T17:00:14Z
-
-[Term]
-id: ID:0000003
-name: cytoplasmic effector
-namespace: PHI_phenotype_ontology
-def: "An effector that is secreted and translocated across the plant membrane into the host cytoplasm, where it targets different subcellular compartments." [DOI:10.1038/nrmicro3119]
-is_a: PHIPO:0000132 ! effector location in host
-created_by: irvinea
-creation_date: 2015-08-03T17:15:45Z
-
-[Term]
-id: ID:0000004
-name: avirulence effector
-namespace: PHI_phenotype_ontology
-def: "An effector that is recognized by a corresponding plant resistance (R) protein, triggering the hypersensitive response and rendering pathogen strains expressing these effectors unable to infect host genotypes expressing the R protein." [DOI:10.1038/nrmicro3119]
-synonym: "AVR effector" EXACT []
-is_a: PHIPO:0000001 ! effector
-created_by: irvinea
-creation_date: 2015-08-03T17:19:07Z
+default-namespace: phi_interaction_phenotype
 
 [Term]
 id: PHIPO:0000000
-name: pathogen-host interaction phenotype
-namespace: PHI_phenotype_ontology
+name: apoplastic effector
+def: "An effector that is secreted into and functions in the plant extracellular space." [DOI:10.1038/nrmicro3119]
+is_a: PHIPO:0000132 ! effector location in host
 created_by: irvinea
-creation_date: 2015-07-15T16:09:06Z
+creation_date: 2015-08-17T11:51:58Z
 
 [Term]
 id: PHIPO:0000001
 name: effector
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-15T16:18:55Z
@@ -67,14 +22,13 @@ creation_date: 2015-07-15T16:18:55Z
 [Term]
 id: PHIPO:0000002
 name: PHI pathogen phenotype
-is_a: PHIPO:0000000 ! pathogen-host interaction phenotype
+namespace: phi_pathogen_phenotype
 created_by: irvinea
 creation_date: 2015-07-15T16:15:45Z
 
 [Term]
 id: PHIPO:0000003
 name: effector (plant avirulence determinant)
-namespace: PHI_phenotype_ontology
 def: "Some effector genes are required to cause disease on susceptible hosts but most are not. A plant pathogen-specific term which was previously referred to as a corresponding avirulence (Avr) gene. An effector gene is formally identified because its presence leads to the direct or indirect recognition of a pathogen in resistant host genotypes which possess the corresponding disease resistance (R) gene. Positive recognition leads to activation of plant defense and the pathogen either fails to cause disease or causes less disease. In the absence of the pathogen, effector delivery into a healthy plant possessing the corresponding R gene activates plant defense responses." []
 is_a: PHIPO:0000001 ! effector
 created_by: irvinea
@@ -83,7 +37,6 @@ creation_date: 2015-07-15T16:19:43Z
 [Term]
 id: PHIPO:0000004
 name: enhanced antagonism
-namespace: PHI_phenotype_ontology
 def: "The transgenic strain shows greater endophytic biomass in the host and/or the formation of visible disease symptoms." []
 is_a: PHIPO:0000135 ! increased disease formation
 created_by: irvinea
@@ -92,7 +45,6 @@ creation_date: 2015-07-15T16:22:13Z
 [Term]
 id: PHIPO:0000005
 name: increased virulence
-namespace: PHI_phenotype_ontology
 def: "The transgenic strain causes greater incidence or severity of disease than the wild-type strain." []
 is_a: PHIPO:0000135 ! increased disease formation
 created_by: irvinea
@@ -101,7 +53,6 @@ creation_date: 2015-07-15T16:23:44Z
 [Term]
 id: PHIPO:0000006
 name: lethal
-namespace: PHI_phenotype_ontology
 def: "The transgenic strain is not viable. The gene product is essential for life of the organism." []
 is_a: PHIPO:0000135 ! increased disease formation
 created_by: irvinea
@@ -110,7 +61,6 @@ creation_date: 2015-07-15T16:25:15Z
 [Term]
 id: PHIPO:0000007
 name: loss of pathogenicity
-namespace: PHI_phenotype_ontology
 def: "The transgenic strain fails to cause disease that is observed in the wild type (i.e. qualitative effect)." []
 is_a: PHIPO:0000136 ! reduced disease formation
 created_by: irvinea
@@ -119,7 +69,6 @@ creation_date: 2015-07-15T16:25:39Z
 [Term]
 id: PHIPO:0000008
 name: reduced virulence
-namespace: PHI_phenotype_ontology
 def: "The transgenic strain still causes some disease formation but fewer symptoms than the wild-type strain (i.e. a quantitative effect)." []
 is_a: PHIPO:0000136 ! reduced disease formation
 created_by: irvinea
@@ -128,7 +77,7 @@ creation_date: 2015-07-15T16:26:23Z
 [Term]
 id: PHIPO:0000009
 name: resistant to chemical
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 def: "The transgenic strain grows and/or develops normally when exposed to chemistry concentrations that are detrimental to the wild-type strain." []
 is_a: PHIPO:0000135 ! increased disease formation
 is_a: PHIPO:0000137 ! response to chemistry
@@ -139,7 +88,6 @@ creation_date: 2015-07-15T16:26:50Z
 [Term]
 id: PHIPO:0000010
 name: sensitive to chemical
-namespace: PHI_phenotype_ontology
 def: "The transgenic strain which expresses either no or reduced levels of a specific gene product(s) or possesses a specific gene mutation(s), has the same ability as the wild-type strain to grow and develop when exposed to detrimental chemistry concentrations." []
 is_a: PHIPO:0000136 ! reduced disease formation
 is_a: PHIPO:0000137 ! response to chemistry
@@ -149,7 +97,6 @@ creation_date: 2015-07-15T16:27:14Z
 [Term]
 id: PHIPO:0000011
 name: unaltered pathogenicity
-namespace: PHI_phenotype_ontology
 def: "The transgenic strain which expresses altered levels of a specific gene product(s) causes the same level of disease compared to the wild-type reference strain." []
 synonym: "control pathogenicity" RELATED []
 synonym: "unaffected pathogenicity" EXACT []
@@ -162,8 +109,6 @@ creation_date: 2015-07-15T16:27:39Z
 [Term]
 id: PHIPO:0000012
 name: PHI interaction phenotype
-namespace: PHI_phenotype_ontology
-is_a: PHIPO:0000000 ! pathogen-host interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-15T17:09:19Z
 
@@ -186,6 +131,7 @@ creation_date: 2015-07-22T15:13:24Z
 id: PHIPO:0000015
 name: mating defect
 is_a: PHIPO:0000039 ! defect in appressorium
+is_a: PHIPO:0000126 ! variant host entry
 created_by: irvinea
 creation_date: 2015-07-15T17:17:00Z
 
@@ -207,6 +153,7 @@ creation_date: 2015-07-15T17:18:39Z
 [Term]
 id: PHIPO:0000018
 name: variant vegetative spores
+namespace: phi_pathogen_phenotype
 synonym: "abnormal vegetative spores" RELATED []
 is_a: PHIPO:0000095 ! variant spores
 is_a: PHIPO:0000146 ! vegetative spores
@@ -216,6 +163,7 @@ creation_date: 2015-07-15T17:19:15Z
 [Term]
 id: PHIPO:0000019
 name: increased vegetative spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000018 ! variant vegetative spores
 created_by: irvinea
 creation_date: 2015-07-15T17:19:34Z
@@ -223,6 +171,7 @@ creation_date: 2015-07-15T17:19:34Z
 [Term]
 id: PHIPO:0000020
 name: reduced vegetative spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000018 ! variant vegetative spores
 created_by: irvinea
 creation_date: 2015-07-15T17:20:34Z
@@ -230,6 +179,7 @@ creation_date: 2015-07-15T17:20:34Z
 [Term]
 id: PHIPO:0000021
 name: defective vegetative spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000018 ! variant vegetative spores
 created_by: irvinea
 creation_date: 2015-07-15T17:27:48Z
@@ -237,6 +187,7 @@ creation_date: 2015-07-15T17:27:48Z
 [Term]
 id: PHIPO:0000022
 name: SPECIFIC VEGETATIVE SPORE DEFECTS
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000021 ! defective vegetative spores
 created_by: irvinea
 creation_date: 2015-07-15T17:28:32Z
@@ -244,6 +195,7 @@ creation_date: 2015-07-15T17:28:32Z
 [Term]
 id: PHIPO:0000023
 name: variant sexual spores
+namespace: phi_pathogen_phenotype
 synonym: "abnormal sexual spores" RELATED []
 is_a: PHIPO:0000095 ! variant spores
 is_a: PHIPO:0000145 ! sexual spores
@@ -253,6 +205,7 @@ creation_date: 2015-07-15T17:29:18Z
 [Term]
 id: PHIPO:0000024
 name: increased sexual spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000023 ! variant sexual spores
 created_by: irvinea
 creation_date: 2015-07-15T17:29:47Z
@@ -260,6 +213,7 @@ creation_date: 2015-07-15T17:29:47Z
 [Term]
 id: PHIPO:0000025
 name: reduced sexual spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000023 ! variant sexual spores
 created_by: irvinea
 creation_date: 2015-07-15T17:30:09Z
@@ -267,6 +221,7 @@ creation_date: 2015-07-15T17:30:09Z
 [Term]
 id: PHIPO:0000026
 name: defective sexual spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000023 ! variant sexual spores
 created_by: irvinea
 creation_date: 2015-07-15T17:30:27Z
@@ -274,6 +229,7 @@ creation_date: 2015-07-15T17:30:27Z
 [Term]
 id: PHIPO:0000027
 name: SPECIFIC SEXUAL SPORE DEFECTS
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000026 ! defective sexual spores
 created_by: irvinea
 creation_date: 2015-07-15T17:31:00Z
@@ -281,6 +237,7 @@ creation_date: 2015-07-15T17:31:00Z
 [Term]
 id: PHIPO:0000028
 name: variant vegetative spore germination
+namespace: phi_pathogen_phenotype
 synonym: "abnormal vegetative spore germination" RELATED []
 is_a: PHIPO:0000018 ! variant vegetative spores
 created_by: irvinea
@@ -289,6 +246,7 @@ creation_date: 2015-07-15T17:34:06Z
 [Term]
 id: PHIPO:0000029
 name: reduced sexual spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000094 ! variant sexual spore germination
 created_by: irvinea
 creation_date: 2015-07-15T17:34:52Z
@@ -296,6 +254,7 @@ creation_date: 2015-07-15T17:34:52Z
 [Term]
 id: PHIPO:0000030
 name: defective sexual spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000094 ! variant sexual spore germination
 created_by: irvinea
 creation_date: 2015-07-15T17:35:22Z
@@ -303,6 +262,7 @@ creation_date: 2015-07-15T17:35:22Z
 [Term]
 id: PHIPO:0000031
 name: SPECIFIC SEXUAL SPORE GERMINATION DEFECTS
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000030 ! defective sexual spore germination
 created_by: irvinea
 creation_date: 2015-07-22T16:30:04Z
@@ -310,6 +270,7 @@ creation_date: 2015-07-22T16:30:04Z
 [Term]
 id: PHIPO:0000032
 name: unaltered pathogen phenotype
+namespace: phi_pathogen_phenotype
 synonym: "control pathogen phenotype" EXACT []
 synonym: "normal pathogen phenotype" RELATED []
 synonym: "wild type pathogen phenotype" RELATED []
@@ -320,6 +281,7 @@ creation_date: 2015-07-15T17:36:22Z
 [Term]
 id: PHIPO:0000033
 name: unaltered host penetration
+namespace: phi_pathogen_phenotype
 synonym: "control host penetration" EXACT []
 synonym: "normal host penetration" RELATED []
 synonym: "wild type host penetration" RELATED []
@@ -330,6 +292,7 @@ creation_date: 2015-07-15T17:37:08Z
 [Term]
 id: PHIPO:0000034
 name: unaltered vegetative spores
+namespace: phi_pathogen_phenotype
 synonym: "control vegetative spores" RELATED []
 synonym: "normal vegetative spores" RELATED []
 synonym: "wild type vegetative spores" RELATED []
@@ -341,6 +304,7 @@ creation_date: 2015-07-15T17:38:12Z
 [Term]
 id: PHIPO:0000035
 name: unaltered sexual spores
+namespace: phi_pathogen_phenotype
 synonym: "control sexual spores" EXACT []
 synonym: "normal sexual spores" RELATED []
 synonym: "wild type sexual spores" RELATED []
@@ -352,6 +316,7 @@ creation_date: 2015-07-15T17:38:35Z
 [Term]
 id: PHIPO:0000036
 name: unaltered sexual spore germination
+namespace: phi_pathogen_phenotype
 synonym: "control sexual spore germination" EXACT []
 synonym: "normal sexual spore germination" RELATED []
 synonym: "wild type sexual spore germination" RELATED []
@@ -370,6 +335,7 @@ creation_date: 2015-07-16T15:28:54Z
 [Term]
 id: PHIPO:0000038
 name: defective vegetative spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000028 ! variant vegetative spore germination
 created_by: irvinea
 creation_date: 2015-07-22T15:42:26Z
@@ -385,6 +351,7 @@ creation_date: 2015-07-16T16:09:02Z
 [Term]
 id: PHIPO:0000040
 name: SPECIFIC VEGETATIVE SPORE GERMINATION DEFECTS
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000038 ! defective vegetative spore germination
 created_by: irvinea
 creation_date: 2015-07-22T15:42:39Z
@@ -392,6 +359,7 @@ creation_date: 2015-07-22T15:42:39Z
 [Term]
 id: PHIPO:0000041
 name: reduced vegetative spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000028 ! variant vegetative spore germination
 created_by: irvinea
 creation_date: 2015-07-22T15:43:41Z
@@ -399,15 +367,14 @@ creation_date: 2015-07-22T15:43:41Z
 [Term]
 id: PHIPO:0000042
 name: PHI host phenotype
-namespace: host_response_ontology
-is_a: PHIPO:0000000 ! pathogen-host interaction phenotype
+namespace: phi_host_phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:37:59Z
 
 [Term]
 id: PHIPO:0000043
 name: callose deposition
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000112 ! host chemical phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:40:41Z
@@ -415,7 +382,7 @@ creation_date: 2015-07-16T20:40:41Z
 [Term]
 id: PHIPO:0000044
 name: phytoalexin production
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000112 ! host chemical phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:47:44Z
@@ -423,7 +390,7 @@ creation_date: 2015-07-27T10:47:44Z
 [Term]
 id: PHIPO:0000045
 name: chlorosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000106 ! host tissue phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:41:38Z
@@ -431,7 +398,7 @@ creation_date: 2015-07-16T20:41:38Z
 [Term]
 id: PHIPO:0000046
 name: host response strength
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000042 ! PHI host phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:43:04Z
@@ -439,7 +406,7 @@ creation_date: 2015-07-16T20:43:04Z
 [Term]
 id: PHIPO:0000047
 name: inflammation
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000106 ! host tissue phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:43:08Z
@@ -447,7 +414,7 @@ creation_date: 2015-07-16T20:43:08Z
 [Term]
 id: PHIPO:0000048
 name: lesions
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000106 ! host tissue phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:43:13Z
@@ -455,7 +422,7 @@ creation_date: 2015-07-16T20:43:13Z
 [Term]
 id: PHIPO:0000049
 name: necrosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000106 ! host tissue phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:43:16Z
@@ -463,7 +430,7 @@ creation_date: 2015-07-16T20:43:16Z
 [Term]
 id: PHIPO:0000050
 name: host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000115 ! host gene phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:43:21Z
@@ -471,7 +438,7 @@ creation_date: 2015-07-16T20:43:21Z
 [Term]
 id: PHIPO:0000051
 name: radical length
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000108 ! organ size
 created_by: irvinea
 creation_date: 2015-07-16T20:43:28Z
@@ -479,7 +446,7 @@ creation_date: 2015-07-16T20:43:28Z
 [Term]
 id: PHIPO:0000052
 name: resistance to infection
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000106 ! host tissue phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:43:35Z
@@ -487,7 +454,7 @@ creation_date: 2015-07-16T20:43:35Z
 [Term]
 id: PHIPO:0000053
 name: unaltered callose deposition
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control callose deposition" EXACT []
 synonym: "wild type callose deposition" RELATED []
 synonym: "wild-type callose deposition" RELATED []
@@ -498,7 +465,7 @@ creation_date: 2015-07-16T20:51:56Z
 [Term]
 id: PHIPO:0000054
 name: reduced callose deposition
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000043 ! callose deposition
 created_by: irvinea
 creation_date: 2015-07-16T20:51:56Z
@@ -506,7 +473,7 @@ creation_date: 2015-07-16T20:51:56Z
 [Term]
 id: PHIPO:0000055
 name: increased callose deposition
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000043 ! callose deposition
 created_by: irvinea
 creation_date: 2015-07-16T20:51:56Z
@@ -514,7 +481,7 @@ creation_date: 2015-07-16T20:51:56Z
 [Term]
 id: PHIPO:0000056
 name: production of phenolic compounds
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000112 ! host chemical phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:52:59Z
@@ -522,7 +489,7 @@ creation_date: 2015-07-16T20:52:59Z
 [Term]
 id: PHIPO:0000057
 name: oxidative burst
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "accumulation of hydrogen peroxide" EXACT []
 synonym: "increased production of reactive oxygen species" EXACT []
 synonym: "increased production of ROS" EXACT []
@@ -533,7 +500,7 @@ creation_date: 2015-07-16T20:52:59Z
 [Term]
 id: PHIPO:0000058
 name: unaltered chlorosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control chlorosis" RELATED []
 synonym: "wild type chlorosis" RELATED []
 synonym: "wild-type chlorosis" RELATED []
@@ -544,7 +511,7 @@ creation_date: 2015-07-16T20:53:06Z
 [Term]
 id: PHIPO:0000059
 name: reduced chlorosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000045 ! chlorosis
 created_by: irvinea
 creation_date: 2015-07-16T20:53:06Z
@@ -552,7 +519,7 @@ creation_date: 2015-07-16T20:53:06Z
 [Term]
 id: PHIPO:0000060
 name: increased chlorosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000045 ! chlorosis
 created_by: irvinea
 creation_date: 2015-07-16T20:53:06Z
@@ -560,7 +527,7 @@ creation_date: 2015-07-16T20:53:06Z
 [Term]
 id: PHIPO:0000061
 name: unaltered host response
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control host response" EXACT []
 synonym: "wild type host response" RELATED []
 synonym: "wild-type host response" RELATED []
@@ -571,7 +538,6 @@ creation_date: 2015-07-16T20:53:12Z
 [Term]
 id: PHIPO:0000062
 name: increased host response
-namespace: host_response_ontology
 is_a: PHIPO:0000046 ! host response strength
 is_a: PHIPO:0000136 ! reduced disease formation
 created_by: irvinea
@@ -580,7 +546,7 @@ creation_date: 2015-07-16T20:53:12Z
 [Term]
 id: PHIPO:0000063
 name: no host response
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000046 ! host response strength
 created_by: irvinea
 creation_date: 2015-07-16T20:53:12Z
@@ -588,7 +554,6 @@ creation_date: 2015-07-16T20:53:12Z
 [Term]
 id: PHIPO:0000064
 name: reduced host response
-namespace: host_response_ontology
 is_a: PHIPO:0000046 ! host response strength
 is_a: PHIPO:0000135 ! increased disease formation
 created_by: irvinea
@@ -597,7 +562,7 @@ creation_date: 2015-07-16T20:53:12Z
 [Term]
 id: PHIPO:0000065
 name: systemic host phenotype
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000042 ! PHI host phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:16:41Z
@@ -605,7 +570,7 @@ creation_date: 2015-07-27T10:16:41Z
 [Term]
 id: PHIPO:0000066
 name: increased inflammation
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000047 ! inflammation
 created_by: irvinea
 creation_date: 2015-07-16T20:53:16Z
@@ -613,7 +578,7 @@ creation_date: 2015-07-16T20:53:16Z
 [Term]
 id: PHIPO:0000067
 name: unaltered lesions
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control lesions" EXACT []
 synonym: "wild type lesions" RELATED []
 synonym: "wild-type lesions" RELATED []
@@ -624,7 +589,7 @@ creation_date: 2015-07-16T20:53:23Z
 [Term]
 id: PHIPO:0000068
 name: reduced lesions
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 def: "Fewer lesions or smaller lesions." []
 is_a: PHIPO:0000048 ! lesions
 created_by: irvinea
@@ -633,8 +598,8 @@ creation_date: 2015-07-16T20:53:23Z
 [Term]
 id: PHIPO:0000069
 name: increased lesions
-namespace: host_response_ontology
-def: "increased number or size of lesions" []
+namespace: phi_host_phenotype
+def: "Increased number or size of lesions." []
 is_a: PHIPO:0000048 ! lesions
 created_by: irvinea
 creation_date: 2015-07-16T20:53:23Z
@@ -642,7 +607,7 @@ creation_date: 2015-07-16T20:53:23Z
 [Term]
 id: PHIPO:0000070
 name: unaltered necrosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control necrosis" EXACT []
 synonym: "wild type necrosis" RELATED []
 synonym: "wild-type necrosis" RELATED []
@@ -653,7 +618,7 @@ creation_date: 2015-07-16T20:53:39Z
 [Term]
 id: PHIPO:0000071
 name: reduced necrosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000049 ! necrosis
 created_by: irvinea
 creation_date: 2015-07-16T20:53:39Z
@@ -661,7 +626,7 @@ creation_date: 2015-07-16T20:53:39Z
 [Term]
 id: PHIPO:0000072
 name: increased necrosis
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000049 ! necrosis
 created_by: irvinea
 creation_date: 2015-07-16T20:53:39Z
@@ -669,7 +634,7 @@ creation_date: 2015-07-16T20:53:39Z
 [Term]
 id: PHIPO:0000073
 name: target host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000050 ! host protein expression
 created_by: irvinea
 creation_date: 2015-07-16T20:53:50Z
@@ -677,7 +642,7 @@ creation_date: 2015-07-16T20:53:50Z
 [Term]
 id: PHIPO:0000074
 name: defensive host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000050 ! host protein expression
 created_by: irvinea
 creation_date: 2015-07-16T20:53:50Z
@@ -685,7 +650,7 @@ creation_date: 2015-07-16T20:53:50Z
 [Term]
 id: PHIPO:0000075
 name: unaltered radical length
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control radical length" EXACT []
 synonym: "wild type radical length" RELATED []
 synonym: "wild-type radical length" RELATED []
@@ -696,7 +661,7 @@ creation_date: 2015-07-16T20:53:56Z
 [Term]
 id: PHIPO:0000076
 name: increased radical length
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000051 ! radical length
 created_by: irvinea
 creation_date: 2015-07-16T20:53:56Z
@@ -704,7 +669,7 @@ creation_date: 2015-07-16T20:53:56Z
 [Term]
 id: PHIPO:0000077
 name: decreased radical length
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000051 ! radical length
 created_by: irvinea
 creation_date: 2015-07-16T20:53:56Z
@@ -712,7 +677,7 @@ creation_date: 2015-07-16T20:53:56Z
 [Term]
 id: PHIPO:0000078
 name: unaltered resistance to infection
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control resistance to infection" EXACT []
 synonym: "wild type resistance to infection" RELATED []
 synonym: "wild-type resistance to infection" RELATED []
@@ -723,7 +688,7 @@ creation_date: 2015-07-16T20:54:05Z
 [Term]
 id: PHIPO:0000079
 name: reduced resistance to infection
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000052 ! resistance to infection
 created_by: irvinea
 creation_date: 2015-07-16T20:54:05Z
@@ -731,15 +696,15 @@ creation_date: 2015-07-16T20:54:05Z
 [Term]
 id: PHIPO:0000080
 name: increased resistance to infection
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000052 ! resistance to infection
 created_by: irvinea
 creation_date: 2015-07-16T20:54:05Z
 
 [Term]
 id: PHIPO:0000081
-name: oxdiative burst in adjacent uninfected cells
-namespace: host_response_ontology
+name: oxidative burst in adjacent uninfected cells
+namespace: phi_host_phenotype
 is_a: PHIPO:0000057 ! oxidative burst
 created_by: irvinea
 creation_date: 2015-07-16T21:13:56Z
@@ -747,7 +712,7 @@ creation_date: 2015-07-16T21:13:56Z
 [Term]
 id: PHIPO:0000082
 name: decreased defensive host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000074 ! defensive host protein expression
 created_by: irvinea
 creation_date: 2015-07-16T21:17:39Z
@@ -755,7 +720,7 @@ creation_date: 2015-07-16T21:17:39Z
 [Term]
 id: PHIPO:0000083
 name: increased defensive host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000074 ! defensive host protein expression
 created_by: irvinea
 creation_date: 2015-07-16T21:18:02Z
@@ -763,7 +728,7 @@ creation_date: 2015-07-16T21:18:02Z
 [Term]
 id: PHIPO:0000084
 name: unaltered defensive host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control defensive host protein expression" EXACT []
 synonym: "wild type defensive host protein expression" RELATED []
 synonym: "wild-type defensive host protein expression" RELATED []
@@ -774,7 +739,7 @@ creation_date: 2015-07-16T21:18:21Z
 [Term]
 id: PHIPO:0000085
 name: decreased target host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000073 ! target host protein expression
 created_by: irvinea
 creation_date: 2015-07-16T21:18:51Z
@@ -782,7 +747,7 @@ creation_date: 2015-07-16T21:18:51Z
 [Term]
 id: PHIPO:0000086
 name: increased target host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000073 ! target host protein expression
 created_by: irvinea
 creation_date: 2015-07-16T21:19:12Z
@@ -790,7 +755,7 @@ creation_date: 2015-07-16T21:19:12Z
 [Term]
 id: PHIPO:0000087
 name: unaltered target host protein expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "control target host protein expression" EXACT []
 synonym: "wild type target host protein expression" RELATED []
 synonym: "wild-type target host protein expression" RELATED []
@@ -801,6 +766,7 @@ creation_date: 2015-07-16T21:19:28Z
 [Term]
 id: PHIPO:0000088
 name: unaltered vegetative spore germination
+namespace: phi_pathogen_phenotype
 synonym: "control vegetative spore germination" EXACT []
 synonym: "normal vegetative spore germination" RELATED []
 synonym: "wild type vegetative spore germination" RELATED []
@@ -811,6 +777,7 @@ creation_date: 2015-07-22T13:44:02Z
 [Term]
 id: PHIPO:0000089
 name: unaltered vegetative spore production
+namespace: phi_pathogen_phenotype
 synonym: "control vegetative spore production" RELATED []
 synonym: "normal vegetative spore production" RELATED []
 synonym: "wild type vegetative spore production" RELATED []
@@ -821,6 +788,7 @@ creation_date: 2015-07-22T14:13:58Z
 [Term]
 id: PHIPO:0000090
 name: variant pathogen phenotype
+namespace: phi_pathogen_phenotype
 synonym: "abnormal pathogen phenotype" RELATED []
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
@@ -829,6 +797,7 @@ creation_date: 2015-07-22T14:17:20Z
 [Term]
 id: PHIPO:0000091
 name: no vegetative spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000018 ! variant vegetative spores
 created_by: irvinea
 creation_date: 2015-07-22T14:21:18Z
@@ -836,6 +805,7 @@ creation_date: 2015-07-22T14:21:18Z
 [Term]
 id: PHIPO:0000092
 name: no sexual spore germination
+namespace: phi_pathogen_phenotype
 synonym: "sexual spore germination absent" EXACT []
 is_a: PHIPO:0000094 ! variant sexual spore germination
 created_by: irvinea
@@ -844,6 +814,7 @@ creation_date: 2015-07-22T14:36:32Z
 [Term]
 id: PHIPO:0000093
 name: increased sexual spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000094 ! variant sexual spore germination
 created_by: irvinea
 creation_date: 2015-07-22T14:37:56Z
@@ -851,6 +822,7 @@ creation_date: 2015-07-22T14:37:56Z
 [Term]
 id: PHIPO:0000094
 name: variant sexual spore germination
+namespace: phi_pathogen_phenotype
 synonym: "abnormal sexual spore germination" RELATED []
 is_a: PHIPO:0000023 ! variant sexual spores
 is_a: PHIPO:0000213 ! spore germination
@@ -860,6 +832,7 @@ creation_date: 2015-07-22T14:43:30Z
 [Term]
 id: PHIPO:0000095
 name: variant spores
+namespace: phi_pathogen_phenotype
 synonym: "abnormal spores" RELATED []
 is_a: PHIPO:0000090 ! variant pathogen phenotype
 created_by: irvinea
@@ -896,6 +869,7 @@ creation_date: 2015-07-22T15:00:42Z
 [Term]
 id: PHIPO:0000100
 name: no vegetative spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000028 ! variant vegetative spore germination
 created_by: irvinea
 creation_date: 2015-07-22T15:43:41Z
@@ -903,6 +877,7 @@ creation_date: 2015-07-22T15:43:41Z
 [Term]
 id: PHIPO:0000101
 name: increased vegetative spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000028 ! variant vegetative spore germination
 created_by: irvinea
 creation_date: 2015-07-22T15:43:41Z
@@ -910,6 +885,7 @@ creation_date: 2015-07-22T15:43:41Z
 [Term]
 id: PHIPO:0000102
 name: unaltered spores
+namespace: phi_pathogen_phenotype
 synonym: "control spores" EXACT []
 synonym: "normal spores" RELATED []
 synonym: "wild type spores" RELATED []
@@ -920,6 +896,7 @@ creation_date: 2015-07-22T17:17:21Z
 [Term]
 id: PHIPO:0000103
 name: unaltered sexual spore production
+namespace: phi_pathogen_phenotype
 synonym: "control sexual spore production" EXACT []
 synonym: "normal sexual spore production" RELATED []
 synonym: "wild type sexual spore production" RELATED []
@@ -930,7 +907,7 @@ creation_date: 2015-07-22T17:19:26Z
 [Term]
 id: PHIPO:0000104
 name: variant lesions
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 synonym: "abnormal lesions" RELATED []
 is_a: PHIPO:0000048 ! lesions
 created_by: irvinea
@@ -939,7 +916,7 @@ creation_date: 2015-07-27T10:13:06Z
 [Term]
 id: PHIPO:0000105
 name: host death
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000065 ! systemic host phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:19:37Z
@@ -947,7 +924,7 @@ creation_date: 2015-07-27T10:19:37Z
 [Term]
 id: PHIPO:0000106
 name: host tissue phenotype
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000042 ! PHI host phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:21:26Z
@@ -955,7 +932,7 @@ creation_date: 2015-07-27T10:21:26Z
 [Term]
 id: PHIPO:0000107
 name: hypersensitive response
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000106 ! host tissue phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:23:17Z
@@ -963,7 +940,7 @@ creation_date: 2015-07-27T10:23:17Z
 [Term]
 id: PHIPO:0000108
 name: organ size
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000106 ! host tissue phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:28:27Z
@@ -971,7 +948,7 @@ creation_date: 2015-07-27T10:28:27Z
 [Term]
 id: PHIPO:0000109
 name: grain size
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000108 ! organ size
 created_by: irvinea
 creation_date: 2015-07-27T10:32:12Z
@@ -979,7 +956,7 @@ creation_date: 2015-07-27T10:32:12Z
 [Term]
 id: PHIPO:0000110
 name: fruit size
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000108 ! organ size
 created_by: irvinea
 creation_date: 2015-07-27T10:32:35Z
@@ -987,7 +964,7 @@ creation_date: 2015-07-27T10:32:35Z
 [Term]
 id: PHIPO:0000111
 name: kidney size
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000108 ! organ size
 created_by: irvinea
 creation_date: 2015-07-27T10:34:55Z
@@ -995,7 +972,7 @@ creation_date: 2015-07-27T10:34:55Z
 [Term]
 id: PHIPO:0000112
 name: host chemical phenotype
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000042 ! PHI host phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:37:20Z
@@ -1003,7 +980,7 @@ creation_date: 2015-07-27T10:37:20Z
 [Term]
 id: PHIPO:0000113
 name: ion flux
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000112 ! host chemical phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:48:14Z
@@ -1011,7 +988,7 @@ creation_date: 2015-07-27T10:48:14Z
 [Term]
 id: PHIPO:0000114
 name: detoxification of a microbial compound
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000112 ! host chemical phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:50:42Z
@@ -1019,7 +996,7 @@ creation_date: 2015-07-27T10:50:42Z
 [Term]
 id: PHIPO:0000115
 name: host gene phenotype
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000042 ! PHI host phenotype
 created_by: irvinea
 creation_date: 2015-07-27T10:51:29Z
@@ -1027,7 +1004,7 @@ creation_date: 2015-07-27T10:51:29Z
 [Term]
 id: PHIPO:0000116
 name: host gene expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000115 ! host gene phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:00:25Z
@@ -1035,7 +1012,7 @@ creation_date: 2015-07-27T11:00:25Z
 [Term]
 id: PHIPO:0000117
 name: host gene modification
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000115 ! host gene phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:00:52Z
@@ -1043,7 +1020,7 @@ creation_date: 2015-07-27T11:00:52Z
 [Term]
 id: PHIPO:0000118
 name: host protein modification
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000115 ! host gene phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:01:39Z
@@ -1051,7 +1028,7 @@ creation_date: 2015-07-27T11:01:39Z
 [Term]
 id: PHIPO:0000119
 name: epigenetic host gene expression
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000115 ! host gene phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:03:56Z
@@ -1059,7 +1036,7 @@ creation_date: 2015-07-27T11:03:56Z
 [Term]
 id: PHIPO:0000120
 name: MICROSCOPY OBSERVATIONS
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000115 ! host gene phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:10:04Z
@@ -1067,7 +1044,7 @@ creation_date: 2015-07-27T11:10:04Z
 [Term]
 id: PHIPO:0000121
 name: papillae formation
-namespace: host_response_ontology
+namespace: phi_host_phenotype
 is_a: PHIPO:0000112 ! host chemical phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:14:36Z
@@ -1075,6 +1052,7 @@ creation_date: 2015-07-27T11:14:36Z
 [Term]
 id: PHIPO:0000122
 name: pathogen death
+namespace: phi_pathogen_phenotype
 synonym: "lethal to pathogen" RELATED []
 is_a: PHIPO:0000090 ! variant pathogen phenotype
 created_by: irvinea
@@ -1083,7 +1061,6 @@ creation_date: 2015-07-27T11:27:03Z
 [Term]
 id: PHIPO:0000123
 name: unaltered interaction phenotype
-namespace: PHI_phenotype_ontology
 synonym: "control interaction phenotype" EXACT []
 synonym: "wild type interaction phenotype" RELATED []
 synonym: "wild-type interaction phenotype" RELATED []
@@ -1094,7 +1071,6 @@ creation_date: 2015-07-27T11:34:11Z
 [Term]
 id: PHIPO:0000124
 name: unaltered disease formation
-namespace: PHI_phenotype_ontology
 synonym: "control disease formation" EXACT []
 synonym: "wild type disease formation" RELATED []
 synonym: "wild-type disease formation" RELATED []
@@ -1105,7 +1081,6 @@ creation_date: 2015-07-27T11:34:35Z
 [Term]
 id: PHIPO:0000125
 name: unaltered virulence
-namespace: PHI_phenotype_ontology
 synonym: "control virulence" EXACT []
 synonym: "wild type virulence" RELATED []
 synonym: "wild-type virulence" RELATED []
@@ -1116,7 +1091,6 @@ creation_date: 2015-07-27T11:35:12Z
 [Term]
 id: PHIPO:0000126
 name: variant host entry
-namespace: PHI_phenotype_ontology
 synonym: "abnormal host entry" RELATED []
 is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
@@ -1125,7 +1099,6 @@ creation_date: 2015-07-27T11:44:27Z
 [Term]
 id: PHIPO:0000127
 name: defect in macrophage engulfment
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000126 ! variant host entry
 created_by: irvinea
 creation_date: 2015-07-27T11:44:51Z
@@ -1133,23 +1106,13 @@ creation_date: 2015-07-27T11:44:51Z
 [Term]
 id: PHIPO:0000128
 name: defect in stomatal entry
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000126 ! variant host entry
 created_by: irvinea
 creation_date: 2015-07-27T11:45:17Z
 
 [Term]
-id: PHIPO:0000129
-name: mating defect
-namespace: PHI_phenotype_ontology
-is_a: PHIPO:0000126 ! variant host entry
-created_by: irvinea
-creation_date: 2015-07-27T11:45:52Z
-
-[Term]
 id: PHIPO:0000130
 name: OTHER TYPES OF HOST ENTRY DEFECT
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000126 ! variant host entry
 created_by: irvinea
 creation_date: 2015-07-27T11:47:05Z
@@ -1157,7 +1120,6 @@ creation_date: 2015-07-27T11:47:05Z
 [Term]
 id: PHIPO:0000131
 name: effector target in host
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000001 ! effector
 created_by: irvinea
 creation_date: 2015-07-27T11:48:17Z
@@ -1165,7 +1127,6 @@ creation_date: 2015-07-27T11:48:17Z
 [Term]
 id: PHIPO:0000132
 name: effector location in host
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000001 ! effector
 created_by: irvinea
 creation_date: 2015-07-27T11:48:46Z
@@ -1173,7 +1134,6 @@ creation_date: 2015-07-27T11:48:46Z
 [Term]
 id: PHIPO:0000133
 name: SPECIFIC EFFECTOR LOCATION
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000132 ! effector location in host
 created_by: irvinea
 creation_date: 2015-07-27T11:49:08Z
@@ -1181,7 +1141,6 @@ creation_date: 2015-07-27T11:49:08Z
 [Term]
 id: PHIPO:0000134
 name: SPECIFIC EFFECTOR TARGET IN HOST
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000131 ! effector target in host
 created_by: irvinea
 creation_date: 2015-07-27T11:49:41Z
@@ -1189,7 +1148,6 @@ creation_date: 2015-07-27T11:49:41Z
 [Term]
 id: PHIPO:0000135
 name: increased disease formation
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000161 ! disease formation
 created_by: irvinea
 creation_date: 2015-07-27T11:50:29Z
@@ -1197,7 +1155,6 @@ creation_date: 2015-07-27T11:50:29Z
 [Term]
 id: PHIPO:0000136
 name: reduced disease formation
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000161 ! disease formation
 created_by: irvinea
 creation_date: 2015-07-27T11:53:00Z
@@ -1205,7 +1162,6 @@ creation_date: 2015-07-27T11:53:00Z
 [Term]
 id: PHIPO:0000137
 name: response to chemistry
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:59:21Z
@@ -1213,7 +1169,7 @@ creation_date: 2015-07-27T11:59:21Z
 [Term]
 id: PHIPO:0000138
 name: increased resistance to chemical
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000009 ! resistant to chemical
 created_by: irvinea
 creation_date: 2015-07-27T12:27:14Z
@@ -1221,7 +1177,7 @@ creation_date: 2015-07-27T12:27:14Z
 [Term]
 id: PHIPO:0000139
 name: decreased resistance to chemical
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000009 ! resistant to chemical
 created_by: irvinea
 creation_date: 2015-07-27T12:27:42Z
@@ -1229,7 +1185,7 @@ creation_date: 2015-07-27T12:27:42Z
 [Term]
 id: PHIPO:0000140
 name: unaltered resistance to chemical
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 synonym: "control resistance to chemical" EXACT []
 synonym: "wild type resistance to chemical" RELATED []
 synonym: "wild-type resistance to chemical" RELATED []
@@ -1240,7 +1196,6 @@ creation_date: 2015-07-27T12:28:00Z
 [Term]
 id: PHIPO:0000141
 name: increased sensitivity to chemical
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000010 ! sensitive to chemical
 created_by: irvinea
 creation_date: 2015-07-27T12:28:37Z
@@ -1248,7 +1203,6 @@ creation_date: 2015-07-27T12:28:37Z
 [Term]
 id: PHIPO:0000142
 name: decreased sensitivity to chemical
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000010 ! sensitive to chemical
 created_by: irvinea
 creation_date: 2015-07-27T12:28:55Z
@@ -1256,7 +1210,6 @@ creation_date: 2015-07-27T12:28:55Z
 [Term]
 id: PHIPO:0000143
 name: unaltered sensitivity to chemical
-namespace: PHI_phenotype_ontology
 synonym: "control sensitivity to chemical" EXACT []
 synonym: "wild type sensitivity to chemical" RELATED []
 synonym: "wild-type sensitivity to chemical" RELATED []
@@ -1267,6 +1220,7 @@ creation_date: 2015-07-27T12:29:20Z
 [Term]
 id: PHIPO:0000144
 name: pathogen spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-27T16:49:58Z
@@ -1274,6 +1228,7 @@ creation_date: 2015-07-27T16:49:58Z
 [Term]
 id: PHIPO:0000145
 name: sexual spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000144 ! pathogen spores
 created_by: irvinea
 creation_date: 2015-07-27T16:50:22Z
@@ -1281,6 +1236,7 @@ creation_date: 2015-07-27T16:50:22Z
 [Term]
 id: PHIPO:0000146
 name: vegetative spores
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000144 ! pathogen spores
 created_by: irvinea
 creation_date: 2015-07-27T16:56:31Z
@@ -1288,7 +1244,6 @@ creation_date: 2015-07-27T16:56:31Z
 [Term]
 id: PHIPO:0000147
 name: hypervirulence
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000005 ! increased virulence
 created_by: irvinea
 creation_date: 2015-07-29T15:49:35Z
@@ -1296,7 +1251,7 @@ creation_date: 2015-07-29T15:49:35Z
 [Term]
 id: PHIPO:0000148
 name: pathogen adhesion to host
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-29T15:57:59Z
@@ -1304,7 +1259,7 @@ creation_date: 2015-07-29T15:57:59Z
 [Term]
 id: PHIPO:0000149
 name: increased pathogen adhesion to host
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000148 ! pathogen adhesion to host
 created_by: irvinea
 creation_date: 2015-07-29T15:58:44Z
@@ -1312,7 +1267,7 @@ creation_date: 2015-07-29T15:58:44Z
 [Term]
 id: PHIPO:0000150
 name: decreased pathogen adhesion to host
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000148 ! pathogen adhesion to host
 created_by: irvinea
 creation_date: 2015-07-29T15:59:01Z
@@ -1320,7 +1275,7 @@ creation_date: 2015-07-29T15:59:01Z
 [Term]
 id: PHIPO:0000151
 name: unaltered pathogen adhesion to host
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000148 ! pathogen adhesion to host
 created_by: irvinea
 creation_date: 2015-07-29T15:59:40Z
@@ -1328,6 +1283,7 @@ creation_date: 2015-07-29T15:59:40Z
 [Term]
 id: PHIPO:0000152
 name: resistance to death by host
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-29T16:29:26Z
@@ -1335,6 +1291,7 @@ creation_date: 2015-07-29T16:29:26Z
 [Term]
 id: PHIPO:0000153
 name: increased resistance to death by host
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000152 ! resistance to death by host
 created_by: irvinea
 creation_date: 2015-07-29T16:30:51Z
@@ -1342,6 +1299,7 @@ creation_date: 2015-07-29T16:30:51Z
 [Term]
 id: PHIPO:0000154
 name: decreased resistance to death by host
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000152 ! resistance to death by host
 created_by: irvinea
 creation_date: 2015-07-29T16:31:13Z
@@ -1349,6 +1307,7 @@ creation_date: 2015-07-29T16:31:13Z
 [Term]
 id: PHIPO:0000155
 name: unaltered resistance to death by host
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000152 ! resistance to death by host
 created_by: irvinea
 creation_date: 2015-07-29T16:31:28Z
@@ -1356,6 +1315,7 @@ creation_date: 2015-07-29T16:31:28Z
 [Term]
 id: PHIPO:0000156
 name: resistance to phagocytosis
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-29T16:32:52Z
@@ -1363,6 +1323,7 @@ creation_date: 2015-07-29T16:32:52Z
 [Term]
 id: PHIPO:0000157
 name: increased resistance to phagocytosis
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000156 ! resistance to phagocytosis
 created_by: irvinea
 creation_date: 2015-07-29T16:36:02Z
@@ -1370,6 +1331,7 @@ creation_date: 2015-07-29T16:36:02Z
 [Term]
 id: PHIPO:0000158
 name: decreased resistance to phagocytosis
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000156 ! resistance to phagocytosis
 created_by: irvinea
 creation_date: 2015-07-29T16:36:15Z
@@ -1377,6 +1339,7 @@ creation_date: 2015-07-29T16:36:15Z
 [Term]
 id: PHIPO:0000159
 name: unaltered resistance to phagocytosis
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000156 ! resistance to phagocytosis
 created_by: irvinea
 creation_date: 2015-07-29T16:36:33Z
@@ -1384,6 +1347,7 @@ creation_date: 2015-07-29T16:36:33Z
 [Term]
 id: PHIPO:0000160
 name: response to light
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-29T16:39:10Z
@@ -1391,7 +1355,6 @@ creation_date: 2015-07-29T16:39:10Z
 [Term]
 id: PHIPO:0000161
 name: disease formation
-namespace: PHI_phenotype_ontology
 is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-29T16:40:23Z
@@ -1399,6 +1362,7 @@ creation_date: 2015-07-29T16:40:23Z
 [Term]
 id: PHIPO:0000162
 name: increased response to light
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000160 ! response to light
 created_by: irvinea
 creation_date: 2015-07-29T16:42:33Z
@@ -1406,6 +1370,7 @@ creation_date: 2015-07-29T16:42:33Z
 [Term]
 id: PHIPO:0000163
 name: decreased response to light
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000160 ! response to light
 created_by: irvinea
 creation_date: 2015-07-29T16:42:59Z
@@ -1413,6 +1378,7 @@ creation_date: 2015-07-29T16:42:59Z
 [Term]
 id: PHIPO:0000164
 name: unaltered response to light
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000160 ! response to light
 created_by: irvinea
 creation_date: 2015-07-29T16:43:14Z
@@ -1420,6 +1386,7 @@ creation_date: 2015-07-29T16:43:14Z
 [Term]
 id: PHIPO:0000165
 name: pathogen development
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-29T17:05:20Z
@@ -1427,6 +1394,7 @@ creation_date: 2015-07-29T17:05:20Z
 [Term]
 id: PHIPO:0000166
 name: conidiation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000165 ! pathogen development
 created_by: irvinea
 creation_date: 2015-07-29T17:05:49Z
@@ -1434,6 +1402,7 @@ creation_date: 2015-07-29T17:05:49Z
 [Term]
 id: PHIPO:0000167
 name: increased conidiation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000166 ! conidiation
 created_by: irvinea
 creation_date: 2015-07-29T17:07:28Z
@@ -1441,6 +1410,7 @@ creation_date: 2015-07-29T17:07:28Z
 [Term]
 id: PHIPO:0000168
 name: decreased conidiation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000166 ! conidiation
 created_by: irvinea
 creation_date: 2015-07-29T17:07:55Z
@@ -1448,6 +1418,7 @@ creation_date: 2015-07-29T17:07:55Z
 [Term]
 id: PHIPO:0000169
 name: unaltered conidiation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000166 ! conidiation
 created_by: irvinea
 creation_date: 2015-07-29T17:08:08Z
@@ -1455,6 +1426,7 @@ creation_date: 2015-07-29T17:08:08Z
 [Term]
 id: PHIPO:0000170
 name: variant conidiation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000166 ! conidiation
 created_by: irvinea
 creation_date: 2015-07-29T17:08:29Z
@@ -1462,6 +1434,7 @@ creation_date: 2015-07-29T17:08:29Z
 [Term]
 id: PHIPO:0000171
 name: conidiation absent
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000166 ! conidiation
 created_by: irvinea
 creation_date: 2015-07-29T17:09:17Z
@@ -1469,6 +1442,7 @@ creation_date: 2015-07-29T17:09:17Z
 [Term]
 id: PHIPO:0000172
 name: conidial germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000166 ! conidiation
 created_by: irvinea
 creation_date: 2015-07-29T17:12:42Z
@@ -1476,6 +1450,7 @@ creation_date: 2015-07-29T17:12:42Z
 [Term]
 id: PHIPO:0000173
 name: increased conidial germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000172 ! conidial germination
 created_by: irvinea
 creation_date: 2015-07-29T17:13:15Z
@@ -1483,6 +1458,7 @@ creation_date: 2015-07-29T17:13:15Z
 [Term]
 id: PHIPO:0000174
 name: decreased conidial germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000172 ! conidial germination
 created_by: irvinea
 creation_date: 2015-07-29T17:13:28Z
@@ -1490,6 +1466,7 @@ creation_date: 2015-07-29T17:13:28Z
 [Term]
 id: PHIPO:0000175
 name: unaltered conidial germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000172 ! conidial germination
 created_by: irvinea
 creation_date: 2015-07-29T17:13:43Z
@@ -1497,6 +1474,7 @@ creation_date: 2015-07-29T17:13:43Z
 [Term]
 id: PHIPO:0000176
 name: delayed conidial germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000172 ! conidial germination
 created_by: irvinea
 creation_date: 2015-07-29T17:14:05Z
@@ -1504,6 +1482,7 @@ creation_date: 2015-07-29T17:14:05Z
 [Term]
 id: PHIPO:0000177
 name: conidial germination absent
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000172 ! conidial germination
 created_by: irvinea
 creation_date: 2015-07-29T17:14:27Z
@@ -1511,6 +1490,7 @@ creation_date: 2015-07-29T17:14:27Z
 [Term]
 id: PHIPO:0000178
 name: conidial germination arrested
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000172 ! conidial germination
 created_by: irvinea
 creation_date: 2015-07-29T17:15:31Z
@@ -1518,6 +1498,7 @@ creation_date: 2015-07-29T17:15:31Z
 [Term]
 id: PHIPO:0000179
 name: filamentous growth
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000165 ! pathogen development
 created_by: irvinea
 creation_date: 2015-07-29T17:19:56Z
@@ -1525,6 +1506,7 @@ creation_date: 2015-07-29T17:19:56Z
 [Term]
 id: PHIPO:0000180
 name: hyphal growth
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000179 ! filamentous growth
 created_by: irvinea
 creation_date: 2015-07-29T17:21:58Z
@@ -1532,6 +1514,7 @@ creation_date: 2015-07-29T17:21:58Z
 [Term]
 id: PHIPO:0000181
 name: formation of anatomical structure
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000165 ! pathogen development
 created_by: irvinea
 creation_date: 2015-07-29T17:41:26Z
@@ -1539,6 +1522,7 @@ creation_date: 2015-07-29T17:41:26Z
 [Term]
 id: PHIPO:0000182
 name: increased hyphal growth
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000180 ! hyphal growth
 created_by: irvinea
 creation_date: 2015-07-29T17:23:01Z
@@ -1546,6 +1530,7 @@ creation_date: 2015-07-29T17:23:01Z
 [Term]
 id: PHIPO:0000183
 name: decreased hyphal growth
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000180 ! hyphal growth
 created_by: irvinea
 creation_date: 2015-07-29T17:23:32Z
@@ -1553,6 +1538,7 @@ creation_date: 2015-07-29T17:23:32Z
 [Term]
 id: PHIPO:0000184
 name: unaltered hyphal growth
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000180 ! hyphal growth
 created_by: irvinea
 creation_date: 2015-07-29T17:23:47Z
@@ -1560,6 +1546,7 @@ creation_date: 2015-07-29T17:23:47Z
 [Term]
 id: PHIPO:0000185
 name: variant hyphal growth
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000180 ! hyphal growth
 created_by: irvinea
 creation_date: 2015-07-29T17:25:22Z
@@ -1567,6 +1554,7 @@ creation_date: 2015-07-29T17:25:22Z
 [Term]
 id: PHIPO:0000186
 name: delayed hyphal growth
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000180 ! hyphal growth
 created_by: irvinea
 creation_date: 2015-07-29T17:25:37Z
@@ -1574,6 +1562,7 @@ creation_date: 2015-07-29T17:25:37Z
 [Term]
 id: PHIPO:0000187
 name: anatomical structure absent
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000181 ! formation of anatomical structure
 created_by: irvinea
 creation_date: 2015-07-29T17:42:46Z
@@ -1581,6 +1570,7 @@ creation_date: 2015-07-29T17:42:46Z
 [Term]
 id: PHIPO:0000188
 name: formation of anatomical structure arrested
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000181 ! formation of anatomical structure
 created_by: irvinea
 creation_date: 2015-07-29T17:44:06Z
@@ -1588,6 +1578,7 @@ creation_date: 2015-07-29T17:44:06Z
 [Term]
 id: PHIPO:0000189
 name: anatomical structure decreased
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000181 ! formation of anatomical structure
 created_by: irvinea
 creation_date: 2015-07-29T17:44:25Z
@@ -1595,6 +1586,7 @@ creation_date: 2015-07-29T17:44:25Z
 [Term]
 id: PHIPO:0000190
 name: anatomical structure increased
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000181 ! formation of anatomical structure
 created_by: irvinea
 creation_date: 2015-07-29T17:45:40Z
@@ -1602,6 +1594,7 @@ creation_date: 2015-07-29T17:45:40Z
 [Term]
 id: PHIPO:0000191
 name: formation of anatomical structure delayed
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000181 ! formation of anatomical structure
 created_by: irvinea
 creation_date: 2015-07-29T17:46:05Z
@@ -1609,6 +1602,7 @@ creation_date: 2015-07-29T17:46:05Z
 [Term]
 id: PHIPO:0000192
 name: unaltered anatomical structure
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000181 ! formation of anatomical structure
 created_by: irvinea
 creation_date: 2015-07-29T17:46:55Z
@@ -1616,6 +1610,7 @@ creation_date: 2015-07-29T17:46:55Z
 [Term]
 id: PHIPO:0000193
 name: sexual cycle
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000165 ! pathogen development
 created_by: irvinea
 creation_date: 2015-07-29T19:08:02Z
@@ -1623,6 +1618,7 @@ creation_date: 2015-07-29T19:08:02Z
 [Term]
 id: PHIPO:0000194
 name: variant sexual cycle
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000193 ! sexual cycle
 created_by: irvinea
 creation_date: 2015-07-29T19:10:52Z
@@ -1630,6 +1626,7 @@ creation_date: 2015-07-29T19:10:52Z
 [Term]
 id: PHIPO:0000195
 name: sexual cycle absent
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000193 ! sexual cycle
 created_by: irvinea
 creation_date: 2015-07-29T19:11:20Z
@@ -1637,6 +1634,7 @@ creation_date: 2015-07-29T19:11:20Z
 [Term]
 id: PHIPO:0000196
 name: meiosis
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000193 ! sexual cycle
 created_by: irvinea
 creation_date: 2015-07-29T19:13:45Z
@@ -1644,6 +1642,7 @@ creation_date: 2015-07-29T19:13:45Z
 [Term]
 id: PHIPO:0000197
 name: unaltered meiosis
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000196 ! meiosis
 created_by: irvinea
 creation_date: 2015-07-29T19:14:21Z
@@ -1651,6 +1650,7 @@ creation_date: 2015-07-29T19:14:21Z
 [Term]
 id: PHIPO:0000198
 name: variant meiosis
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000196 ! meiosis
 created_by: irvinea
 creation_date: 2015-07-29T19:14:49Z
@@ -1658,6 +1658,7 @@ creation_date: 2015-07-29T19:14:49Z
 [Term]
 id: PHIPO:0000199
 name: meiosis absent
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000196 ! meiosis
 created_by: irvinea
 creation_date: 2015-07-29T19:15:07Z
@@ -1665,6 +1666,7 @@ creation_date: 2015-07-29T19:15:07Z
 [Term]
 id: PHIPO:0000200
 name: meiosis arrested
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000196 ! meiosis
 created_by: irvinea
 creation_date: 2015-07-29T19:15:40Z
@@ -1672,6 +1674,7 @@ creation_date: 2015-07-29T19:15:40Z
 [Term]
 id: PHIPO:0000201
 name: meiotic recombination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000196 ! meiosis
 created_by: irvinea
 creation_date: 2015-07-29T19:16:05Z
@@ -1679,6 +1682,7 @@ creation_date: 2015-07-29T19:16:05Z
 [Term]
 id: PHIPO:0000202
 name: increased meiotic recombination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000201 ! meiotic recombination
 created_by: irvinea
 creation_date: 2015-07-29T19:16:40Z
@@ -1686,6 +1690,7 @@ creation_date: 2015-07-29T19:16:40Z
 [Term]
 id: PHIPO:0000203
 name: decreased meiotic recombination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000201 ! meiotic recombination
 created_by: irvinea
 creation_date: 2015-07-29T19:17:27Z
@@ -1693,6 +1698,7 @@ creation_date: 2015-07-29T19:17:27Z
 [Term]
 id: PHIPO:0000204
 name: unaltered meiotic recombination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000201 ! meiotic recombination
 created_by: irvinea
 creation_date: 2015-07-29T19:17:45Z
@@ -1700,6 +1706,7 @@ creation_date: 2015-07-29T19:17:45Z
 [Term]
 id: PHIPO:0000205
 name: sporulation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000144 ! pathogen spores
 is_a: PHIPO:0000193 ! sexual cycle
 created_by: irvinea
@@ -1708,6 +1715,7 @@ creation_date: 2015-07-29T19:21:47Z
 [Term]
 id: PHIPO:0000206
 name: increased sporulation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:23:34Z
@@ -1715,6 +1723,7 @@ creation_date: 2015-07-29T19:23:34Z
 [Term]
 id: PHIPO:0000207
 name: decreased sporulation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:23:55Z
@@ -1722,6 +1731,7 @@ creation_date: 2015-07-29T19:23:55Z
 [Term]
 id: PHIPO:0000208
 name: unaltered sporulation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:24:15Z
@@ -1729,6 +1739,7 @@ creation_date: 2015-07-29T19:24:15Z
 [Term]
 id: PHIPO:0000209
 name: variant sporulation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:26:28Z
@@ -1736,6 +1747,7 @@ creation_date: 2015-07-29T19:26:28Z
 [Term]
 id: PHIPO:0000210
 name: sporulation absent
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:26:50Z
@@ -1743,6 +1755,7 @@ creation_date: 2015-07-29T19:26:50Z
 [Term]
 id: PHIPO:0000211
 name: delayed sporulation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:27:07Z
@@ -1750,6 +1763,7 @@ creation_date: 2015-07-29T19:27:07Z
 [Term]
 id: PHIPO:0000212
 name: premature sporulation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:28:39Z
@@ -1757,6 +1771,7 @@ creation_date: 2015-07-29T19:28:39Z
 [Term]
 id: PHIPO:0000213
 name: spore germination
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:31:17Z
@@ -1764,6 +1779,7 @@ creation_date: 2015-07-29T19:31:17Z
 [Term]
 id: PHIPO:0000214
 name: spore wall formation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:47:31Z
@@ -1771,6 +1787,7 @@ creation_date: 2015-07-29T19:47:31Z
 [Term]
 id: PHIPO:0000215
 name: unaltered spore wall formation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000214 ! spore wall formation
 created_by: irvinea
 creation_date: 2015-07-29T19:48:09Z
@@ -1778,6 +1795,7 @@ creation_date: 2015-07-29T19:48:09Z
 [Term]
 id: PHIPO:0000216
 name: variant spore wall formation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000214 ! spore wall formation
 created_by: irvinea
 creation_date: 2015-07-29T19:48:37Z
@@ -1785,6 +1803,7 @@ creation_date: 2015-07-29T19:48:37Z
 [Term]
 id: PHIPO:0000217
 name: sporulation efficiency
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000205 ! sporulation
 created_by: irvinea
 creation_date: 2015-07-29T19:57:54Z
@@ -1792,6 +1811,7 @@ creation_date: 2015-07-29T19:57:54Z
 [Term]
 id: PHIPO:0000218
 name: increased sporulation efficiency
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000217 ! sporulation efficiency
 is_a: PHIPO:0000221 ! variant sporulation efficiency
 created_by: irvinea
@@ -1800,6 +1820,7 @@ creation_date: 2015-07-29T19:58:35Z
 [Term]
 id: PHIPO:0000219
 name: decreased sporulation efficiency
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000217 ! sporulation efficiency
 is_a: PHIPO:0000221 ! variant sporulation efficiency
 created_by: irvinea
@@ -1808,6 +1829,7 @@ creation_date: 2015-07-29T19:58:54Z
 [Term]
 id: PHIPO:0000220
 name: unaltered sporulation efficiency
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000217 ! sporulation efficiency
 created_by: irvinea
 creation_date: 2015-07-29T19:59:10Z
@@ -1815,6 +1837,7 @@ creation_date: 2015-07-29T19:59:10Z
 [Term]
 id: PHIPO:0000221
 name: variant sporulation efficiency
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000217 ! sporulation efficiency
 created_by: irvinea
 creation_date: 2015-07-29T19:59:29Z
@@ -1822,6 +1845,7 @@ creation_date: 2015-07-29T19:59:29Z
 [Term]
 id: PHIPO:0000222
 name: sterile pathogen
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000193 ! sexual cycle
 created_by: irvinea
 creation_date: 2015-07-29T20:00:40Z
@@ -1829,6 +1853,7 @@ creation_date: 2015-07-29T20:00:40Z
 [Term]
 id: PHIPO:0000223
 name: resistance to stress
+namespace: phi_pathogen_phenotype
 synonym: "stress resistance" EXACT []
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
@@ -1837,6 +1862,7 @@ creation_date: 2015-07-31T12:04:01Z
 [Term]
 id: PHIPO:0000224
 name: increased stress resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000223 ! resistance to stress
 created_by: irvinea
 creation_date: 2015-07-31T12:05:00Z
@@ -1844,6 +1870,7 @@ creation_date: 2015-07-31T12:05:00Z
 [Term]
 id: PHIPO:0000225
 name: decreased stress resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000223 ! resistance to stress
 created_by: irvinea
 creation_date: 2015-07-31T12:07:06Z
@@ -1851,6 +1878,7 @@ creation_date: 2015-07-31T12:07:06Z
 [Term]
 id: PHIPO:0000226
 name: unaltered stress resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000223 ! resistance to stress
 created_by: irvinea
 creation_date: 2015-07-31T12:07:28Z
@@ -1858,6 +1886,7 @@ creation_date: 2015-07-31T12:07:28Z
 [Term]
 id: PHIPO:0000227
 name: freeze-thaw resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000223 ! resistance to stress
 created_by: irvinea
 creation_date: 2015-07-31T12:09:01Z
@@ -1865,6 +1894,7 @@ creation_date: 2015-07-31T12:09:01Z
 [Term]
 id: PHIPO:0000228
 name: increased freeze-thaw resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000227 ! freeze-thaw resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:09:26Z
@@ -1872,6 +1902,7 @@ creation_date: 2015-07-31T12:09:26Z
 [Term]
 id: PHIPO:0000229
 name: decreased freeze-thaw resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000227 ! freeze-thaw resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:09:40Z
@@ -1879,6 +1910,7 @@ creation_date: 2015-07-31T12:09:40Z
 [Term]
 id: PHIPO:0000230
 name: unaltered freeze-thaw resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000227 ! freeze-thaw resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:09:57Z
@@ -1886,6 +1918,7 @@ creation_date: 2015-07-31T12:09:57Z
 [Term]
 id: PHIPO:0000231
 name: radiation resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000223 ! resistance to stress
 created_by: irvinea
 creation_date: 2015-07-31T12:10:42Z
@@ -1893,6 +1926,7 @@ creation_date: 2015-07-31T12:10:42Z
 [Term]
 id: PHIPO:0000232
 name: ionizing radiation resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000231 ! radiation resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:10:58Z
@@ -1900,6 +1934,7 @@ creation_date: 2015-07-31T12:10:58Z
 [Term]
 id: PHIPO:0000233
 name: gamma ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000232 ! ionizing radiation resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:11:20Z
@@ -1907,6 +1942,7 @@ creation_date: 2015-07-31T12:11:20Z
 [Term]
 id: PHIPO:0000234
 name: increased gamma ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000233 ! gamma ray resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:11:49Z
@@ -1914,6 +1950,7 @@ creation_date: 2015-07-31T12:11:49Z
 [Term]
 id: PHIPO:0000235
 name: decreased gamma ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000233 ! gamma ray resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:12:02Z
@@ -1921,6 +1958,7 @@ creation_date: 2015-07-31T12:12:02Z
 [Term]
 id: PHIPO:0000236
 name: unaltered gamma ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000233 ! gamma ray resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:12:13Z
@@ -1928,6 +1966,7 @@ creation_date: 2015-07-31T12:12:13Z
 [Term]
 id: PHIPO:0000237
 name: X-ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000232 ! ionizing radiation resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:12:38Z
@@ -1935,6 +1974,7 @@ creation_date: 2015-07-31T12:12:38Z
 [Term]
 id: PHIPO:0000238
 name: increased X-ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000237 ! X-ray resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:13:00Z
@@ -1942,6 +1982,7 @@ creation_date: 2015-07-31T12:13:00Z
 [Term]
 id: PHIPO:0000239
 name: decreased X-ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000237 ! X-ray resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:13:24Z
@@ -1949,6 +1990,7 @@ creation_date: 2015-07-31T12:13:24Z
 [Term]
 id: PHIPO:0000240
 name: unaltered X-ray resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000237 ! X-ray resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:13:37Z
@@ -1956,6 +1998,7 @@ creation_date: 2015-07-31T12:13:37Z
 [Term]
 id: PHIPO:0000241
 name: UV resistance
+namespace: phi_pathogen_phenotype
 synonym: "ultraviolet resistance" EXACT []
 is_a: PHIPO:0000231 ! radiation resistance
 created_by: irvinea
@@ -1964,6 +2007,7 @@ creation_date: 2015-07-31T12:14:02Z
 [Term]
 id: PHIPO:0000242
 name: increased UV resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000241 ! UV resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:15:04Z
@@ -1971,6 +2015,7 @@ creation_date: 2015-07-31T12:15:04Z
 [Term]
 id: PHIPO:0000243
 name: decreased UV resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000241 ! UV resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:15:21Z
@@ -1978,6 +2023,7 @@ creation_date: 2015-07-31T12:15:21Z
 [Term]
 id: PHIPO:0000244
 name: unaltered UV resistance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000241 ! UV resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:15:30Z
@@ -1985,7 +2031,7 @@ creation_date: 2015-07-31T12:15:30Z
 [Term]
 id: PHIPO:0000245
 name: acid pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000249 ! pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:17:51Z
@@ -1993,7 +2039,7 @@ creation_date: 2015-07-31T12:17:51Z
 [Term]
 id: PHIPO:0000246
 name: increased acid pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000245 ! acid pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:18:29Z
@@ -2001,7 +2047,7 @@ creation_date: 2015-07-31T12:18:29Z
 [Term]
 id: PHIPO:0000247
 name: decreased acid pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000245 ! acid pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:18:40Z
@@ -2009,7 +2055,7 @@ creation_date: 2015-07-31T12:18:40Z
 [Term]
 id: PHIPO:0000248
 name: unaltered acid pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000245 ! acid pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:18:56Z
@@ -2017,7 +2063,7 @@ creation_date: 2015-07-31T12:18:56Z
 [Term]
 id: PHIPO:0000249
 name: pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000009 ! resistant to chemical
 created_by: irvinea
 creation_date: 2015-07-31T12:20:00Z
@@ -2025,7 +2071,7 @@ creation_date: 2015-07-31T12:20:00Z
 [Term]
 id: PHIPO:0000250
 name: alkaline pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000249 ! pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:20:35Z
@@ -2033,7 +2079,7 @@ creation_date: 2015-07-31T12:20:35Z
 [Term]
 id: PHIPO:0000251
 name: increased alkaline pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000250 ! alkaline pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:20:59Z
@@ -2041,7 +2087,7 @@ creation_date: 2015-07-31T12:20:59Z
 [Term]
 id: PHIPO:0000252
 name: decreased alkaline pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000250 ! alkaline pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:21:10Z
@@ -2049,7 +2095,7 @@ creation_date: 2015-07-31T12:21:10Z
 [Term]
 id: PHIPO:0000253
 name: unaltered alkaline pH resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000250 ! alkaline pH resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:21:21Z
@@ -2057,7 +2103,7 @@ creation_date: 2015-07-31T12:21:21Z
 [Term]
 id: PHIPO:0000254
 name: ionic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000009 ! resistant to chemical
 created_by: irvinea
 creation_date: 2015-07-31T12:21:55Z
@@ -2065,7 +2111,7 @@ creation_date: 2015-07-31T12:21:55Z
 [Term]
 id: PHIPO:0000255
 name: increased ionic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000254 ! ionic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:22:10Z
@@ -2073,7 +2119,7 @@ creation_date: 2015-07-31T12:22:10Z
 [Term]
 id: PHIPO:0000256
 name: decreased ionic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000254 ! ionic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:22:21Z
@@ -2081,7 +2127,7 @@ creation_date: 2015-07-31T12:22:21Z
 [Term]
 id: PHIPO:0000257
 name: unaltered ionic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000254 ! ionic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:22:32Z
@@ -2089,7 +2135,7 @@ creation_date: 2015-07-31T12:22:32Z
 [Term]
 id: PHIPO:0000258
 name: metal resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000009 ! resistant to chemical
 created_by: irvinea
 creation_date: 2015-07-31T12:23:23Z
@@ -2097,7 +2143,7 @@ creation_date: 2015-07-31T12:23:23Z
 [Term]
 id: PHIPO:0000259
 name: increased metal resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000258 ! metal resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:23:47Z
@@ -2105,7 +2151,7 @@ creation_date: 2015-07-31T12:23:47Z
 [Term]
 id: PHIPO:0000260
 name: decreased metal resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000258 ! metal resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:24:00Z
@@ -2113,7 +2159,7 @@ creation_date: 2015-07-31T12:24:00Z
 [Term]
 id: PHIPO:0000261
 name: unaltered metal resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000258 ! metal resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:24:11Z
@@ -2121,7 +2167,7 @@ creation_date: 2015-07-31T12:24:11Z
 [Term]
 id: PHIPO:0000262
 name: osmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000009 ! resistant to chemical
 created_by: irvinea
 creation_date: 2015-07-31T12:35:02Z
@@ -2129,7 +2175,7 @@ creation_date: 2015-07-31T12:35:02Z
 [Term]
 id: PHIPO:0000263
 name: increased osmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000262 ! osmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:35:28Z
@@ -2137,7 +2183,7 @@ creation_date: 2015-07-31T12:35:28Z
 [Term]
 id: PHIPO:0000264
 name: decreased osmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000262 ! osmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:35:58Z
@@ -2145,7 +2191,7 @@ creation_date: 2015-07-31T12:35:58Z
 [Term]
 id: PHIPO:0000265
 name: unaltered osmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000262 ! osmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:36:15Z
@@ -2153,7 +2199,7 @@ creation_date: 2015-07-31T12:36:15Z
 [Term]
 id: PHIPO:0000266
 name: hyperosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000262 ! osmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:36:30Z
@@ -2161,7 +2207,7 @@ creation_date: 2015-07-31T12:36:30Z
 [Term]
 id: PHIPO:0000267
 name: increased hyperosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000266 ! hyperosmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:36:58Z
@@ -2169,7 +2215,7 @@ creation_date: 2015-07-31T12:36:58Z
 [Term]
 id: PHIPO:0000268
 name: decreased hyperosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000266 ! hyperosmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:37:18Z
@@ -2177,7 +2223,7 @@ creation_date: 2015-07-31T12:37:18Z
 [Term]
 id: PHIPO:0000269
 name: unaltered hyperosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000266 ! hyperosmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:37:50Z
@@ -2185,7 +2231,7 @@ creation_date: 2015-07-31T12:37:50Z
 [Term]
 id: PHIPO:0000270
 name: hypoosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000262 ! osmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:38:07Z
@@ -2193,7 +2239,7 @@ creation_date: 2015-07-31T12:38:07Z
 [Term]
 id: PHIPO:0000271
 name: increased hypoosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000270 ! hypoosmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:39:00Z
@@ -2201,7 +2247,7 @@ creation_date: 2015-07-31T12:39:00Z
 [Term]
 id: PHIPO:0000272
 name: decreased hypoosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000270 ! hypoosmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:39:17Z
@@ -2209,7 +2255,7 @@ creation_date: 2015-07-31T12:39:17Z
 [Term]
 id: PHIPO:0000273
 name: unaltered hypoosmotic stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000270 ! hypoosmotic stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:39:29Z
@@ -2217,7 +2263,7 @@ creation_date: 2015-07-31T12:39:29Z
 [Term]
 id: PHIPO:0000274
 name: oxidative stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000009 ! resistant to chemical
 created_by: irvinea
 creation_date: 2015-07-31T12:41:27Z
@@ -2225,7 +2271,7 @@ creation_date: 2015-07-31T12:41:27Z
 [Term]
 id: PHIPO:0000275
 name: increased oxidative stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000274 ! oxidative stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:41:48Z
@@ -2233,7 +2279,7 @@ creation_date: 2015-07-31T12:41:48Z
 [Term]
 id: PHIPO:0000276
 name: decreased oxidative stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000274 ! oxidative stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:41:57Z
@@ -2241,7 +2287,7 @@ creation_date: 2015-07-31T12:41:57Z
 [Term]
 id: PHIPO:0000277
 name: unaltered oxidative stress resistance
-namespace: PHI_phenotype_ontology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000274 ! oxidative stress resistance
 created_by: irvinea
 creation_date: 2015-07-31T12:42:07Z
@@ -2249,6 +2295,7 @@ creation_date: 2015-07-31T12:42:07Z
 [Term]
 id: PHIPO:0000278
 name: temperature sensitive growth
+namespace: phi_pathogen_phenotype
 synonym: "temperature sensitivity" RELATED []
 is_a: PHIPO:0000223 ! resistance to stress
 created_by: irvinea
@@ -2257,6 +2304,7 @@ creation_date: 2015-07-31T12:42:56Z
 [Term]
 id: PHIPO:0000279
 name: cold sensitivity
+namespace: phi_pathogen_phenotype
 synonym: "cold sensitive growth" EXACT []
 is_a: PHIPO:0000278 ! temperature sensitive growth
 created_by: irvinea
@@ -2265,6 +2313,7 @@ creation_date: 2015-07-31T12:44:46Z
 [Term]
 id: PHIPO:0000280
 name: increased cold sensitivity
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000279 ! cold sensitivity
 created_by: irvinea
 creation_date: 2015-07-31T12:46:52Z
@@ -2272,6 +2321,7 @@ creation_date: 2015-07-31T12:46:52Z
 [Term]
 id: PHIPO:0000281
 name: decreased cold sensitivity
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000279 ! cold sensitivity
 created_by: irvinea
 creation_date: 2015-07-31T12:47:06Z
@@ -2279,6 +2329,7 @@ creation_date: 2015-07-31T12:47:06Z
 [Term]
 id: PHIPO:0000282
 name: unaltered cold sensitivity
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000279 ! cold sensitivity
 created_by: irvinea
 creation_date: 2015-07-31T12:47:16Z
@@ -2286,6 +2337,7 @@ creation_date: 2015-07-31T12:47:16Z
 [Term]
 id: PHIPO:0000283
 name: pathogen morphology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-31T13:47:58Z
@@ -2293,6 +2345,7 @@ creation_date: 2015-07-31T13:47:58Z
 [Term]
 id: PHIPO:0000284
 name: cellular morphology
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000283 ! pathogen morphology
 created_by: irvinea
 creation_date: 2015-07-31T13:48:13Z
@@ -2300,6 +2353,7 @@ creation_date: 2015-07-31T13:48:13Z
 [Term]
 id: PHIPO:0000285
 name: cell shape
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000284 ! cellular morphology
 created_by: irvinea
 creation_date: 2015-07-31T13:48:36Z
@@ -2307,6 +2361,7 @@ creation_date: 2015-07-31T13:48:36Z
 [Term]
 id: PHIPO:0000286
 name: unaltered cell shape
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000285 ! cell shape
 created_by: irvinea
 creation_date: 2015-07-31T13:49:02Z
@@ -2314,6 +2369,7 @@ creation_date: 2015-07-31T13:49:02Z
 [Term]
 id: PHIPO:0000287
 name: variant cell shape
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000285 ! cell shape
 created_by: irvinea
 creation_date: 2015-07-31T13:49:15Z
@@ -2321,6 +2377,7 @@ creation_date: 2015-07-31T13:49:15Z
 [Term]
 id: PHIPO:0000288
 name: cell size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000284 ! cellular morphology
 created_by: irvinea
 creation_date: 2015-07-31T13:49:31Z
@@ -2328,6 +2385,7 @@ creation_date: 2015-07-31T13:49:31Z
 [Term]
 id: PHIPO:0000289
 name: increased cell size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000288 ! cell size
 created_by: irvinea
 creation_date: 2015-07-31T13:49:54Z
@@ -2335,6 +2393,7 @@ creation_date: 2015-07-31T13:49:54Z
 [Term]
 id: PHIPO:0000290
 name: decreased cell size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000288 ! cell size
 created_by: irvinea
 creation_date: 2015-07-31T13:50:15Z
@@ -2342,6 +2401,7 @@ creation_date: 2015-07-31T13:50:15Z
 [Term]
 id: PHIPO:0000291
 name: unaltered cell size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000288 ! cell size
 created_by: irvinea
 creation_date: 2015-07-31T13:50:36Z
@@ -2349,6 +2409,7 @@ creation_date: 2015-07-31T13:50:36Z
 [Term]
 id: PHIPO:0000292
 name: pathogen culture
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-31T13:51:53Z
@@ -2356,6 +2417,7 @@ creation_date: 2015-07-31T13:51:53Z
 [Term]
 id: PHIPO:0000293
 name: culture appearance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000292 ! pathogen culture
 created_by: irvinea
 creation_date: 2015-07-31T13:52:11Z
@@ -2363,6 +2425,7 @@ creation_date: 2015-07-31T13:52:11Z
 [Term]
 id: PHIPO:0000294
 name: biofilm formation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000293 ! culture appearance
 created_by: irvinea
 creation_date: 2015-07-31T13:52:31Z
@@ -2370,6 +2433,7 @@ creation_date: 2015-07-31T13:52:31Z
 [Term]
 id: PHIPO:0000295
 name: increased biofilm formation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000294 ! biofilm formation
 created_by: irvinea
 creation_date: 2015-07-31T14:28:21Z
@@ -2377,6 +2441,7 @@ creation_date: 2015-07-31T14:28:21Z
 [Term]
 id: PHIPO:0000296
 name: decreased biofilm formation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000294 ! biofilm formation
 created_by: irvinea
 creation_date: 2015-07-31T14:28:32Z
@@ -2384,6 +2449,7 @@ creation_date: 2015-07-31T14:28:32Z
 [Term]
 id: PHIPO:0000297
 name: unaltered biofilm formation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000294 ! biofilm formation
 created_by: irvinea
 creation_date: 2015-07-31T14:28:48Z
@@ -2391,6 +2457,7 @@ creation_date: 2015-07-31T14:28:48Z
 [Term]
 id: PHIPO:0000298
 name: colony color
+namespace: phi_pathogen_phenotype
 synonym: "colony colour" EXACT []
 is_a: PHIPO:0000299 ! colony appearance
 created_by: irvinea
@@ -2399,6 +2466,7 @@ creation_date: 2015-07-31T14:29:59Z
 [Term]
 id: PHIPO:0000299
 name: colony appearance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000293 ! culture appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:31:14Z
@@ -2406,6 +2474,7 @@ creation_date: 2015-07-31T14:31:14Z
 [Term]
 id: PHIPO:0000300
 name: unaltered colony appearance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000299 ! colony appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:34:36Z
@@ -2413,6 +2482,7 @@ creation_date: 2015-07-31T14:34:36Z
 [Term]
 id: PHIPO:0000301
 name: variant colony appearance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000299 ! colony appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:36:00Z
@@ -2420,6 +2490,7 @@ creation_date: 2015-07-31T14:36:00Z
 [Term]
 id: PHIPO:0000302
 name: unaltered colony color
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000298 ! colony color
 created_by: irvinea
 creation_date: 2015-07-31T14:37:26Z
@@ -2427,6 +2498,7 @@ creation_date: 2015-07-31T14:37:26Z
 [Term]
 id: PHIPO:0000303
 name: variant colony color
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000298 ! colony color
 created_by: irvinea
 creation_date: 2015-07-31T14:37:46Z
@@ -2434,6 +2506,7 @@ creation_date: 2015-07-31T14:37:46Z
 [Term]
 id: PHIPO:0000304
 name: colony sectoring
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000299 ! colony appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:38:22Z
@@ -2441,6 +2514,7 @@ creation_date: 2015-07-31T14:38:22Z
 [Term]
 id: PHIPO:0000305
 name: increased colony sectoring
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000304 ! colony sectoring
 created_by: irvinea
 creation_date: 2015-07-31T14:38:40Z
@@ -2448,6 +2522,7 @@ creation_date: 2015-07-31T14:38:40Z
 [Term]
 id: PHIPO:0000306
 name: decreased colony sectoring
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000304 ! colony sectoring
 created_by: irvinea
 creation_date: 2015-07-31T14:39:10Z
@@ -2455,6 +2530,7 @@ creation_date: 2015-07-31T14:39:10Z
 [Term]
 id: PHIPO:0000307
 name: unaltered colony sectoring
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000304 ! colony sectoring
 created_by: irvinea
 creation_date: 2015-07-31T14:39:22Z
@@ -2462,6 +2538,7 @@ creation_date: 2015-07-31T14:39:22Z
 [Term]
 id: PHIPO:0000308
 name: colony shape
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000299 ! colony appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:39:46Z
@@ -2469,6 +2546,7 @@ creation_date: 2015-07-31T14:39:46Z
 [Term]
 id: PHIPO:0000309
 name: unaltered colony shape
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000308 ! colony shape
 created_by: irvinea
 creation_date: 2015-07-31T14:40:02Z
@@ -2476,6 +2554,7 @@ creation_date: 2015-07-31T14:40:02Z
 [Term]
 id: PHIPO:0000310
 name: variant colony shape
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000308 ! colony shape
 created_by: irvinea
 creation_date: 2015-07-31T14:40:30Z
@@ -2483,6 +2562,7 @@ creation_date: 2015-07-31T14:40:30Z
 [Term]
 id: PHIPO:0000311
 name: colony size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000299 ! colony appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:40:50Z
@@ -2490,6 +2570,7 @@ creation_date: 2015-07-31T14:40:50Z
 [Term]
 id: PHIPO:0000312
 name: increased colony size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000311 ! colony size
 created_by: irvinea
 creation_date: 2015-07-31T14:41:03Z
@@ -2497,6 +2578,7 @@ creation_date: 2015-07-31T14:41:03Z
 [Term]
 id: PHIPO:0000313
 name: decreased colony size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000311 ! colony size
 created_by: irvinea
 creation_date: 2015-07-31T14:41:14Z
@@ -2504,6 +2586,7 @@ creation_date: 2015-07-31T14:41:14Z
 [Term]
 id: PHIPO:0000314
 name: unaltered colony size
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000311 ! colony size
 created_by: irvinea
 creation_date: 2015-07-31T14:41:38Z
@@ -2511,6 +2594,7 @@ creation_date: 2015-07-31T14:41:38Z
 [Term]
 id: PHIPO:0000315
 name: liquid culture appearance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000293 ! culture appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:42:57Z
@@ -2518,6 +2602,7 @@ creation_date: 2015-07-31T14:42:57Z
 [Term]
 id: PHIPO:0000316
 name: unaltered liquid culture appearance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000315 ! liquid culture appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:43:17Z
@@ -2525,6 +2610,7 @@ creation_date: 2015-07-31T14:43:17Z
 [Term]
 id: PHIPO:0000317
 name: variant liquid culture appearance
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000315 ! liquid culture appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:43:33Z
@@ -2532,6 +2618,7 @@ creation_date: 2015-07-31T14:43:33Z
 [Term]
 id: PHIPO:0000318
 name: flocculation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000315 ! liquid culture appearance
 created_by: irvinea
 creation_date: 2015-07-31T14:44:00Z
@@ -2539,6 +2626,7 @@ creation_date: 2015-07-31T14:44:00Z
 [Term]
 id: PHIPO:0000319
 name: unaltered flocculation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000318 ! flocculation
 created_by: irvinea
 creation_date: 2015-07-31T14:44:12Z
@@ -2546,6 +2634,7 @@ creation_date: 2015-07-31T14:44:12Z
 [Term]
 id: PHIPO:0000320
 name: variant flocculation
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000318 ! flocculation
 created_by: irvinea
 creation_date: 2015-07-31T14:44:52Z
@@ -2553,6 +2642,7 @@ creation_date: 2015-07-31T14:44:52Z
 [Term]
 id: PHIPO:0000321
 name: nutrient utilization
+namespace: phi_pathogen_phenotype
 synonym: "nutrient utilisation" EXACT []
 is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
@@ -2561,6 +2651,7 @@ creation_date: 2015-07-31T14:50:58Z
 [Term]
 id: PHIPO:0000322
 name: increased nutrient utilization
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000321 ! nutrient utilization
 created_by: irvinea
 creation_date: 2015-07-31T14:53:28Z
@@ -2568,6 +2659,7 @@ creation_date: 2015-07-31T14:53:28Z
 [Term]
 id: PHIPO:0000323
 name: decreased nutrient utilization
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000321 ! nutrient utilization
 created_by: irvinea
 creation_date: 2015-07-31T14:53:41Z
@@ -2575,7 +2667,45 @@ creation_date: 2015-07-31T14:53:41Z
 [Term]
 id: PHIPO:0000324
 name: unaltered nutrient utilization
+namespace: phi_pathogen_phenotype
 is_a: PHIPO:0000321 ! nutrient utilization
 created_by: irvinea
 creation_date: 2015-07-31T15:06:52Z
+
+[Term]
+id: PHIPO:0000325
+name: avirulence effector
+def: "An effector that is recognized by a corresponding plant resistance (R) protein, triggering the hypersensitive response and rendering pathogen strains expressing these effectors unable to infect host genotypes expressing the R protein." [DOI:10.1038/nrmicro3119]
+synonym: "AVR effector" EXACT []
+is_a: PHIPO:0000001 ! effector
+created_by: irvinea
+creation_date: 2015-08-17T11:53:04Z
+
+[Term]
+id: PHIPO:0000326
+name: buff colony
+namespace: phi_pathogen_phenotype
+def: "Buff/tan pigmentation." []
+synonym: "tan colony" RELATED []
+is_a: PHIPO:0000303 ! variant colony color
+created_by: irvinea
+creation_date: 2015-08-17T11:54:37Z
+
+[Term]
+id: PHIPO:0000327
+name: white colony
+namespace: phi_pathogen_phenotype
+def: "White pigmentation." []
+synonym: "albino colony" RELATED []
+is_a: PHIPO:0000303 ! variant colony color
+created_by: irvinea
+creation_date: 2015-08-17T11:56:11Z
+
+[Term]
+id: PHIPO:0000328
+name: cytoplasmic effector
+def: "An effector that is secreted and translocated across the plant membrane into the host cytoplasm, where it targets different subcellular compartments." [DOI:10.1038/nrmicro3119]
+is_a: PHIPO:0000132 ! effector location in host
+created_by: irvinea
+creation_date: 2015-08-17T11:57:25Z
 
