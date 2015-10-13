@@ -1,0 +1,25 @@
+<div class="curs-extension-builder">
+  <span style="display: none; float:right">{{asString()}}</span>
+  <div ng-hide="inProgressConf">
+    <div ng-show="termDetails.id" style="padding: 0 0 5px 0">
+You have annotated {{featureDisplayName}} to {{termDetails.id}}. Can you specify the
+extensions based on the experiments in this paper?
+    </div>
+    <div style="padding: 0 0 15px 0">
+Please add as many as are appropriate to make a compound annotation (all occur
+simultaneously).  You will be given the option to make additional independent
+extensions.
+    </div>
+
+    <ul>
+    <li ng-repeat="extConf in matchingConfigurations">
+      <a href="#" ng-click="startAddPart(extConf)">{{extConf.displayText}} ...</a>
+    </li>
+    </ul>
+  </div>
+
+  <div ng-if="!inProgressConf && extension.length > 0" style="padding-top: 10px">
+    Extensions added so far:
+    <extension-display extension="extension" show-delete="true"></extension-display>
+  </div>
+</div>

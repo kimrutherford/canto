@@ -16,6 +16,7 @@ test_config:
   test_phenotype_obo_file: "t/data/phenotype_small.obo"
   test_psi_mod_obo_file: "t/data/psi_mod_small.obo"
   test_peco_obo_file: "t/data/peco_small.obo"
+  test_extension_conf: 't/data/extension_config.tsv'
   test_pubmed_xml: 'entrez_pubmed.xml'
   test_extra_publication: 'pubmed_18910671.xml'
   test_uniprot_entries: 'uniprot_lookup.xml'
@@ -165,7 +166,19 @@ test_config:
                evidence_code: IPI
                term_ontid: GO:0034763
                with_gene: SPCC576.16c
-               annotation_extension: "annotation_extension=exists_during(GO:0051329),annotation_extension=has_substrate(PomBase:SPBC1105.11c),annotation_extension=requires_feature(Pfam:PF00564),residue=T31,residue=T586(T586,X123),qualifier=NOT,condition=PECO:0000012,allele=SPAC9.02cdelta(deletion)|annotation_extension=exists_during(GO:0051329),has_substrate(PomBase:SPBC1105.11c)"
+               extension:
+                 -
+                   - relation: 'exists_during'
+                     rangeValue: 'GO:0051329'
+                   - relation: 'has_substrate'
+                     rangeValue: 'PomBase:SPBC1105.11c'
+                   - relation: 'requires_feature'
+                     rangeValue: 'Pfam:PF00564'
+                 -
+                   - relation: 'exists_during'
+                     rangeValue: 'GO:0051329'
+                   - relation: 'has_substrate'
+                     rangeValue: 'PomBase:SPBC1105.11c'
                curator:
                  email: "some.testperson@pombase.org"
                  name: "Some Testperson"

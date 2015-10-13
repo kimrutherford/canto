@@ -832,38 +832,6 @@ sub annotation_delete_suggestion : Chained('annotation') PathPart('delete_sugges
   _redirect_and_detach($c);
 }
 
-sub _field_edit_internal
-{
-  my ($self, $c, $field_name) = @_;
-
-  my $st = $c->stash();
-  my $annotation = $st->{annotation};
-  my $data = $annotation->data();
-
-  my $params = $c->req()->params();
-  my $new_text = $params->{'curs-edit-dialog-text'};
-
-  $data->{$field_name} = $new_text;
-
-  $annotation->data($data);
-  $annotation->update();
-
-  $c->stash->{json_data} = {
-    result => 'success',
-  };
-  $c->forward('View::JSON');
-}
-
-sub annotation_comment_edit : Chained('annotation') PathPart('comment_edit') Args(1)
-{
-  _field_edit_internal(@_, 'submitter_comment');
-}
-
-sub annotation_extension_edit : Chained('annotation') PathPart('extension_edit') Args(1)
-{
-  _field_edit_internal(@_, 'annotation_extension');
-}
-
 # change the annotation data of an existing annotation
 sub _re_edit_annotation
 {
@@ -944,48 +912,14 @@ sub annotation_ontology_edit
 {
   my ($self, $c, $feature, $annotation_config) = @_;
 
-  my $module_display_name = $annotation_config->{display_name};
-
   my $annotation_type_name = $annotation_config->{name};
-  my $config = $c->config();
+
   my $st = $c->stash();
-  my $schema = $st->{schema};
+  my $category = $annotation_config->{category};
 
-  my $feature_type = $st->{feature_type};
+  $st->{annotation_type_name} = $annotation_type_name;
 
-  my $feature_id;
-
-  if ($feature_type eq 'gene') {
-    $feature_id = $feature->gene_id();
-  } else {
-    $feature_id = $feature->genotype_id();
-  }
-
-  my $module_category = $annotation_config->{category};
-
-  $st->{current_component} = $annotation_type_name;
-  $st->{annotation_type_config} = $annotation_config;
-  $st->{annotation_namespace} = $annotation_config->{namespace};
-  $st->{current_component_display_name} = $module_display_name;
-  $st->{current_component_short_display_name} =
-    $annotation_config->{short_display_name};
-  $st->{current_component_very_short_display_name} =
-    $annotation_config->{very_short_display_name};
-  $st->{current_component_suggest_term_help} =
-    $annotation_config->{suggest_term_help_text};
-  my $broad_term_suggestions = $annotation_config->{broad_term_suggestions};
-  $broad_term_suggestions =~ s/\s+$//g;
-  $st->{broad_term_suggestions} = $broad_term_suggestions;
-  my $specific_term_examples = $annotation_config->{specific_term_examples};
-  $specific_term_examples =~ s/\s+$//g;
-  $st->{specific_term_examples} = $specific_term_examples;
-  my $annotation_help_text = $annotation_config->{help_text};
-  $st->{annotation_help_text} = $annotation_help_text;
-  my $annotation_more_help_text = $annotation_config->{more_help_text};
-  $st->{annotation_more_help_text} = $annotation_more_help_text;
-  my $annotation_extra_help_text = $annotation_config->{extra_help_text};
-  $st->{annotation_extra_help_text} = $annotation_extra_help_text;
-  $st->{template} = "curs/modules/$module_category.mhtml";
+  $st->{template} = "curs/modules/$category.mhtml";
 }
 
 sub annotation_interaction_edit
@@ -996,15 +930,13 @@ sub annotation_interaction_edit
   my $st = $c->stash();
   my $schema = $st->{schema};
 
-  my $module_display_name = $annotation_config->{display_name};
   my $annotation_type_name = $annotation_config->{name};
 
-  my $module_category = $annotation_config->{category};
+  my $category = $annotation_config->{category};
 
   # don't set stash title - use default
-  $st->{current_component} = $annotation_type_name;
-  $st->{current_component_display_name} = $annotation_config->{display_name};
-  $st->{template} = "curs/modules/$module_category.mhtml";
+  $st->{annotation_type_name} = $annotation_type_name;
+  $st->{template} = "curs/modules/$category.mhtml";
 }
 
 sub _get_gene_proxy
@@ -1192,6 +1124,7 @@ sub annotation_set_term : Chained('annotate') PathPart('set_term') Args(1)
 
   my $term_ontid = $body_data->{term_ontid};
   my $evidence_code = $body_data->{evidence_code};
+  my $extension = $body_data->{extension} || [];
 
   my @conditions = ();
 
@@ -1221,10 +1154,11 @@ sub annotation_set_term : Chained('annotate') PathPart('set_term') Args(1)
   my %annotation_data = (term_ontid => $term_ontid,
                          evidence_code => $evidence_code,
                          conditions => \@conditions,
+                         extension => $extension,
                        );
 
-  my $suggested_name = trim($body_data->{term_suggestion}->{name});
-  my $suggested_definition = trim($body_data->{term_suggestion}->{definition});
+  my $suggested_name = trim($body_data->{term_suggestion_name});
+  my $suggested_definition = trim($body_data->{term_suggestion_definition});
 
   $annotation_data{term_suggestion} = {
     name => $suggested_name,
@@ -1237,23 +1171,18 @@ sub annotation_set_term : Chained('annotate') PathPart('set_term') Args(1)
     $annotation_data{with_gene} = $with_gene->primary_identifier();
   }
 
-  $st->{show_title} = 0;
-
-  $st->{current_component} = $annotation_type_name;
-  $st->{current_component_display_name} = $annotation_config->{display_name};
-
-  my $annotation_type_config = $config->{annotation_types}->{$annotation_type_name};
-  my $evidence_types = $config->{evidence_types};
+  if ($body_data->{submitter_comment}) {
+    $annotation_data{submitter_comment} = $body_data->{submitter_comment};
+  }
 
   my $annotation =
     $self->_create_annotation($c, $annotation_type_name,
                                   $feature_type, [$feature], \%annotation_data);
 
-
   $c->stash->{json_data} = {
     status => "success",
-    location => $st->{curs_root_uri} . "/annotation/" .
-      $annotation->annotation_id() . "/transfer",
+    location => $st->{curs_root_uri} . "/feature/$feature_type/view/" .
+      $feature->feature_id(),
   };
 
   $c->forward('View::JSON');
@@ -1387,251 +1316,6 @@ sub _set_allele_select_stash
   }
 }
 
-sub annotation_transfer : Chained('annotation') PathPart('transfer') Form
-{
-  my ($self, $c) = @_;
-
-  my $config = $c->config();
-  my $st = $c->stash();
-  my $schema = $st->{schema};
-
-  my @annotations = @{$st->{annotations}};
-
-  my %annotation_by_id = ();
-
-  map {
-    my $annotation = $_;
-    $annotation_by_id{$annotation->annotation_id()} = $annotation;
-  } @annotations;
-
-  my $annotation_type_name = $annotations[0]->type();
-
-  my $annotation_config = $config->{annotation_types}->{$annotation_type_name};
-
-  $st->{annotation_type} = $annotation_config;
-  $st->{annotations} = \@annotations;
-  $st->{annotation_comment_help_text} = [
-    split /\n/, ($annotation_config->{annotation_comment_help_text} // '')
-  ];
-
-  my $module_category = $annotation_config->{category};
-
-  my $display_name = undef;
-
-  my ($feature_type, $feature) = annotation_features($config, $annotations[0]);
-
-  $st->{feature} = $feature;
-  $st->{feature_type} = $feature_type;
-
-  my $genes_rs = $self->get_ordered_gene_rs($schema, 'primary_identifier');
-
-  my @options = ();
-
-  if ($feature_type eq 'gene') {
-    while (defined (my $other_gene = $genes_rs->next())) {
-      next if $feature->gene_id() == $other_gene->gene_id();
-
-      my $other_gene_proxy = _get_gene_proxy($config, $other_gene);
-
-      push @options, { value => $other_gene_proxy->gene_id(),
-                       label => $other_gene_proxy->long_display_name(),
-                       container_attributes => {
-                         class => 'checkbox-gene-list',
-                       }
-                     };
-    }
-
-    @options = sort { $a->{label} cmp $b->{label} } @options;
-  }
-
-  $st->{title} = "Finalise annotation";
-  $st->{show_title} = 0;
-  $st->{template} = "curs/modules/${module_category}_transfer.mhtml";
-
-  my $form = $self->form();
-  $form->attributes({ action => '?' });
-
-  $form->auto_fieldset(0);
-
-  my $gene_count = $genes_rs->count();
-
-  my $annotation_0_data = $annotations[0]->data();
-  my $transfer_select_genes_text;
-
-  if ($gene_count > 1) {
-    $transfer_select_genes_text =
-      'You can annotate other genes from your list with the '
-        . "same term and evidence by selecting genes below:";
-  } else {
-    $transfer_select_genes_text =
-      "You can annotate other genes with the same term and evidence "
-        . 'by adding more genes from the publication:';
-  }
-
-  my @all_elements = ();
-
-  if (@annotations == 1) {
-    # hack: show a textfield for the comment and extension if there is
-    # one annotation
-    my $annotation = $annotations[0];
-    my $existing_comment = $annotation->data()->{submitter_comment};
-
-    my %comment_def = (
-      name => 'annotation-comment-0',
-      label => 'Optional comment:',
-      label_tag => 'formfu-label',
-      type => 'Textarea',
-      container_tag => 'div',
-      container_attributes => {
-        style => 'display: block',
-        class => 'curs-transfer-comment-container',
-      },
-      attributes => { class => 'annotation-comment',
-                      style => 'display: block' },
-      cols => 80,
-      rows => 6,
-    );
-
-    if (defined $existing_comment) {
-      $comment_def{'value'} = $existing_comment;
-    }
-
-    push @all_elements, {
-      %comment_def,
-    };
-
-    my $current_user = $c->user();
-
-    if (defined $current_user && $current_user->is_admin() ||
-        $config->{always_show_extensions} && lc $config->{always_show_extensions} ne 'no') {
-      my $existing_extension = $annotation->data()->{annotation_extension};
-
-      my %extension_def = (
-        name => 'annotation-extension-0',
-        label => 'Optional annotation extension:',
-        label_tag => 'formfu-label',
-        type => 'Textarea',
-        container_tag => 'div',
-        container_attributes => {
-          style => 'display: block',
-          class => 'curs-transfer-extension-container',
-        },
-        attributes => { class => 'annotation-extension',
-                        style => 'display: block' },
-        cols => 80,
-        rows => 6,
-      );
-
-      if (defined $existing_extension) {
-        $extension_def{'value'} = $existing_extension;
-      }
-
-      push @all_elements, {
-        %extension_def,
-      };
-    }
-  }
-
-  if (@options) {
-    push @all_elements, (
-      {
-        type => 'Block',
-        tag => 'div',
-        content => $transfer_select_genes_text,
-      },
-      {
-        name => 'dest',
-        type => 'Checkboxgroup',
-        container_tag => 'div',
-        label => '',
-        options => [@options],
-      },
-    );
-  }
-
-  push @all_elements, {
-    name => 'transfer-submit', type => 'Submit',
-    attributes => { class => 'btn btn-primary curs-finish-button', },
-    value => 'Finish',
-  };
-
-  $form->elements([@all_elements]);
-  $form->process();
-  $st->{form} = $form;
-
-  if ($form->submitted_and_valid()) {
-    my $submit_value = $form->param_value('transfer-submit');
-
-    my $guard = $schema->txn_scope_guard;
-
-    my @dest_params = @{$form->param_array('dest')};
-
-    if (@annotations == 1) {
-      # hack: use a textfield for the comment and extension only if there is one annotation
-      my $annotation = $annotations[0];
-
-      my $comment = $form->param_value('annotation-comment-0');
-      my $extension = $form->param_value('annotation-extension-0');
-      my $data = $annotation->data();
-
-      if ($comment && $comment !~ /^\s*$/) {
-        $data->{submitter_comment} = $comment;
-      } else {
-        delete $data->{submitter_comment};
-      }
-
-      if ($extension && $extension !~ /^\s*$/) {
-        $data->{annotation_extension} = $extension;
-      } else {
-        delete $data->{annotation_extension};
-      }
-
-      $annotation->data($data);
-      $annotation->update();
-    }
-
-    if (@dest_params > 0) {
-      my $first_annotation = $annotations[0];
-      my $first_ann_data = $first_annotation->data();
-
-      my $new_data = clone $first_ann_data;
-      delete $new_data->{with_gene};
-      delete $new_data->{annotation_extension};
-      delete $new_data->{conditions};
-      delete $new_data->{expression};
-
-      my @dest_gene_identifiers = ();
-
-      for my $dest_param (@dest_params) {
-        my $dest_gene = $schema->find_with_type('Gene', $dest_param);
-
-        my $new_annotation =
-          $schema->create_with_type('Annotation',
-                                    {
-                                      type => $annotation_type_name,
-                                      status => 'new',
-                                      pub => $annotations[0]->pub(),
-                                      creation_date => Canto::Curs::Utils::get_iso_date(),
-                                      data => $new_data,
-                                    });
-        $new_annotation->set_genes($dest_gene);
-
-        my $gene_proxy = Canto::Curs::GeneProxy->new(config => $config,
-                                                      cursdb_gene => $dest_gene);
-
-        push @dest_gene_identifiers, $gene_proxy->display_name();
-      }
-
-      $c->flash()->{message} = 'Transferred annotation to: ' . join ',', @dest_gene_identifiers;
-    }
-
-    $guard->commit();
-
-    $self->state()->store_statuses($schema);
-
-    _redirect_and_detach($c, 'feature', $feature_type, 'view', $feature->feature_id());
-  }
-}
 
 sub feature : Chained('top') CaptureArgs(1)
 {

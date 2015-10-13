@@ -355,6 +355,11 @@ table.list thead img.sort-direction-icon {
   padding-right: 5px;
 }
 
+.annotation-single-row td {
+  padding: 5px !important;
+  padding-right: 8px !important;
+}
+
 .field-label {
   color: #226;
   white-space: nowrap;
@@ -931,14 +936,7 @@ span.canto-select-buttons {
   margin: 5px 10px 5px 5px;
 }
 
-.curs-finish-buttons {
-  float: right;
-  margin: 5px;
-  margin-top: 10px;
-  margin-left: 8px;
-}
-
-.curs-finish-button {
+.curs-finish-buttons, .curs-finish-button {
   float: right;
   margin: 5px;
   margin-top: 10px;
@@ -970,6 +968,10 @@ span.canto-select-buttons {
   margin-left: -1em;
   margin-right: -1em;
   margin-top: 1.5em;
+}
+
+.curs-extension-relation {
+  font-weight: bold;
 }
 
 .curs-external-links {
