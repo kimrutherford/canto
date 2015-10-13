@@ -230,6 +230,23 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
   if ($state eq APPROVAL_IN_PROGRESS) {
     if ($c->user_exists() && $c->user()->role()->name() eq 'admin') {
       # fall through, use dispatch table
+      my $unused_genotype_count = _unused_genotype_count($c);
+
+      if ($unused_genotype_count > 0) {
+        if ($st->{message}) {
+          if (!ref $st->{message}) {
+            $st->{message} = [$st->{message}];
+          }
+        } else {
+          $st->{message} = [];
+        }
+
+        if ($unused_genotype_count == 1) {
+          push @{$st->{message}}, "Warning: there is an unused genotype in this session";
+        } else {
+          push @{$st->{message}}, "Warning: there are $unused_genotype_count unused genotypes in this session";
+        }
+      }
     } else {
       if ($path !~ m!/ro/?$|ws/\w+/list!) {
         $c->detach('finished_publication');
@@ -272,6 +289,18 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
       $c->detach($dispatch_dest);
     }
   }
+}
+
+sub _unused_genotype_count
+{
+  my $c = shift;
+  my $st = $c->stash();
+  my $schema = $st->{schema};
+
+  my $genotype_rs = $schema->resultset('Genotype')
+    ->search({}, { where => \"genotype_id NOT IN (SELECT genotype FROM genotype_annotation)" });
+
+  return $genotype_rs->count();
 }
 
 sub _set_genes_in_session
@@ -726,11 +755,15 @@ sub gene_upload : Chained('top') Args(0) Form
   }
 }
 
-sub genotype_manage : Chained('top') Args(0)
+sub genotype_manage : Chained('top')
 {
-  my ($self, $c) = @_;
+  my ($self, $c, $flag) = @_;
 
   my $st = $c->stash();
+
+  if (defined $flag && $flag eq 'ro') {
+    $st->{read_only_curs} = 1;
+  }
 
   $st->{title} = 'Genotypes for: ' . $st->{pub}->uniquename();
   $st->{template} = 'curs/genotype_manage.mhtml';
@@ -1694,17 +1727,21 @@ sub feature_add : Chained('feature') PathPart('add')
 
   $st->{annotation_count} = 0;
 
+  $st->{edit_or_duplicate} = 'edit';
+
   $st->{title} = "Add a $feature_type";
   $st->{template} = "curs/${feature_type}_edit.mhtml";
 }
 
-sub feature_edit : Chained('feature') PathPart('edit')
+sub _feature_edit_helper
 {
-  my ($self, $c, $genotype_id) = @_;
+  my ($self, $c, $edit_or_duplicate, $genotype_id) = @_;
 
   my $st = $c->stash();
   $st->{show_title} = 1;
   my $feature_type = $st->{feature_type};
+
+  $st->{edit_or_duplicate} = $edit_or_duplicate;
 
   my $schema = $st->{schema};
 
@@ -1769,16 +1806,36 @@ sub feature_edit : Chained('feature') PathPart('edit')
       $st->{feature} = $genotype;
       $st->{features} = [$genotype];
 
-      $st->{annotation_count} = $genotype->annotations()->count();
+      if ($edit_or_duplicate eq 'edit') {
+        $st->{annotation_count} = $genotype->annotations()->count();
+      }
 
       my $display_name = $st->{feature}->display_name();
 
-      $st->{title} = "Editing genotype: $display_name";
+      if ($edit_or_duplicate eq 'edit') {
+        $st->{title} = "Editing genotype: $display_name";
+      } else {
+        $st->{title} = "Adding a genotype";
+      }
       $st->{template} = "curs/${feature_type}_edit.mhtml";
     }
   } else {
     die "can't edit feature type: $feature_type\n";
   }
+}
+
+sub feature_duplicate : Chained('feature') PathPart('duplicate')
+{
+  my ($self, $c, $genotype_id) = @_;
+
+  $self->_feature_edit_helper($c, 'duplicate', $genotype_id);
+}
+
+sub feature_edit : Chained('feature') PathPart('edit')
+{
+  my ($self, $c, $genotype_id) = @_;
+
+  $self->_feature_edit_helper($c, 'edit', $genotype_id);
 }
 
 sub _decode_json_content
@@ -1845,15 +1902,20 @@ sub genotype_store : Chained('feature') PathPart('store')
       my $existing_genotype = $genotype_manager->find_with_alleles(\@alleles);
 
       if ($existing_genotype) {
+        my $alleles_string = "allele";
+        if (@alleles > 1) {
+          $alleles_string = "alleles";
+        }
         if (defined $existing_genotype->name()) {
-          $c->flash()->{message} = 'Using existing genotype with the same alleles: ' .
+          $c->flash()->{message} = "Using existing genotype with the same $alleles_string: " .
             $existing_genotype->name();
         } else {
-          $c->flash()->{message} = 'Using existing genotype with the same alleles';
+          $c->flash()->{message} = "Using existing genotype with the same $alleles_string";
         }
 
         $c->stash->{json_data} = {
-          status => "success",
+          status => "existing",
+          genotype_display_name => $existing_genotype->display_name(),
           location => $st->{curs_root_uri} . "/feature/genotype/view/" . $existing_genotype->genotype_id(),
         };
       } else {
@@ -1868,6 +1930,7 @@ sub genotype_store : Chained('feature') PathPart('store')
 
         $c->stash->{json_data} = {
           status => "success",
+          genotype_display_name => $genotype->display_name(),
           location => $st->{curs_root_uri} . "/feature/genotype/view/" . $genotype->genotype_id(),
         };
       }
@@ -2681,7 +2744,11 @@ sub ws_genotype_delete : Chained('top') PathPart('ws/genotype/delete')
 
   my $json_data = $c->req()->body_data();
 
+  my $guard = $schema->txn_scope_guard();
+
   $c->stash->{json_data} = $service_utils->delete_genotype($feature_id, $json_data);
+
+  $guard->commit();
 
   $c->forward('View::JSON');
 }

@@ -32,7 +32,9 @@
               <th ng-if="annotationType.feature_type == 'genotype'">Genes</th>
               <th ng-if="annotationType.feature_type == 'genotype' && !data.hideColumns.genotype_background">Background</th>
               <th ng-if="annotationType.feature_type == 'genotype' && !data.hideColumns.genotype_name">Genotype name</th>
-              <th ng-if="annotationType.feature_type == 'genotype' || !featureIdFilter">{{displayAnnotationFeatureType}}</th>
+              <th ng-if="annotationType.feature_type == 'genotype' || !featureIdFilter">{{displayAnnotationFeatureType}}
+                <span ng-if="annotationType.feature_type == 'genotype'">(allele and expression)</span>
+              </th>
               <th>Term ID</th>
               <th>Term name</th>
               <th>Evidence code</th>
@@ -55,10 +57,10 @@
           <thead>
             <tr>
               <th>Interactor A</th>
-              <th>Taxon Id A</th>
-              <th>Interactor B</th>
-              <th>Taxon Id B</th>
+              <th ng-if="multiOrganismMode">Taxon Id A</th>
               <th>Evidence code</th>
+              <th>Interactor B</th>
+              <th ng-if="multiOrganismMode">Taxon Id B</th>
               <th ng-if="!data.hideColumns.submitter_comment">Comment</th>
               <th ng-if="!data.hideColumns.curator">Curator</th>
             </tr>

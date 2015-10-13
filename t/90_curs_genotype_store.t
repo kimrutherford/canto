@@ -6,6 +6,7 @@ use Plack::Test;
 
 use Canto::TestUtil;
 use Canto::Controller::Curs;
+use Canto::Curs::GenotypeManager;
 
 use JSON;
 
@@ -40,6 +41,7 @@ test_psgi $app, sub {
     sub {
       my $genotype_name = shift;
       my $genotype_identifier = shift;
+      my $status = shift;
 
       my $req = HTTP::Request->new(POST => $uri);
       $req->header('Content-Type' => 'application/json');
@@ -80,21 +82,26 @@ test_psgi $app, sub {
       my $res = $cb->($req);
       my $perl_res = decode_json $res->content();
 
-      is($perl_res->{status}, 'success');
+      is($perl_res->{status}, $status);
     };
+
+  my $genotype_manager = Canto::Curs::GenotypeManager->new(config => $config,
+                                                           curs_schema => $curs_schema);
+  $genotype_manager->_remove_unused_alleles();
 
   my $start_allele_count = $curs_schema->resultset('Allele')->count();
 
-  $test_create_1_proc->("h+ abc-1", "h+ ssm4delta(deletion)");
+  $test_create_1_proc->("h+ abc-1", "h+ ssm4delta(deletion)", "success");
   # create new allele in the CursDB and allele from Chado
   is ($curs_schema->resultset('Allele')->count(), $start_allele_count + 2);
 
-  $test_create_1_proc->("h+ abc-1 g-2", "h+ ssm4delta(deletion) g-2");
-  # create new allele in the CursDB, not the allele from Chado
+  $test_create_1_proc->("h+ abc-1 g-2", "h+ ssm4delta(deletion) g-2", "existing");
+  # duplicate, so nothing new is stored
   is($curs_schema->resultset('Allele')->count(), $start_allele_count + 2);
 
   my $_create_test_genotype = sub
   {
+    my $status = shift;
     my @alleles = @_;
 
     my $req = HTTP::Request->new(POST => $uri);
@@ -114,10 +121,10 @@ test_psgi $app, sub {
     my $res = $cb->($req);
     my $perl_res = decode_json $res->content();
 
-    is($perl_res->{status}, 'success');
+    is($perl_res->{status}, $status);
   };
 
-  $_create_test_genotype->(
+  $_create_test_genotype->("existing",
     map {
       { primary_identifier => $_->primary_identifier() }
     } $curs_schema->resultset('Genotype')
@@ -127,16 +134,16 @@ test_psgi $app, sub {
     $curs_schema->resultset('Genotype')
       ->find({ name => 'h+ xyz-aa-1' });
 
-  # genotype not create because it's a dulpicate
+  # genotype not created because it's a duplicate
   ok(!defined $new_genotype);
 
   # add an extra allele and try again
-  $_create_test_genotype->(
+  $_create_test_genotype->("success",
     (map {
       { primary_identifier => $_->primary_identifier() }
     } $curs_schema->resultset('Genotype')
       ->first()->alleles()->all()),
-    { primary_identifier => 'SPAC27D7.13c:aaaa0007-2' });
+    { primary_identifier => 'SPAC27D7.13c:allele-2' });
 
   $new_genotype =
     $curs_schema->resultset('Genotype')
@@ -146,8 +153,7 @@ test_psgi $app, sub {
 
   is ($new_genotype->identifier(), "aaaa0007-genotype-4");
 
-  # shouldn't have created any new alleles:
-  is ($curs_schema->resultset('Allele')->count(), $start_allele_count + 2);
+  is ($curs_schema->resultset('Allele')->count(), $start_allele_count + 3);
 };
 
 1;

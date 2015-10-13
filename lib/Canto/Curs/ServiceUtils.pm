@@ -272,6 +272,7 @@ sub _genotype_details_hash
     allele_string => $genotype->allele_string(),
     display_name => $genotype->display_name(),
     genotype_id => $genotype->genotype_id(),
+    annotation_count => $genotype->annotations()->count(),
   );
 
   if ($include_allele) {
@@ -411,9 +412,12 @@ sub _get_alleles
   my $allele_rs = $curs_schema->resultset('Allele')
     ->search({ 'gene.primary_identifier' => $gene_primary_identifier,
                name => { -like => $search_string . '%' },
+             },
+             {
+               join => 'gene',
                # only return alleles that are part of a genotype
-               allele_genotype_id => { '!=' => undef } },
-             { join => [ 'gene', 'allele_genotypes' ] });
+               where => \"me.allele_id IN (SELECT allele FROM allele_genotype)",
+             });
   my @res = map {
     $self->_allele_details_hash($_);
   } $allele_rs->all();
@@ -710,6 +714,8 @@ sub _ontology_change_keys
       }
 
       my $res = $lookup->lookup_by_id( id => $term_ontid );
+
+      $annotation->type($res->{annotation_type_name});
 
       if (defined $res) {
         # do the default - set Annotation->data()->{...}
@@ -1164,8 +1170,6 @@ sub delete_annotation
  Args    : $details - annotation details:
              - key: the curs key
              - genotype_identifier: ID of the annotation to delete
- Return  : Nothing - dies on error
-
  Return  : { status: 'success' }
          or:
            { status: 'error', message: '...' }
@@ -1188,13 +1192,22 @@ sub delete_genotype
       Canto::Curs::GenotypeManager->new(config => $self->config(),
                                         curs_schema => $self->curs_schema());
 
-    $genotype_manager->delete_genotype($genotype_id);
+    my $ret = $genotype_manager->delete_genotype($genotype_id);
 
     $self->metadata_storer()->store_counts($curs_schema);
 
     $curs_schema->txn_commit();
 
-    return { status => 'success' };
+    if ($ret) {
+      return {
+        status => 'error',
+        message => $ret,
+      };
+    } else {
+      return {
+        status => 'success',
+      };
+    }
   } catch {
     $curs_schema->txn_rollback();
 

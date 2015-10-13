@@ -81,13 +81,11 @@ Description
 %   if ($allele->expression()) {
 -     <i><% $allele->expression() %></i>
 %   }
-% if (!$read_only_curs) {
- - <a href="<% $start_path . '/feature/gene/view/' . $allele->gene()->gene_id() %>">
+ - <a href="<% $gene_view_url . $allele->gene()->gene_id() . ($read_only_curs ? '/ro' : '') %>">
      <span>
        <% $_proxy_gene->($allele->gene())->display_name() %>
      </span>
    </a>
-% }
    <br/>
 % }
     </div>
@@ -95,14 +93,17 @@ Description
     <div>
       <a ng-click="checkEditIsSensible($event)" href="<% $start_path . '/feature/genotype/edit/' . $genotype->genotype_id() %>">Edit ...</a>
     </div>
+    <div>
+      <a href="<% $start_path . '/feature/genotype/duplicate/' . $genotype->genotype_id() %>">Duplicate ...</a>
+    </div>
 % }
   </div>
 </div>
 
 <div class="clearall"/>
 
-<button type="button" id="curs-finish-genotype" class="btn btn-primary
-curs-back-button"><% $finish_text %></button>
+<button type="button" id="curs-genotype-page-back"
+        class="btn btn-primary curs-back-button">&lt;- Back to genotypes</button>
 
 <annotation-table-list feature-type-filter="genotype" feature-id-filter="<% $genotype_id %>"
                        feature-filter-display-name="<% $genotype->display_name() %>"></annotation-table-list>
@@ -111,8 +112,6 @@ curs-back-button"><% $finish_text %></button>
 my $genotype_id = $genotype->genotype_id();
 
 my $st = $c->stash();
-
-my $finish_text = '<- Back to summary';
 
 my @types_to_show = grep {
   $_->{feature_type} eq 'genotype'
@@ -137,5 +136,7 @@ my $_unicode_allele_symbol = sub {
   my $text = shift;
   $text =~ s/(delta)\b/&Delta;/gr;
 };
+
+my $gene_view_url = $start_path . '/feature/gene/view/';
 
 </%init>
