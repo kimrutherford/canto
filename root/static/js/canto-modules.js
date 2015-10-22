@@ -529,15 +529,6 @@ var cursStateService =
     // return the data in a obj with keys keys suitable for sending to the
     // server
     this.asAnnotationDetails = function() {
-      var cleanExtensions =
-        $.map(this.extension,
-              function(part) {
-                return {
-                  rangeValue: part.rangeValue,
-                  relation: part.relation,
-                };
-              });
-
       var retVal = {
         term_ontid: this.currentTerm(),
         evidence_code: this.evidence_code,
@@ -545,7 +536,7 @@ var cursStateService =
         conditions: this.conditions,
         term_suggestion_name: null,
         term_suggestion_definition: null,
-        extension: cleanExtensions,
+        extension: this.extension,
         submitter_comment: this.comment,
       };
 
@@ -749,9 +740,6 @@ var breadcrumbsDirective =
           return CantoService.lookup('ontology', [termId],
                                      {
                                        def: 1,
-                                       children: 1,
-                                       exact_synonyms: 1,
-                                       subset_ids: 1
                                      });
         };
 
@@ -987,10 +975,8 @@ var externalTermLinks =
       replace: true,
       templateUrl: app_static_path + 'ng_templates/external_term_links.html',
       controller: function($scope) {
-        $scope.processExternalLinks = function(results) {
-          var ontology_external_links = results.data;
-
-          var link_confs = ontology_external_links[$scope.termDetails.annotation_namespace];
+        $scope.processExternalLinks = function(linkConfig, newTermId) {
+          var link_confs = linkConfig[$scope.termDetails.annotation_namespace];
           if (link_confs) {
             var html = '';
             $.each(link_confs, function(idx, link_conf) {
@@ -1018,9 +1004,9 @@ var externalTermLinks =
               var link_img_src = application_root + 'static/images/ext_link.png';
               html += '<img src="' + link_img_src + '"/></div>';
             });
-            var $linkouts = $('#ferret-linkouts');
+            var $linkouts = $('.curs-term-linkouts');
             if (html.length > 0) {
-              $linkouts.find('.links-container').html(html);
+              $linkouts.find('.curs-term-linkout-target').html(html);
               $linkouts.show();
             } else {
               $linkouts.hide();
@@ -1037,17 +1023,14 @@ var externalTermLinks =
                         CantoService.lookup('ontology', [newTermId],
                                             {
                                               def: 1,
-                                              children: 1,
-                                              exact_synonyms: 1,
-                                              subset_ids: 1
                                             })
                           .then(function(details) {
-                            $scope.termDetails = details;
+                            $scope.termDetails = details.data;
 
                             return CantoConfig.get('ontology_external_links');
                           })
                           .then(function(results) {
-                            $scope.processExternalLinks(results, newTermId);
+                            $scope.processExternalLinks(results.data, newTermId);
                           });
                     });
 
@@ -1066,6 +1049,7 @@ var ontologyTermConfirm =
         annotationType: '=',
         featureDisplayName: '@',
         termId: '@',
+        matchingSynonym: '@',
         gotoChildCallback: '&',
         unsetTermCallback: '&',
         suggestTermCallback: '&',
@@ -1075,20 +1059,33 @@ var ontologyTermConfirm =
       replace: true,
       templateUrl: app_static_path + 'ng_templates/ontology_term_confirm.html',
       controller: function($scope) {
+        $scope.synonymTypes = [];
+
+        $scope.$watch('annotationType.name',
+                      function(typeName) {
+                        if (typeName) {
+                          $scope.synonymTypes = $scope.annotationType.synonyms_to_display;
+                        }
+                      });
+
         $scope.app_static_path = CantoGlobals.app_static_path;
 
         $scope.$watch('termId',
                       function(newTermId) {
-                        CantoService.lookup('ontology', [newTermId],
-                                            {
-                                              def: 1,
-                                              children: 1,
-                                              exact_synonyms: 1,
-                                            })
-                          .then(function(response) {
-                            $scope.termDetails = response.data;
-                          });
-                  });
+                        if (newTermId) {
+                          CantoService.lookup('ontology', [newTermId],
+                                              {
+                                                def: 1,
+                                                children: 1,
+                                                synonyms: $scope.synonymTypes,
+                                              })
+                            .then(function(response) {
+                              $scope.termDetails = response.data;
+                            });
+                        } else {
+                          $scope.termDetails = null;
+                        }
+                      });
 
         $scope.gotoChild = function(childId) {
           $scope.gotoChildCallback({ childId: childId });
@@ -1173,12 +1170,17 @@ function openExtensionPartDialog($modal, extensionPart, relationConfig) {
 }
 
 
-// filter the extension_configuration results from the server and return
-// only those where there "domain" term ID in the configuration matches one of
-// subsetIds
-function extensionConfFilter(allConfigs, subsetIds) {
+// Filter the extension_configuration results from the server and return
+// only those where the "domain" term ID in the configuration matches one of
+// subsetIds.  Also ignore any configs where the "role" is "admin" and the
+// current, logged in user isn't an admin.
+function extensionConfFilter(allConfigs, subsetIds, role) {
   return $.map(allConfigs,
                function(conf) {
+                 if (conf.role == 'admin' &&
+                     role != 'admin') {
+                   return;
+                 }
                  if ($.inArray(conf.domain, subsetIds) != -1) {
                    var range = conf.range;
                    var rangeNamespace = null;
@@ -1251,7 +1253,7 @@ function openExtensionBuilderDialog($modal, extension, termId, featureDisplayNam
 
 
 var extensionBuilder =
-  function($modal, CantoConfig, CantoService) {
+  function($modal, CantoConfig, CantoService, CursSessionDetails) {
     return {
       scope: {
         extension: '=',
@@ -1283,7 +1285,6 @@ var extensionBuilder =
                                             {
                                               def: 1,
                                               children: 1,
-                                              exact_synonyms: 1,
                                               subset_ids: 1,
                                             })
                           .then(function(response) {
@@ -1291,24 +1292,26 @@ var extensionBuilder =
                           });
                       });
 
-        $scope.$watch('termDetails.id',
-                      function() {
-                        if (!$scope.termDetails.id) {
-                          return;
-                        }
+        $scope.updateMatchingConfigs = function() {
+          if (!$scope.termDetails.id) {
+            $scope.matchingConfigurations = [];
+            return;
+          }
 
-                        var subset_ids = $scope.termDetails.subset_ids;
+          var subset_ids = $scope.termDetails.subset_ids;
 
-                        if (subset_ids && subset_ids.length > 0) {
-                          $scope.extensionConfigurationPromise
-                            .success(function(results) {
-                              $scope.matchingConfigurations =
-                                extensionConfFilter(results, subset_ids);
-                            });
-                        } else {
-                          $scope.matchingConfigurations = [];
-                        }
-                      });
+          if (subset_ids && subset_ids.length > 0) {
+            $scope.extensionConfigurationPromise
+              .success(function(results) {
+                $scope.matchingConfigurations =
+                  extensionConfFilter(results, subset_ids);
+              });
+          } else {
+            $scope.matchingConfigurations = [];
+          }
+        };
+
+        $scope.$watch('termDetails.id', $scope.updateMatchingConfigs);
 
         $scope.startAddPart = function(extensionConfig) {
           var editExtensionPart = {
@@ -1328,7 +1331,8 @@ var extensionBuilder =
   };
 
 canto.directive('extensionBuilder',
-                ['$modal', 'CantoConfig', 'CantoService', extensionBuilder]);
+                ['$modal', 'CantoConfig', 'CantoService', 'CursSessionDetails',
+                 extensionBuilder]);
 
 
 var extensionPartDialogCtrl =
@@ -1413,8 +1417,8 @@ var extensionDisplay =
       replace: true,
       templateUrl: app_static_path + 'ng_templates/extension_display.html',
       controller: function($scope) {
-        $scope.delete = function(part) {
-          if ($scope.showDelete()) {
+        $scope.deletePart = function(part) {
+          if ($scope.showDelete) {
             arrayRemoveOne($scope.extension, part);
           }
         };
@@ -1444,6 +1448,10 @@ var ontologyWorkflowCtrl =
 
     $scope.gotoChild = function(termId) {
       CursStateService.addTerm(termId);
+    };
+
+    $scope.matchingSynonym = function () {
+      return CursStateService.matchingSynonym;
     };
 
     $scope.getState = function() {
@@ -2771,7 +2779,6 @@ var termConfirmDialogCtrl =
                                         {
                                           def: 1,
                                           children: 1,
-                                          exact_synonyms: 1,
                                         });
 
       promise.success(function(termDetails) {
@@ -2842,6 +2849,7 @@ var termDefinitionDisplayCtrl =
     return {
       scope: {
         termDetails: '=',
+        matchingSynonym: '=',
       },
       restrict: 'E',
       replace: true,

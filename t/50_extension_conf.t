@@ -19,7 +19,9 @@ cmp_deeply($conf[0],
              'range' => 'GENE',
              'display_text' => 'kinase substrate',
              'cardinality' => [0,1],
-             'allowed_relation' => 'has_substrate'
+             'allowed_relation' => 'has_substrate',
+             'role' => 'user',
+             'index' => 0,
            });
 
 cmp_deeply($conf[1]->{cardinality}, ['*']);
