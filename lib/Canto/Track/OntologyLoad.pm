@@ -132,16 +132,20 @@ sub _delete_term_by_cv
 
   for my $related (qw(cvtermprop_cvterms cvtermsynonym_cvterms
                       cvterm_relationship_objects cvterm_relationship_subjects
-                      cvterm_relationship_types)) {
+                      cvterm_relationship_types cvterm_dbxrefs)) {
     $cv_cvterms->search_related($related)->delete();
   }
 
-  $cv_cvterms->search_related('cvterm_dbxrefs')->delete();
   $cv_cvterms->delete();
 
   my $dbxref_where = \"dbxref_id NOT IN (SELECT dbxref_id FROM cvterm) AND dbxref_id NOT IN (SELECT dbxref_id FROM cvterm_dbxref)";
-
   $schema->resultset('Dbxref')->search({ }, { where => $dbxref_where })->delete();
+
+  my $cvtermprop_where = \"cvterm_id NOT IN (SELECT cvterm_id FROM cvterm)";
+  $schema->resultset('Cvtermprop')->search({ }, { where => $cvtermprop_where })->delete();
+
+  my $cvtermsynonym_where = \"cvterm_id NOT IN (SELECT cvterm_id FROM cvterm)";
+  $schema->resultset('Cvtermsynonym')->search({ }, { where => $cvtermsynonym_where })->delete();
 }
 
 =head2 load
@@ -153,9 +157,6 @@ sub _delete_term_by_cv
            $index - the index to add the terms to (optional)
            $synonym_types_ref - a array ref of synonym types that should be
                                 added to the index
-         : $extension_subset_process - A ExtensionSubsetProcess object.  If set
-                                       call its process() method after loading
-                                       all ontology terms
  Returns : Nothing
 
 =cut
@@ -166,7 +167,6 @@ sub load
   my $source = shift;
   my $index = shift;
   my $synonym_types_ref = shift;
-  my $extension_subset_process = shift;
 
   if (!defined $source) {
     croak "no source passed to OntologyLoad::load()";
@@ -395,7 +395,7 @@ sub load
     my $rel_type = $rel->type();
     my $rel_type_cvterm = $relationship_cvterms{$rel_type};
 
-    die "can't find relationship cvterm for: $rel_type"
+    die "can't find relationship cvterm for: $subject_term_acc <- $rel_type -> $object_term_acc"
       unless defined $rel_type_cvterm;
 
     # don't store relations between relation terms
@@ -411,10 +411,6 @@ sub load
                                 object => $object_cvterm,
                                 type => $rel_type_cvterm
                               });
-  }
-
-  if ($extension_subset_process) {
-    $extension_subset_process->process($schema, $file_name);
   }
 
   $guard->commit();
@@ -454,11 +450,11 @@ sub finalise
       qw(db dbxref cv cvterm cvterm_dbxref cvtermsynonym cvterm_relationship cvtermprop);
 
     for my $table_name (reverse @table_names) {
-      $dest_dbh->do("DELETE FROM main.$table_name WHERE main.$table_name.${table_name}_id NOT IN (SELECT ${table_name}_id FROM load_db.$table_name)");
+      $dest_dbh->do("DELETE FROM main.$table_name WHERE main.$table_name.${table_name}_id");
     }
 
     for my $table_name (@table_names) {
-      $dest_dbh->do("INSERT INTO main.$table_name SELECT * FROM load_db.$table_name WHERE load_db.$table_name.${table_name}_id NOT IN (SELECT ${table_name}_id FROM main.$table_name)");
+      $dest_dbh->do("INSERT INTO main.$table_name SELECT * FROM load_db.$table_name");
     }
 
     $dest_dbh->commit();

@@ -191,15 +191,13 @@ if (@ontology_args) {
   for my $ontology_source (@ontology_args) {
     print "loading $ontology_source\n" if $verbose;
 
-    my $extension_subset_process = undef;
+    $ontology_load->load($ontology_source, $index, $synonym_types);
+  }
 
-    if ($do_process_extension_config) {
-      $extension_subset_process =
-        Canto::Config::ExtensionSubsetProcess->new(config => $config);
-    }
-
-    $ontology_load->load($ontology_source, $index, $synonym_types,
-                         $extension_subset_process);
+  if ($do_process_extension_config) {
+    my $extension_subset_process =
+      Canto::Config::ExtensionSubsetProcess->new(config => $config);
+    $extension_subset_process->process($ontology_load->load_schema(), @ontology_args);
   }
 
   if (!$dry_run) {

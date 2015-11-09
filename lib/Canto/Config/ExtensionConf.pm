@@ -54,8 +54,7 @@ use warnings;
              "ProteinID" - only protein IDs are allowed
 =cut
 
-sub parse
-  {
+sub parse {
     my @extension_conf_files = @_;
 
     my @res = ();
@@ -64,10 +63,10 @@ sub parse
       open my $conf_fh, '<', $extension_conf_file
         or die "can't open $extension_conf_file: $!\n";
 
-      my $index = 0;
-
       while (defined (my $line = <$conf_fh>)) {
         chomp $line;
+
+        next if $line =~ /^#/;
 
         my ($domain, $subset_rel, $allowed_relation, $range, $display_text,
             $cardinality, $role) =
@@ -92,15 +91,29 @@ sub parse
           } split /,/, $cardinality;
         }
 
+        my @range_bits = split /\|/, $range;
+
+        # hack: treat everything as a gene (and normalise the case)
+        map {
+          s/^(Gene|FeatureId|GeneID|ProteinID|TranscriptID|tRNAID)$/GeneID/i;
+        } @range_bits;
+
+        # hack: treat numbers as free text for now
+        map {
+          s/^(number|text)$/Text/i;
+        } @range_bits;
+
+        # hack: use only the first part of the range conf.
+        @range_bits = ($range_bits[0]);
+
         push @res, {
           domain => $domain,
           subset_rel => $subset_rel,
           allowed_relation => $allowed_relation,
-          range => $range,
+          range => \@range_bits,
           display_text => $display_text,
           cardinality => \@cardinality,
           role => $role,
-          index => $index++,
         };
       }
 

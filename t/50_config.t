@@ -88,9 +88,8 @@ cmp_deeply($config_with_suffix->{extension_configuration},
                                  '1'
                                ],
               'domain' => 'GO:0016023',
-              'range' => 'GENE',
+              'range' => ['GeneID'],
               'role' => 'user',
-              'index' => 0,
             },
             {
               'display_text' => 'Something that happens during',
@@ -99,10 +98,9 @@ cmp_deeply($config_with_suffix->{extension_configuration},
               'cardinality' => [
                                  '*'
                                ],
-              'range' => 'GO:0005575',
+              'range' => ['GO:0005575'],
               'domain' => 'GO:0016023',
               'role' => 'user',
-              'index' => 1,
             },
             {
               'subset_rel' => 'is_a',
@@ -112,10 +110,33 @@ cmp_deeply($config_with_suffix->{extension_configuration},
                                  '0',
                                  '1'
                                ],
-              'range' => 'GENE',
+              'range' => ['GeneID'],
               'domain' => 'GO:0022857',
               'role' => 'user',
-              'index' => 2,
+            },
+            {
+              'range' => ['SO:0001799'],
+              'domain' => 'GO:0022857',
+              'allowed_relation' => 'occurs_at',
+              'role' => 'user',
+              'cardinality' => [
+                                 '0',
+                                 '1'
+                               ],
+              'subset_rel' => 'is_a',
+              'display_text' => 'occurs at'
+            },
+            {
+              'domain' => 'GO:0022857',
+              'range' => ['Text'],
+              'role' => 'user',
+              'allowed_relation' => 'modifies_residue',
+              'display_text' => 'occurs at',
+              'subset_rel' => 'is_a',
+              'cardinality' => [
+                                 '0',
+                                 '1'
+                               ]
             },
             {
               'display_text' => 'assayed using',
@@ -126,10 +147,18 @@ cmp_deeply($config_with_suffix->{extension_configuration},
                                  '2'
                                ],
               'domain' => 'FYPO:0000002',
-              'range' => 'GENE',
+              'range' => ['GeneID'],
               'role' => 'user',
-              'index' => 3,
-            }
+            },
+            {
+              'subset_rel' => 'is_a',
+              'cardinality' => ['0', '1'],
+              'range' => ['FYPO_EXT:1000000'],
+              'domain' => 'FYPO:0000002',
+              'allowed_relation' => 'has_penetrance',
+              'role' => 'user',
+              'display_text' => 'penetrance'
+            },
           ]);
 
 

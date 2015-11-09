@@ -226,7 +226,7 @@ canto.service('CursGeneList', function($q, Curs) {
 });
 
 canto.service('CursGenotypeList', function($q, Curs) {
-  this.cursGenotypesPromise = Curs.list('genotype', ['curs_only']);
+  this.cursGenotypesPromise = null;
 
   function add_id_or_identifier(genotypes) {
     $.map(genotypes, function(genotype) {
@@ -238,6 +238,9 @@ canto.service('CursGenotypeList', function($q, Curs) {
   this.cursGenotypeList = function() {
     var q = $q.defer();
 
+    if (this.cursGenotypesPromise == null) {
+      this.cursGenotypesPromise = Curs.list('genotype', ['curs_only']);
+    }
     this.cursGenotypesPromise.success(function(genotypes) {
       add_id_or_identifier(genotypes);
       q.resolve(genotypes);
@@ -1182,7 +1185,7 @@ function extensionConfFilter(allConfigs, subsetIds, role) {
                    return;
                  }
                  if ($.inArray(conf.domain, subsetIds) != -1) {
-                   var range = conf.range;
+                   var range = conf.range[0];
                    var rangeNamespace = null;
                    if (range.match(/\w+:\d+/)) {
                      if (range == 'GO:0005575') {
@@ -1194,7 +1197,15 @@ function extensionConfFilter(allConfigs, subsetIds, role) {
                          if (range == 'GO:0008150') {
                            rangeNamespace = 'biological_process';
                          } else {
-                           rangeNamespace = 'UNKNOWN';
+                           if (range.indexOf('FYPO_EXT:') == 0) {
+                             rangeNamespace = 'fypo_extensions';
+                           } else {
+                             if (range.indexOf('SO:') == 0) {
+                               rangeNamespace = 'sequence';
+                             } else {
+                               rangeNamespace = 'UNKNOWN';
+                             }
+                           }
                          }
                        }
                      }
@@ -1264,8 +1275,7 @@ var extensionBuilder =
       replace: true,
       templateUrl: app_static_path + 'ng_templates/extension_builder.html',
       controller: function($scope) {
-        $scope.matchingConfigurations = [];
-        $scope.extensionConfigurationPromise = CantoConfig.get('extension_configuration');
+        $scope.extensionConfiguration = [];
         $scope.termDetails = { id: null };
 
         $scope.asString = function() {
@@ -1279,39 +1289,60 @@ var extensionBuilder =
           return '';
         };
 
-        $scope.$watch('termId',
-                      function(newTermId) {
-                        CantoService.lookup('ontology', [newTermId],
-                                            {
-                                              def: 1,
-                                              children: 1,
-                                              subset_ids: 1,
-                                            })
-                          .then(function(response) {
-                            $scope.termDetails = response.data;
-                          });
-                      });
+        $scope.updateMatchingConfig = function() {
+          var subset_ids = $scope.termDetails.subset_ids;
 
-        $scope.updateMatchingConfigs = function() {
-          if (!$scope.termDetails.id) {
-            $scope.matchingConfigurations = [];
+          if ($scope.extensionConfiguration.length > 0 &&
+              subset_ids && subset_ids.length > 0) {
+            $scope.matchingConfigurations = 
+              extensionConfFilter($scope.extensionConfiguration, subset_ids);
             return;
           }
 
-          var subset_ids = $scope.termDetails.subset_ids;
-
-          if (subset_ids && subset_ids.length > 0) {
-            $scope.extensionConfigurationPromise
-              .success(function(results) {
-                $scope.matchingConfigurations =
-                  extensionConfFilter(results, subset_ids);
-              });
-          } else {
-            $scope.matchingConfigurations = [];
-          }
+          $scope.matchingConfigurations = [];
         };
 
-        $scope.$watch('termDetails.id', $scope.updateMatchingConfigs);
+        // return the number of uses of each extension config - used to
+        // implement the cardinality constraints
+        $scope.extensionPartCount = function() {
+          var counts = {};
+
+          $.map($scope.extension,
+                function(extensionPart) {
+                  if (counts[extensionPart.relation]) {
+                    counts[extensionPart.relation]++;
+                  } else {
+                    counts[extensionPart.relation] = 1;
+                  }
+                });
+
+          return counts;
+        };
+
+        $scope.$watch('termId',
+                      function(newTermId) {
+                        if (newTermId) {
+                          CantoService.lookup('ontology', [newTermId],
+                                              {
+                                                subset_ids: 1,
+                                              })
+                            .then(function(response) {
+                              $scope.termDetails = response.data;
+                              CantoConfig.get('extension_configuration')
+                                .then(function(results) {
+                                  $scope.extensionConfiguration = results.data;
+                                  $scope.updateMatchingConfig();
+                                });
+                            });
+                          return;
+                        }
+                        $scope.termDetails = { id: null };
+                    });
+
+        $scope.$watch('extension',
+                      function() {
+                        $scope.counts = $scope.extensionPartCount();
+                      }, true);
 
         $scope.startAddPart = function(extensionConfig) {
           var editExtensionPart = {
@@ -1377,9 +1408,9 @@ var extensionPartEdit =
           $scope.extensionPart.rangeDisplayName = termName;
         };
  
-        if ($scope.relationConfig.range == 'ProteinID') {
+        if ($scope.relationConfig.range == 'GeneID') {
           if ($scope.extensionPart.rangeValue) {
-            // editing exisiting part
+            // editing existing part
             CursGeneList.geneList().then(function(results) {
               //
             }).catch(function() {
@@ -1430,7 +1461,8 @@ canto.directive('extensionDisplay', [extensionDisplay]);
 
 
 var ontologyWorkflowCtrl =
-  function($scope, toaster, $http, AnnotationTypeConfig, CursStateService, $attrs) {
+  function($scope, toaster, $http, AnnotationTypeConfig, CantoService,
+           CantoConfig, CursStateService, $attrs) {
     $scope.states = ['searching', 'selectingEvidence', 'buildExtension', 'commenting'];
 
     CursStateService.setState($scope.states[0]);
@@ -1438,12 +1470,42 @@ var ontologyWorkflowCtrl =
     $scope.data = CursStateService;
     $scope.annotationTypeName = $attrs.annotationTypeName;
 
+    $scope.extensionBuilderReady = false;
+    $scope.matchingExtensionConfigs = null;
+
+    $scope.updateMatchingConfig = function() {
+      var subset_ids = $scope.termDetails.subset_ids;
+
+      if (subset_ids && subset_ids.length > 0) {
+        $scope.matchingExtensionConfigs = 
+          extensionConfFilter($scope.extensionConfiguration, subset_ids);
+        return;
+      }
+
+      $scope.matchingExtensionConfigs = [];
+    };
+
     $scope.termFoundCallback =
       function(termId, termName, searchString, matchingSynonym) {
         CursStateService.clearTerm();
         CursStateService.addTerm(termId);
         CursStateService.searchString = searchString;
         CursStateService.matchingSynonym = matchingSynonym;
+
+        $scope.matchingExtensionConfigs = null;
+
+        CantoService.lookup('ontology', [termId],
+                            {
+                              subset_ids: 1,
+                            })
+                          .then(function(response) {
+                            $scope.termDetails = response.data;
+                            CantoConfig.get('extension_configuration')
+                              .then(function(results) {
+                                $scope.extensionConfiguration = results.data;
+                                $scope.updateMatchingConfig();
+                              });
+                          });
       };
 
     $scope.gotoChild = function(termId) {
@@ -1475,7 +1537,16 @@ var ontologyWorkflowCtrl =
     $scope.back = function() {
       if ($scope.getState() == 'searching') {
         CursStateService.clearTerm();
+        $scope.extensionBuilderReady = false;
         return;
+      }
+
+      if ($scope.getState() == 'commenting') {
+        if ($scope.matchingExtensionConfigs &&
+            $scope.matchingExtensionConfigs.length == 0) {
+          CursStateService.setState('selectingEvidence');
+          return;
+        }
       }
 
       $scope.gotoPrevState();
@@ -1486,6 +1557,14 @@ var ontologyWorkflowCtrl =
         CursStateService.comment = $scope.data.comment;
         $scope.storeAnnotation();
         return;
+      }
+
+      if ($scope.getState() == 'selectingEvidence') {
+        if ($scope.matchingExtensionConfigs &&
+            $scope.matchingExtensionConfigs.length == 0) {
+          CursStateService.setState('commenting');
+          return;
+        }
       }
 
       $scope.gotoNextState();
@@ -1532,7 +1611,10 @@ var ontologyWorkflowCtrl =
     };
 
     $scope.isValid = function() {
-      if ($scope.getState() == 'evidence') {
+      if ($scope.getState() == 'selectingEvidence') {
+        if ($scope.matchingExtensionConfigs == null) {
+          return false;
+        }
         return $scope.data.validEvidence;
       }
 
@@ -1553,7 +1635,8 @@ var ontologyWorkflowCtrl =
   };
 
 canto.controller('OntologyWorkflowCtrl',
-                 ['$scope', 'toaster', '$http', 'AnnotationTypeConfig', 'CursStateService', '$attrs',
+                 ['$scope', 'toaster', '$http', 'AnnotationTypeConfig', 'CantoService',
+                  'CantoConfig', 'CursStateService', '$attrs',
                   ontologyWorkflowCtrl]);
 
 
@@ -3460,16 +3543,20 @@ var annotationSingleRow =
 
         $scope.$watch('annotationDetails.term_ontid',
                       function(newId) {
-                        CantoService.lookup('ontology', [newId],
-                                            {
-                                              def: 1,
-                                              children: 1,
-                                              exact_synonyms: 1,
-                                              subset_ids: 1,
-                                            })
-                          .then(function(response) {
-                            $scope.termDetails = response.data;
-                          });
+                        if (newId) {
+                          CantoService.lookup('ontology', [newId],
+                                              {
+                                                def: 1,
+                                                children: 1,
+                                                exact_synonyms: 1,
+                                                subset_ids: 1,
+                                              })
+                            .then(function(response) {
+                              $scope.termDetails = response.data;
+                            });
+                        } else {
+                          $scope.termDetails = {};
+                        }
                       });
 
         $scope.$watch('annotationDetails.conditions',
