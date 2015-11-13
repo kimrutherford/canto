@@ -15,7 +15,17 @@ my $schema = Canto::TrackDB->new(config => $config);
 
 my @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is (@loaded_cvterms, 73);
+is (@loaded_cvterms, 52);
+
+my $test_go_file =
+  $test_util->root_dir() . '/' . $config->{test_config}->{test_go_obo_file};
+my $test_fypo_file =
+  $test_util->root_dir() . '/' . $config->{test_config}->{test_phenotype_obo_file};
+my $test_relationship_ontology_file =
+  $test_util->root_dir() . '/' . $config->{relationship_ontology_path};
+my $psi_mod_obo_file = $config->{test_config}->{test_psi_mod_obo_file};
+
+my $synonym_types = $config->{load}->{ontology}->{synonym_types};
 
 my $index_path = $config->data_dir_path('ontology_index_dir');
 my $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
@@ -24,7 +34,7 @@ $test_util->load_test_ontologies($ontology_index, 1);
 
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is(@loaded_cvterms, 115);
+is(@loaded_cvterms, 91);
 
 my @cvterm_relationships = $schema->resultset('CvtermRelationship')->all();
 
@@ -115,7 +125,7 @@ is($results[0]->{doc}->get('term_name'), 'dihydropteroate synthase activity');
 
 # check loading of alt_ids
 my $cvterm_dbxref_rs = $schema->resultset('CvtermDbxref');
-is($cvterm_dbxref_rs->count(), 34);
+is($cvterm_dbxref_rs->count(), 14);
 
 undef $ontology_index;
 
@@ -123,7 +133,7 @@ $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
 
 # try re-loading
 $test_util->load_test_ontologies($ontology_index);
-is($cvterm_dbxref_rs->count(), 34);
+is($cvterm_dbxref_rs->count(), 14);
 
 undef $ontology_index;
 
@@ -133,7 +143,7 @@ $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
 $test_util->load_test_ontologies($ontology_index, 1, 1);
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is(@loaded_cvterms, 133);
+is(@loaded_cvterms, 106);
 
 ok((grep {
   $_->name() eq 'viable elongated vegetative cell population'
