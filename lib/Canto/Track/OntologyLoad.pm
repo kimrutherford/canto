@@ -87,6 +87,11 @@ has 'relationships_to_load' => (
   isa => 'ArrayRef[Str]',
 );
 
+has 'closure_data' => (
+  is => 'ro',
+  required => 0,
+);
+
 sub BUILD
 {
   my $self = shift;
@@ -262,6 +267,10 @@ sub load
   my $load_util = Canto::Track::LoadUtil->new(schema => $schema,
                                               default_db_name => $self->default_db_name(),
                                               preload_cache => 1);
+  my %relationships_to_load = ();
+
+  map { $relationships_to_load{$_} = 1; } @{$self->relationships_to_load()};
+
   my $store_term_handler =
     sub {
       my $ni = shift;
@@ -313,7 +322,17 @@ sub load
         die "Term ", $term->acc(), " from $cv_name has no name - cannot continue\n";
       }
 
-      my $cvterm = $load_util->get_cvterm(cv_name => $cv_name,
+      if ($term->is_relationship_type() &&
+          !$relationships_to_load{$term->name()} &&
+          !$relationships_to_load{$term->name() =~ s/\s+/_/gr}) {
+        return;
+      }
+
+      # special case for relations, which might be in several ontologies
+      my $create_only = !$term->is_relationship_type();
+
+      my $cvterm = $load_util->get_cvterm(create_only => $create_only,
+                                          cv_name => $cv_name,
                                           term_name => $term_name,
                                           ontologyid => $term->acc(),
                                           definition => $term->definition(),
@@ -360,12 +379,24 @@ sub load
         }
       }
 
+      my @subset_ids = ();
+
+      my $closure_data = $self->closure_data();
+
+      if ($closure_data) {
+        my $subjects = $closure_data->{$term->acc()};
+
+        if ($subjects) {
+          push @subset_ids, (keys %$subjects), $term->acc();
+        }
+      }
+
       if (!$term->is_relationship_type()) {
         $cvterms{$term->acc()} = $cvterm;
 
         if (!$term->is_obsolete() && defined $index) {
           $index->add_to_index($cv_name, $term_name, $cvterm_id,
-                               $term->acc(), \@synonyms_for_index);
+                               $term->acc(), \@subset_ids, \@synonyms_for_index);
         }
       }
     };
@@ -381,10 +412,6 @@ sub load
       ||
     $a->{acc2} cmp $b->{acc2};
   } @$rels;
-
-  my %relationships_to_load = ();
-
-  map { $relationships_to_load{$_} = 1; } @{$self->relationships_to_load()};
 
   for my $rel (@sorted_rels) {
     my $subject_term_acc = $rel->subject_acc();
