@@ -1,0 +1,14 @@
+---
+Model::TrackModel:
+  connect_info:
+    - dbi:SQLite:dbname=/var/canto-data//track.sqlite3
+  schema_class: Canto::TrackDB
+data_directory: /var/canto-data/
+implementation_classes:
+  gene_adaptor: Canto::UniProt::GeneLookup
+  ontology_annotation_adaptor: Canto::UniProt::OntologyAnnotationLookup
+  go_adaptor: Canto::Track::OntologyLookup
+  ontology_adaptor: Canto::Track::OntologyLookup
+extension_conf_files:
+  - t/data/extension_config.tsv
+

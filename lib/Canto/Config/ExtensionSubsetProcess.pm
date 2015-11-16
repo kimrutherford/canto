@@ -80,6 +80,7 @@ sub get_owltools_results
            Here GO:0000010 and GO:0000020 are subject term IDs, GO:0000005,
            GO:0000006 and GO:0000007 are the objects and is_a is the relation
            that connects them
+
 =cut
 
 sub get_closure_data
@@ -111,7 +112,7 @@ sub get_closure_data
 =head2 process_closure
 
  Usage   : my $closure_data = $extension_subset_process->get_closure_data();
-           $extension_subset_process->process_closure($closure_data);
+           $extension_subset_process->process_closure($track_schema, $closure_data);
  Function: Use the results of get_closure_data() to add a canto_subset
            cvtermprop for each config file term it's a child of.  For
            more details see:
