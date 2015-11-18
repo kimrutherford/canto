@@ -1,0 +1,278 @@
+format-version: 1.2
+data-version: releases/2014-08-06
+date: 06:08:2014 16:32
+saved-by: lschriml
+auto-generated-by: OBO-Edit 2.1-beta6
+subsetdef: GOLD "GOLD"
+subsetdef: gram-negative_bacterial_infectious_disease "gram-negative bacterial infectious disease"
+subsetdef: gram-positive_bacterial_infectious_disease "gram-positive bacterial infectious disease"
+subsetdef: sexually_transmitted_infectious_disease "sexually transmitted infectious disease"
+subsetdef: tick-borne_infectious_disease "tick-borne infectious disease"
+subsetdef: zoonotic_infectious_disease "zoonotic infectious disease"
+default-namespace: disease_ontology
+remark: This work is licensed under a Creative Commons Attribution 3.0 Unported License http://creativecommons.org/licenses/by/3.0/.
+ontology: doid
+
+[Term]
+id: DOID:4
+name: disease
+def: "A disease is a disposition (i) to undergo pathological processes that (ii) exists in an organism because of one or more disorders in that organism." [url:http\://ontology.buffalo.edu/medo/Disease_and_Diagnosis.pdf]
+xref: MSH:D004194
+xref: NCI:C2991
+xref: SNOMEDCT_2010_1_31:64572001
+xref: UMLS_CUI:C0012634
+
+[Term]
+id: DOID:10113
+name: trypanosomiasis
+def: "A parasitic protozoa infectious disease that involves infection caused by parasitic protozoan of the genus Trypanosoma in animals and humans." [url:http\://en.wikipedia.org/wiki/Trypanosomiasis]
+xref: ICD9CM:086
+xref: ICD9CM:086.9
+xref: MSH:D014352
+xref: SNOMEDCT_2010_1_31:154375001
+xref: SNOMEDCT_2010_1_31:186819000
+xref: SNOMEDCT_2010_1_31:266205000
+xref: SNOMEDCT_2010_1_31:78940002
+xref: UMLS_CUI:C0041227
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:7427
+name: anthrax disease
+def: "A primary bacterial infectious disease that results_in infection located_in skin, located_in lung lymph nodes or located_in gastrointestinal tract, has_material_basis_in Bacillus anthracis, transmitted_by contact with infected animals or animal products, transmitted_by airborne spores or transmitted_by ingestion of undercooked meat from infected animals and has_symptom skin ulcer, has_symptom nausea, has_symptom poor appetite, has_symptom bloody diarrhea, has_symptom fever or has_symptom shortness of breath." [url:http\://www.bt.cdc.gov/agent/anthrax/needtoknow.asp]
+subset: gram-positive_bacterial_infectious_disease
+subset: zoonotic_infectious_disease
+xref: ICD9CM:022
+xref: ICD9CM:022.9
+xref: MSH:D000881
+xref: NCI:C84565
+xref: SNOMEDCT_2010_1_31:154295005
+xref: SNOMEDCT_2010_1_31:17540007
+xref: SNOMEDCT_2010_1_31:186304006
+xref: SNOMEDCT_2010_1_31:187302001
+xref: SNOMEDCT_2010_1_31:409498004
+xref: UMLS_CUI:C0003175
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:13564
+name: aspergillosis
+def: "An opportunistic mycosis that involves a spectrum of diseases of humans and animals caused by members of the genus Aspergillus infecting lungs, brain, kidney,heart, bone, eyes, sinuses, skin and gastrointestinal tract. It is a serious illnesses in people with a weakened immune system." [url:http\://mycology.adelaide.edu.au/Mycoses/Opportunistic/Aspergillosis/, url:http\://www.mayoclinic.com/print/aspergillosis/DS00950/METHOD=print&DSECTION=all]
+synonym: "aspergillosis" EXACT [CSP2005:1988-4002]
+synonym: "aspergillosis" EXACT [NCI2004_11_17:C2886]
+synonym: "Aspergillosis, unspecified" EXACT [SNOMEDCT_2005_07_31:187087004]
+synonym: "Aspergillosis, unspecified (disorder)" EXACT [SNOMEDCT_2005_07_31:187492008]
+synonym: "Infection due to Aspergillus" EXACT [SNOMEDCT_2005_07_31:65553006]
+xref: ICD9CM:117.3
+xref: MSH:D001228
+xref: NCI:C2886
+xref: SNOMEDCT_2010_1_31:154408001
+xref: SNOMEDCT_2010_1_31:187087004
+xref: SNOMEDCT_2010_1_31:187492008
+xref: SNOMEDCT_2010_1_31:266218008
+xref: SNOMEDCT_2010_1_31:65553006
+xref: UMLS_CUI:C0004030
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:1508
+name: candidiasis
+alt_id: DOID:1507
+def: "An opportunistic mycosis that involves fungal infection of the mouth, throat, skin, scalp, vagina, fingers, nails, bronchi, lungs, heart and brain by Candida species, of which Candida albicans is the most common. Systemic Candida infections are usually confined to severely immunocompromised persons." [url:http\://en.wikipedia.org/wiki/Candidiasis, url:http\://mycology.adelaide.edu.au/Mycoses/Cutaneous/Candidiasis/]
+synonym: "Disseminated candidiasis" EXACT [ICD9CM_2006:112.5]
+synonym: "Disseminated candidiasis (disorder)" EXACT [SNOMEDCT_2005_07_31:70572005]
+synonym: "systemic candidiasis" EXACT []
+xref: ICD9CM:112
+xref: ICD9CM:112.9
+xref: MSH:D002177
+xref: NCI:C26711
+xref: SNOMEDCT_2010_1_31:154403005
+xref: SNOMEDCT_2010_1_31:187005005
+xref: SNOMEDCT_2010_1_31:187024008
+xref: SNOMEDCT_2010_1_31:187478002
+xref: SNOMEDCT_2010_1_31:78048006
+xref: UMLS_CUI:C0006840
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:1498
+name: cholera
+def: "A primary bacterial infectious disease that is described as an acute, diarrheal illness caused by infection of the intestine with the bacterium Vibrio cholerae, which is characterized by profuse watery diarrhea, vomiting, leg cramps, circulatory collapse and shock." [url:http\://www.cdc.gov/nczved/divisions/dfbmd/diseases/cholera/#what, url:http\://www.cdc.gov/nczved/divisions/dfbmd/diseases/cholera/technical.html]
+subset: GOLD
+subset: gram-negative_bacterial_infectious_disease
+synonym: "(Cholera) or (Vibrio cholerae)" EXACT [SNOMEDCT_2005_07_31:186087007]
+synonym: "cholera" EXACT [CSP2005:1248-3959]
+synonym: "Cholera (disorder)" EXACT [SNOMEDCT_2005_07_31:63650001]
+synonym: "Cholera - Vibrio cholerae (disorder)" EXACT [SNOMEDCT_2005_07_31:186088002]
+synonym: "Cholera due to Vibrio cholerae" EXACT [ICD9CM_2006:001.0]
+synonym: "Cholera due to Vibrio cholerae (disorder)" EXACT [SNOMEDCT_2005_07_31:61972007]
+synonym: "Cholera NOS (disorder)" EXACT [SNOMEDCT_2005_07_31:186089005]
+synonym: "Cholera, unspecified" EXACT [ICD9CM_2006:001.9]
+synonym: "Cholera, unspecified (disorder)" EXACT [SNOMEDCT_2005_07_31:187267007]
+xref: ICD9CM:001
+xref: ICD9CM:001.0
+xref: ICD9CM:001.9
+xref: MSH:D002771
+xref: SNOMEDCT_2010_1_31:154269008
+xref: SNOMEDCT_2010_1_31:186087007
+xref: SNOMEDCT_2010_1_31:186088002
+xref: SNOMEDCT_2010_1_31:186089005
+xref: SNOMEDCT_2010_1_31:187267007
+xref: SNOMEDCT_2010_1_31:61972007
+xref: SNOMEDCT_2010_1_31:63650001
+xref: UMLS_CUI:C0008354
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:8778
+name: Crohn's disease
+alt_id: DOID:8784
+alt_id: DOID:8855
+alt_id: DOID:8942
+def: "An intestinal disease that involves inflammation located_in intestine." [url:http\://en.wikipedia.org/wiki/Chron%27s_disease]
+comment: MSH:C536215 added from NeuroDevNet [WAK].
+synonym: "Crohn disease" EXACT [MSH:D003424]
+synonym: "Crohn's Colitis" EXACT [NCI2004_11_17:C35211]
+synonym: "Crohn's disease of colon (disorder)" EXACT [SNOMEDCT_2005_07_31:50440006]
+synonym: "Crohn's disease of large bowel" EXACT [MTH:NOCODE]
+synonym: "eleocolitis" EXACT [CSP2005:1248-4071]
+synonym: "Granulomatous Colitis" EXACT [NCI2004_11_17:C37262]
+synonym: "Pediatric Crohn's disease" EXACT [MSH:C536215]
+synonym: "regional colitis" EXACT [MTHICD9_2006:555.1]
+synonym: "regional enteritis" RELATED [ICD9CM_2006:555]
+synonym: "regional enteritis of small intestine with large intestine" EXACT []
+synonym: "regional enteritis of the large bowel" EXACT [SNOMEDCT_2005_07_31:155762006]
+synonym: "regional Ileitis" EXACT [MTHICD9_2006:555.0]
+synonym: "regional ileocolitis" EXACT [MTHICD9_2006:555.2]
+xref: EFO:0000384
+xref: ICD9CM:555.0
+xref: MSH:C536215
+xref: MSH:D003424
+xref: NCI:C35210
+xref: SNOMEDCT_2010_1_31:155761004
+xref: SNOMEDCT_2010_1_31:196980005
+xref: SNOMEDCT_2010_1_31:56689002
+xref: UMLS_CUI:C0156146
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:1485
+name: cystic fibrosis
+alt_id: DOID:12447
+alt_id: DOID:13383
+alt_id: DOID:14395
+alt_id: DOID:1484
+comment: OMIM mapping confirmed by DO. [SN].
+synonym: "CF" EXACT []
+synonym: "mucoviscidosis" EXACT []
+xref: EFOpat_id:49
+xref: ICD9CM:277.0
+xref: MSH:D003550
+xref: NCI:C2975
+xref: OMIM:219700
+xref: SNOMEDCT_2010_1_31:154767009
+xref: SNOMEDCT_2010_1_31:190905008
+xref: SNOMEDCT_2010_1_31:190911006
+xref: SNOMEDCT_2010_1_31:85809002
+xref: UMLS_CUI:C0010674
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:13250
+name: diarrhea
+alt_id: DOID:0050006
+def: "A gastrointestinal system disease described as the condition of having frequent loose or liquid bowel movements. Acute diarrhea is a common cause of death in developing countries and the second most common cause of infant deaths worldwide. The loss of fluids through diarrhea can cause severe dehydration which is one cause of death in diarrhea sufferers. Along with water, sufferers also lose dangerous amounts of important salts, electrolytes, and other nutrients. There are at least four types of diarrhea: secretory diarrhea, osmotic diarrhea, motility-related diarrhea, and inflammatory diarrhea." [url:http\://en.wikipedia.org/wiki/Diarrhea#Types_of_diarrhea]
+subset: GOLD
+synonym: "diarrhea of presumed infectious origin" RELATED []
+synonym: "diarrhoea" RELATED []
+xref: ICD9CM:009.2
+xref: MSH:D003967
+xref: MSH:D004403
+xref: SNOMEDCT_2010_1_31:111939009
+xref: SNOMEDCT_2010_1_31:154268000
+xref: SNOMEDCT_2010_1_31:154279005
+xref: SNOMEDCT_2010_1_31:186165000
+xref: SNOMEDCT_2010_1_31:186167008
+xref: SNOMEDCT_2010_1_31:19213003
+xref: SNOMEDCT_2010_1_31:236076004
+xref: SNOMEDCT_2010_1_31:266173000
+xref: SNOMEDCT_2010_1_31:266180003
+xref: UMLS_CUI:C0013369
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:2326
+name: gastroenteritis
+alt_id: DOID:4094
+alt_id: DOID:5269
+def: "A gastrointestinal system infectious disease that involves inflammation of the lining of the stomach and small and large intestines, which is caused by viruses, bacteria, or parasites. Chemicals and drugs also cause gastroenteritis. The symptoms include diarrhea, loss of appetite, nausea, vomiting, cramps, and discomfort in the abdomen." [url:http\://www.merck.com/mmhe/sec09/ch122/ch122a.html]
+synonym: "cholera morbus" EXACT []
+synonym: "infectious colitis, enteritis and gastroenteritis" EXACT []
+xref: MSH:D005759
+xref: NCI:C34632
+xref: SNOMEDCT_2010_1_31:154278002
+xref: SNOMEDCT_2010_1_31:197010007
+xref: SNOMEDCT_2010_1_31:25374005
+xref: SNOMEDCT_2010_1_31:266179001
+xref: UMLS_CUI:C0017160
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:12365
+name: malaria
+alt_id: DOID:12552
+def: "A parasitic protozoa infectious disease characterized as a vector-borne infectious disease caused by the presence of protozoan parasites of the genus Plasmodium in the red blood cells, transmitted from an infected to an uninfected individual by the bite of anopheline mosquitoes, and characterized by periodic attacks of chills and fever that coincide with mass destruction of blood cells and the release of toxic substances by the parasite at the end of each reproductive cycle." [url:http\://en.wikipedia.org/wiki/Malaria, url:http\://www2.merriam-webster.com/cgi-bin/mwmednlm?book=Medical&va=malaria]
+synonym: "induced malaria" EXACT []
+synonym: "Induced malaria (disorder)" EXACT [SNOMEDCT_2005_07_31:3095005]
+xref: EFO:0001068
+xref: ICD9CM:084
+xref: ICD9CM:084.6
+xref: MSH:D008288
+xref: NCI:C34797
+xref: SNOMEDCT_2010_1_31:105649009
+xref: SNOMEDCT_2010_1_31:154374002
+xref: SNOMEDCT_2010_1_31:186797008
+xref: SNOMEDCT_2010_1_31:187510004
+xref: SNOMEDCT_2010_1_31:248437004
+xref: SNOMEDCT_2010_1_31:61462000
+xref: UMLS_CUI:C0024530
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:9471
+name: meningitis
+alt_id: DOID:9712
+def: "Meningitis is a nervous system infectious disease characterized as an inflammation of the pia-arachnoid meninges. It can be caused by growth of bacteria, fungi, or parasites within the subarachnoid space or by the growth of bacteria or viruses within the meningeal or ependymal cells. Meningitis is a diffuse infection caused by a variety of different agents." [url:http\://www.ncbi.nlm.nih.gov/books/bv.fcgi?rid=mmed.section.5162]
+subset: GOLD
+xref: ICD9CM:322
+xref: ICD9CM:322.9
+xref: MSH:D008581
+xref: NCI:C26828
+xref: SNOMEDCT_2010_1_31:154983000
+xref: SNOMEDCT_2010_1_31:192678004
+xref: SNOMEDCT_2010_1_31:192681009
+xref: SNOMEDCT_2010_1_31:7180009
+xref: UMLS_CUI:C0025289
+is_a: DOID:4 ! disease
+
+[Term]
+id: DOID:399
+name: tuberculosis
+alt_id: DOID:10096
+alt_id: DOID:12688
+alt_id: DOID:12691
+alt_id: DOID:415
+alt_id: DOID:9901
+alt_id: DOID:9902
+def: "A primary bacterial infectious disease that is located_in lungs, located_in lymph nodes, located_in pericardium, located_in brain, located_in pleura or located_in gastrointestinal tract, has_material_basis_in Mycobacterium tuberculosis, which is transmitted_by droplets released into the air when an infected person coughs or sneezes." [url:http\://www.merckmanuals.com/home/sec17/ch193/ch193a.html, url:www.uphs.upenn.edu/bugdrug/antibiotic_manual/atstbdx99.pdf]
+subset: gram-positive_bacterial_infectious_disease
+synonym: "Tuberculosis of mother, with delivery" RELATED []
+synonym: "Tuberculosis pregnancy" RELATED []
+synonym: "Tuberculosis, antepartum" RELATED []
+synonym: "Tuberculosis, postpartum" RELATED []
+synonym: "tuberculous abscess" EXACT []
+xref: EFOpat_id:863
+xref: MSH:D014375
+xref: SNOMEDCT_2010_1_31:15202009
+xref: UMLS_CUI:C0041295
+is_a: DOID:4 ! disease

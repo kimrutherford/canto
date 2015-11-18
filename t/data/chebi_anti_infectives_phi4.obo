@@ -1,0 +1,442 @@
+format-version: 1.2
+data-version: 133
+date: 01:11:2015 02:07
+saved-by: chebi
+default-namespace: chebi_ontology
+remark: ChEBI subsumes and replaces the Chemical Ontology first
+synonymtypedef: IUPAC_NAME "IUPAC NAME"
+synonymtypedef: FORMULA "FORMULA"
+synonymtypedef: SMILES "SMILES"
+synonymtypedef: InChI "InChI"
+synonymtypedef: InChIKey "InChIKey"
+synonymtypedef: BRAND_NAME "BRAND NAME"
+synonymtypedef: INN "INN"
+remark: developed by Michael Ashburner & Pankaj Jaiswal.
+remark: Author: ChEBI curation team 
+remark: ChEBI Release version 133
+remark: For any queries contact chebi-help@ebi.ac.uk 
+ontology: chebi
+
+[Term]
+id: CHEBI:24431
+name: chemical entity
+def: "A chemical entity is a physical entity of interest in chemistry including molecular entities, parts thereof, and chemical substances." []
+synonym: "grouped_by_chemistry" RELATED [ChEBI:]
+synonym: "chemical entity" EXACT [UniProt:]
+synonym: "." RELATED FORMULA [ChEBI:]
+
+[Term]
+id: CHEBI:3015
+name: benomyl
+def: "A member of the class of benzimidazoles that is the methyl ester of  [1-(butylcarbamoyl)-1H-benzimidazol-2-yl]carbamic acid. A foliar fungicide used to control a wide range of Ascomycetes and Fungi Imperfecti in a wide range of crops." []
+synonym: "Benomyl" EXACT [KEGG COMPOUND:]
+synonym: "Methyl 1-(butylamino)carbonyl-1H-benzimidazol-2-ylcarbamate" RELATED [HMDB:]
+synonym: "1-(Butylcarbamoyl)-2-benzimidazolecarbamic acid, methyl ester" RELATED [ChemIDplus:]
+synonym: "Benlate" RELATED [KEGG COMPOUND:]
+synonym: "methyl [1-(butylcarbamoyl)-1H-benzimidazol-2-yl]carbamate" EXACT IUPAC_NAME [IUPAC:]
+synonym: "Methyl N-(1-butylcarbamoyl-2-benzimidazole)carbamate" RELATED [HMDB:]
+synonym: "Methyl 1-(butylcarbamoyl)-2-benzimidazolecarbamate" RELATED [HMDB:]
+synonym: "1-(N-Butylcarbamoyl)-2-(methoxy-carboxamido)-benzimidazol" RELATED [ChemIDplus:]
+synonym: "Benlate" RELATED [KEGG COMPOUND:]
+synonym: "1-(Butylcarbamoyl)-2-benzimidazol-methylcarbamat" RELATED [ChemIDplus:]
+synonym: "C14H18N4O3" RELATED FORMULA [ChEBI:]
+synonym: "CCCCNC(=O)n1c(NC(=O)OC)nc2ccccc12" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C14H18N4O3/c1-3-4-9-15-13(19)18-11-8-6-5-7-10(11)16-12(18)17-14(20)21-2/h5-8H,3-4,9H2,1-2H3,(H,15,19)(H,16,17,20)" RELATED InChI [ChEBI:]
+synonym: "RIOXQFHNBCKOKP-UHFFFAOYSA-N" RELATED InChIKey [ChEBI:]
+xref: KEGG COMPOUND:C10896 "KEGG COMPOUND"
+xref: KEGG COMPOUND:17804-35-2 "CAS Registry Number"
+xref: Alan Wood's Pesticides:benomyl "Pesticides"
+xref: CiteXplore:16903866 "PubMed citation"
+xref: CiteXplore:25104429 "PubMed citation"
+xref: Reaxys:825455 "Reaxys Registry Number"
+xref: HMDB:HMDB31767 "HMDB"
+xref: NIST Chemistry WebBook:17804-35-2 "CAS Registry Number"
+xref: Wikipedia:Benomyl "Wikipedia"
+xref: CiteXplore:15813220 "PubMed citation"
+xref: CiteXplore:24782104 "PubMed citation"
+xref: Beilstein:825455 "Beilstein Registry Number"
+xref: CiteXplore:19049291 "PubMed citation"
+xref: CiteXplore:25045800 "PubMed citation"
+xref: CiteXplore:24693254 "PubMed citation"
+xref: ChemIDplus:17804-35-2 "CAS Registry Number"
+xref: CiteXplore:25145128 "PubMed citation"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:4520
+name: diethofencarb
+def: "A carbamate ester that is the isopropyl ester of (3,4-diethoxyphenyl)carbamic acid. A fungicide with strong activity against Botrytis cinerea and benzimidazole-resistant strains of Botryis spp." []
+synonym: "1-methylethyl N-(3,4-diethoxyphenyl)carbamate" RELATED [Alan Wood's Pesticides:]
+synonym: "1-Methylethyl (3,4-diethoxyphenyl)carbamate" RELATED [ChemIDplus:]
+synonym: "propan-2-yl (3,4-diethoxyphenyl)carbamate" EXACT IUPAC_NAME [IUPAC:]
+synonym: "isopropyl (3,4-diethoxyphenyl)carbamate" RELATED [IUPAC:]
+synonym: "Isopropyl 3,4-diethoxycarbanilate" RELATED [ChemIDplus:]
+synonym: "Diethofencarb" EXACT [KEGG COMPOUND:]
+synonym: "C14H21NO4" RELATED FORMULA [ChEBI:]
+synonym: "CCOc1ccc(NC(=O)OC(C)C)cc1OCC" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C14H21NO4/c1-5-17-12-8-7-11(9-13(12)18-6-2)15-14(16)19-10(3)4/h7-10H,5-6H2,1-4H3,(H,15,16)" RELATED InChI [ChEBI:]
+synonym: "LNJNFVJKDJYTEU-UHFFFAOYSA-N" RELATED InChIKey [ChEBI:]
+xref: CiteXplore:24973804 "PubMed citation"
+xref: CiteXplore:21174194 "PubMed citation"
+xref: Reaxys:8393454 "Reaxys Registry Number"
+xref: NIST Chemistry WebBook:87130-20-9 "CAS Registry Number"
+xref: CiteXplore:24861738 "PubMed citation"
+xref: CiteXplore:23404952 "PubMed citation"
+xref: CiteXplore:23597988 "PubMed citation"
+xref: KEGG COMPOUND:C11077 "KEGG COMPOUND"
+xref: CiteXplore:22921656 "PubMed citation"
+xref: KEGG COMPOUND:87130-20-9 "CAS Registry Number"
+xref: ChemIDplus:87130-20-9 "CAS Registry Number"
+xref: CiteXplore:24679760 "PubMed citation"
+xref: CiteXplore:24817605 "PubMed citation"
+xref: CiteXplore:21763813 "PubMed citation"
+xref: CiteXplore:23760810 "PubMed citation"
+xref: Alan Wood's Pesticides:diethofencarb "Pesticides"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:35014
+name: thiophanate-methyl
+def: "A member of the class of thioureas that is the dimethyl ester of (1,2-phenylenedicarbamothioyl)biscarbamic acid. A fungicide effective against a broad spectrum of diseases in fruit, vegetables, turf and other crops including eyespot, scab, powdery mildew and grey mould." []
+synonym: "Methyl thiophanate" RELATED [ChemIDplus:]
+synonym: "Methylthiophanate" RELATED [ChemIDplus:]
+synonym: "dimethyl N,N'-[1,2-phenylenebis(azanediylcarbonothioyl)]dicarbamate" RELATED [Alan Wood's Pesticides:]
+synonym: "1,2-Di-(3-methoxycarbonyl-2-thioureido)benzene" RELATED [ChemIDplus:]
+synonym: "1,2-Bis(methoxycarbonylthioureido)benzene" RELATED [ChemIDplus:]
+synonym: "dimethyl N,N'-[1,2-phenylenebis(iminocarbonothioyl)]bis[carbamate]" RELATED [Alan Wood's Pesticides:]
+synonym: "1,2-Di-(3-methoxycarbonyl-2-thioureido)benzene" RELATED [KEGG COMPOUND:]
+synonym: "dimethyl (1,2-phenylenedicarbamothioyl)biscarbamate" EXACT IUPAC_NAME [IUPAC:]
+synonym: "Thiophanate-methyl" EXACT [KEGG COMPOUND:]
+synonym: "Methylthiofanate" RELATED [ChemIDplus:]
+synonym: "o-Bis(3-methoxycarbonyl-2-thioureido)benzene" RELATED [ChemIDplus:]
+synonym: "dimethyl 4,4'-(o-phenylene)bis(3-thioallophanate)" RELATED [Alan Wood's Pesticides:]
+synonym: "1,2-Bis(3-(methoxycarbonyl)-2-thioureido)benzene" RELATED [ChemIDplus:]
+synonym: "C12H14N4O4S2" RELATED FORMULA [ChEBI:]
+synonym: "COC(=O)NC(=S)Nc1ccccc1NC(=S)NC(=O)OC" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C12H14N4O4S2/c1-19-11(17)15-9(21)13-7-5-3-4-6-8(7)14-10(22)16-12(18)20-2/h3-6H,1-2H3,(H2,13,15,17,21)(H2,14,16,18,22)" RELATED InChI [ChEBI:]
+synonym: "QGHREAKMXXNCOA-UHFFFAOYSA-N" RELATED InChIKey [ChEBI:]
+xref: Alan Wood's Pesticides:thiophanate-methyl "Pesticides"
+xref: KEGG COMPOUND:C14432 "KEGG COMPOUND"
+xref: CiteXplore:22667099 "PubMed citation"
+xref: CiteXplore:24366405 "PubMed citation"
+xref: Reaxys:937942 "Reaxys Registry Number"
+xref: CiteXplore:23775824 "PubMed citation"
+xref: CiteXplore:23242258 "PubMed citation"
+xref: KEGG COMPOUND:23564-05-8 "CAS Registry Number"
+xref: CiteXplore:22057426 "PubMed citation"
+xref: CiteXplore:23978278 "PubMed citation"
+xref: CiteXplore:24256946 "PubMed citation"
+xref: ChemIDplus:23564-05-8 "CAS Registry Number"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:3405
+name: carboxin
+def: "An anilide obtained by formal condensation of the amino group of aniline with the carboxy group of 2-methyl-5,6-dihydro-1,4-oxathiine-3-carboxylic acid. A fungicide for control of bunts and smuts normally that is normally used as a seed treatment." []
+synonym: "Carbathiin" RELATED [ChemIDplus:]
+synonym: "oxatin" RELATED [MetaCyc:]
+synonym: "Carboxin" EXACT [KEGG COMPOUND:]
+synonym: "5-Carboxanilido-2,3-dihydro-6-methyl-1,4-oxathiin" RELATED [ChemIDplus:]
+synonym: "2,3-Dihydro-6-methyl-1,4-oxathiin-5-carboxanilide" RELATED [NIST Chemistry WebBook:]
+synonym: "2,3-Dihydro-5-carboxanilido-6-methyl-1,4-oxathiin" RELATED [ChemIDplus:]
+synonym: "2,3-Dihydro-6-methyl-5-phenylcarbamoyl-1,4-oxathiin" RELATED [ChemIDplus:]
+synonym: "Carboxine" RELATED [ChemIDplus:]
+synonym: "5,6-Dihydro-2-methyl-1,4-oxathiin-3-carboxanilide" RELATED [ChemIDplus:]
+synonym: "5,6-Dihydro-2-methyl-3-carboxanilido-1,4-oxathiin" RELATED [ChemIDplus:]
+synonym: "2-methyl-N-phenyl-5,6-dihydro-1,4-oxathiine-3-carboxamide" EXACT IUPAC_NAME [IUPAC:]
+synonym: "5,6-Dihydro-2-methyl-N-phenyl-1,4-oxathiin-3-carboxamide" RELATED [ChemIDplus:]
+synonym: "C12H13NO2S" RELATED FORMULA [ChEBI:]
+synonym: "CC1=C(SCCO1)C(=O)Nc1ccccc1" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C12H13NO2S/c1-9-11(16-8-7-15-9)12(14)13-10-5-3-2-4-6-10/h2-6H,7-8H2,1H3,(H,13,14)" RELATED InChI [ChEBI:]
+synonym: "GYSSRZJIHXQEHQ-UHFFFAOYSA-N" RELATED InChIKey [ChEBI:]
+xref: KEGG COMPOUND:5234-68-4 "CAS Registry Number"
+xref: PDBeChem:CBE "PDBeChem"
+xref: CiteXplore:23047320 "PubMed citation"
+xref: ChemIDplus:983249 "Beilstein Registry Number"
+xref: NIST Chemistry WebBook:5234-68-4 "CAS Registry Number"
+xref: Alan Wood's Pesticides:carboxin "Pesticides"
+xref: CiteXplore:23261124 "PubMed citation"
+xref: CiteXplore:24785712 "PubMed citation"
+xref: KEGG COMPOUND:C11255 "KEGG COMPOUND"
+xref: ChemIDplus:5234-68-4 "CAS Registry Number"
+xref: MetaCyc:CPD0-1366 "MetaCyc"
+xref: CiteXplore:24119086 "PubMed citation"
+xref: Reaxys:983249 "Reaxys Registry Number"
+xref: CiteXplore:21228470 "PubMed citation"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:3392
+name: carbendazim
+def: "A member of the class of benzimidazoles that is 2-aminobenzimidazole in which the primary amino group is substituted by a methoxycarbonyl group. A fungicide, carbendazim controls  Ascomycetes, Fungi Imperfecti, and Basidiomycetes on a wide variety of crops, including bananas, cereals, cotton, fruits, grapes, mushrooms, ornamentals, peanuts, sugarbeet, soybeans, tobacco, and vegetables." []
+synonym: "2-(methoxycarbonylamino)benzimidazole" RELATED [ChEBI:]
+synonym: "2-benzimidazolecarbamic acid methyl ester" RELATED [ChEBI:]
+synonym: "carbendazime" RELATED [ChemIDplus:]
+synonym: "methyl benzimidazol-2-ylcarbamate" RELATED [ChemIDplus:]
+synonym: "2-(methoxycarbonylamino)-benzimidazole" RELATED [ChemIDplus:]
+synonym: "methyl 2-benzimidazolecarbamate" RELATED [ChemIDplus:]
+synonym: "BMC" RELATED [ChEBI:]
+synonym: "MBC" RELATED [ChEBI:]
+synonym: "Mecarzole" RELATED [KEGG COMPOUND:]
+synonym: "2-(Methoxy-carbonylamino)-benzimidazol" RELATED [ChemIDplus:]
+synonym: "1H-benzimidazol-2-ylcarbamic acid methyl ester" RELATED [ChEBI:]
+synonym: "methyl 1H-benzimidazol-2-ylcarbamate" EXACT IUPAC_NAME [IUPAC:]
+synonym: "Carbendazim" EXACT [KEGG COMPOUND:]
+synonym: "C9H9N3O2" RELATED FORMULA [ChEBI:]
+synonym: "COC(=O)Nc1nc2ccccc2[nH]1" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C9H9N3O2/c1-14-9(13)12-8-10-6-4-2-3-5-7(6)11-8/h2-5H,1H3,(H2,10,11,12,13)" RELATED InChI [ChEBI:]
+synonym: "TWFZGCMQGLPBSX-UHFFFAOYSA-N" RELATED InChIKey [ChEBI:]
+xref: CiteXplore:22077925 "PubMed citation"
+xref: Wikipedia:Carbendazim "Wikipedia"
+xref: Alan Wood's Pesticides:carbendazim "Pesticides"
+xref: CiteXplore:21315898 "PubMed citation"
+xref: Reaxys:649044 "Reaxys Registry Number"
+xref: CiteXplore:20833408 "PubMed citation"
+xref: CiteXplore:22903170 "PubMed citation"
+xref: Patent:US3010968 "Patent"
+xref: KEGG COMPOUND:C10897 "KEGG COMPOUND"
+xref: HMDB:HMDB31769 "HMDB"
+xref: ChemIDplus:10605-21-7 "CAS Registry Number"
+xref: KEGG COMPOUND:10605-21-7 "CAS Registry Number"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:138856
+name: oxolinic acid
+alt_id: CHEBI:7848
+alt_id: CHEBI:44731
+def: "A quinolinemonocarboxylic acid having the carboxy group at position 7 as well as oxo- and ethyl groups at positions 4 and 1 respectively and a dioxolo ring fused at the 5- and 6-positions. A synthetic antibiotic, it is used in veterinary medicine for the treatment of bacterial infections in cattle, pigs and poultry." []
+synonym: "oxolinic acid" RELATED INN [WHO MedNet:]
+synonym: "OA" RELATED [KEGG DRUG:]
+synonym: "oxolinic acid" RELATED INN [KEGG DRUG:]
+synonym: "acide oxolinique" RELATED INN [ChemIDplus:]
+synonym: "acidum oxolinicum" RELATED INN [ChemIDplus:]
+synonym: "1-Ethyl-1,4-dihydro-6,7-methylenedioxy-4-oxo-3-quinolinecarboxylic acid" RELATED [ChemIDplus:]
+synonym: "1-Ethyl-6,7-methylenedioxy-4-quinolone-3-carboxylic acid" RELATED [ChemIDplus:]
+synonym: "5-ethyl-8-oxo-5,8-dihydro[1,3]dioxolo[4,5-g]quinoline-7-carboxylic acid" EXACT IUPAC_NAME [IUPAC:]
+synonym: "5-Ethyl-5,8-dihydro-8-oxo-1,3-dioxolo(4,5-g)quinoline-7-carboxylic acid" RELATED [ChemIDplus:]
+synonym: "acido oxolinico" RELATED INN [WHO MedNet:]
+synonym: "Oxolinic acid" EXACT [KEGG COMPOUND:]
+synonym: "5-ethyl-8-oxo-5,8-dihydro[1,3]dioxolo[4,5-g]quinoline-7-carboxylic acid" RELATED [PDBeChem:]
+synonym: "OXOLINIC ACID" EXACT [PDBeChem:]
+synonym: "C13H11NO5" RELATED FORMULA [ChEBI:]
+synonym: "CCn1cc(C(O)=O)c(=O)c2cc3OCOc3cc12" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C13H11NO5/c1-2-14-5-8(13(16)17)12(15)7-3-10-11(4-9(7)14)19-6-18-10/h3-5H,2,6H2,1H3,(H,16,17)" RELATED InChI [ChEBI:]
+synonym: "KYGZCKSPAKDVKC-UHFFFAOYSA-N" RELATED InChIKey [ChEBI:]
+xref: CiteXplore:23773949 "PubMed citation"
+xref: CiteXplore:23816421 "PubMed citation"
+xref: Beilstein:620635 "Beilstein Registry Number"
+xref: Patent:US3287458 "Patent"
+xref: CiteXplore:4616804 "PubMed citation"
+xref: CiteXplore:23353085 "PubMed citation"
+xref: CiteXplore:1650428 "PubMed citation"
+xref: Reaxys:620635 "Reaxys Registry Number"
+xref: Wikipedia:Oxolinic_acid "Wikipedia"
+xref: CiteXplore:22670590 "PubMed citation"
+xref: Gmelin:2609419 "Gmelin Registry Number"
+xref: CiteXplore:20151406 "PubMed citation"
+xref: KEGG DRUG:D02301 "KEGG DRUG"
+xref: ChemIDplus:14698-29-4 "CAS Registry Number"
+xref: CiteXplore:1245092 "PubMed citation"
+xref: CiteXplore:19596082 "PubMed citation"
+xref: KEGG COMPOUND:14698-29-4 "CAS Registry Number"
+xref: KEGG COMPOUND:C11342 "KEGG COMPOUND"
+xref: PDBeChem:OXI "PDBeChem"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:9448
+name: terbinafine
+def: "A tertiary amine that is N-methyl-1-naphthalenemethylamine in which the amino hydrogen is replaced by a 3-(tertbutylethynyl)allyl group. An antifungal agent administered orally (generally as the hydrochloride salt) for the treatment of skin and nail infections." []
+synonym: "(E)-N-(6,6-Dimethyl-2-hepten-4-ynyl)-N-methyl-1-naphthalenemethylamine" RELATED [ChemIDplus:]
+synonym: "(E)-N-(6,6-Dimethyl-2-hepten-4-ynyl)-N-methyl-1-naphthalene methanamine" RELATED [ChemIDplus:]
+synonym: "terbinafine" EXACT [WHO MedNet:]
+synonym: "terbinafine" RELATED INN [KEGG DRUG:]
+synonym: "Terbinafine" EXACT [KEGG COMPOUND:]
+synonym: "(2E)-N,6,6-trimethyl-N-(1-naphthylmethyl)hept-2-en-4-yn-1-amine" EXACT IUPAC_NAME [IUPAC:]
+synonym: "terbinafina" RELATED INN [WHO MedNet:]
+synonym: "terbinafinum" RELATED INN [WHO MedNet:]
+synonym: "C21H25N" RELATED FORMULA [ChEBI:]
+synonym: "CN(C\\C=C\\C#CC(C)(C)C)Cc1cccc2ccccc12" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C21H25N/c1-21(2,3)15-8-5-9-16-22(4)17-19-13-10-12-18-11-6-7-14-20(18)19/h5-7,9-14H,16-17H2,1-4H3/b9-5+" RELATED InChI [ChEBI:]
+synonym: "DOMXUEMWDBAQBQ-WEVVVXLNSA-N" RELATED InChIKey [ChEBI:]
+xref: Reaxys:4256376 "Reaxys Registry Number"
+xref: CiteXplore:24352873 "PubMed citation"
+xref: CiteXplore:23841559 "PubMed citation"
+xref: CiteXplore:24126579 "PubMed citation"
+xref: CiteXplore:24576265 "PubMed citation"
+xref: CiteXplore:23802806 "PubMed citation"
+xref: DrugBank:DB00857 "DrugBank"
+xref: ChemIDplus:91161-71-6 "CAS Registry Number"
+xref: CiteXplore:24588014 "PubMed citation"
+xref: CiteXplore:24563892 "PubMed citation"
+xref: CiteXplore:24447130 "PubMed citation"
+xref: CiteXplore:24490976 "PubMed citation"
+xref: CiteXplore:23895037 "PubMed citation"
+xref: CiteXplore:24389279 "PubMed citation"
+xref: CiteXplore:24581620 "PubMed citation"
+xref: KEGG DRUG:D02375 "KEGG DRUG"
+xref: HMDB:HMDB14995 "HMDB"
+xref: MetaCyc:CPD-10571 "MetaCyc"
+xref: CiteXplore:24533442 "PubMed citation"
+xref: CiteXplore:24477462 "PubMed citation"
+xref: CiteXplore:23750489 "PubMed citation"
+xref: KEGG COMPOUND:91161-71-6 "CAS Registry Number"
+xref: Wikipedia:Terbinafine "Wikipedia"
+xref: CiteXplore:24452843 "PubMed citation"
+xref: CiteXplore:24410098 "PubMed citation"
+xref: CiteXplore:24497012 "PubMed citation"
+xref: KEGG COMPOUND:C08079 "KEGG COMPOUND"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:7451
+name: naftifine
+def: "A tertiary amine in which the nitrogen is substituted by methyl, alpha-naphthylmethyl, and (1E)-cinnamyl groups. It is used (usually as its hydrochloride salt) for the treatment of fungal skin infections." []
+synonym: "naftifine" RELATED INN [KEGG DRUG:]
+synonym: "naftifine" RELATED INN [WHO MedNet:]
+synonym: "naftifinum" RELATED INN [WHO MedNet:]
+synonym: "(E)-N-cinnamyl-N-methyl-1-naphthalenemethylamine" RELATED [ChemIDplus:]
+synonym: "naftifin" RELATED [ChemIDplus:]
+synonym: "Naftifine" EXACT [KEGG COMPOUND:]
+synonym: "naftifina" RELATED INN [WHO MedNet:]
+synonym: "trans-N-cinnamyl-N-methyl-(1-naphthylmethyl)amine" RELATED [ChEBI:]
+synonym: "(2E)-N-methyl-N-(1-naphthylmethyl)-3-phenylprop-2-en-1-amine" EXACT IUPAC_NAME [IUPAC:]
+synonym: "C21H21N" RELATED FORMULA [ChEBI:]
+synonym: "CN(C\\C=C\\c1ccccc1)Cc1cccc2ccccc12" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C21H21N/c1-22(16-8-11-18-9-3-2-4-10-18)17-20-14-7-13-19-12-5-6-15-21(19)20/h2-15H,16-17H2,1H3/b11-8+" RELATED InChI [ChEBI:]
+synonym: "OZGNYLLQHRPOBR-DHZHZOJOSA-N" RELATED InChIKey [ChEBI:]
+xref: HMDB:HMDB14873 "HMDB"
+xref: KEGG COMPOUND:C08071 "KEGG COMPOUND"
+xref: DrugBank:DB00735 "DrugBank"
+xref: CiteXplore:18212112 "PubMed citation"
+xref: Wikipedia:Naftifine "Wikipedia"
+xref: CiteXplore:25294700 "PubMed citation"
+xref: ChemIDplus:65472-88-0 "CAS Registry Number"
+xref: Patent:BE853976 "Patent"
+xref: Reaxys:2983617 "Reaxys Registry Number"
+xref: CiteXplore:6388170 "PubMed citation"
+xref: KEGG DRUG:D08245 "KEGG DRUG"
+xref: Patent:US4282251 "Patent"
+xref: CiteXplore:24196340 "PubMed citation"
+xref: KEGG COMPOUND:65472-88-0 "CAS Registry Number"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:9700
+name: tridemorph
+def: "A mixture of 4-alkyl-2,6-dimethylmorpholines, where 'alkyl' is a mixture of C11 to C14 homologues of which 60-70% is tridecyl. A systemic fungicide, it is no longer approved for use within the European Union." []
+synonym: "Calixin" RELATED BRAND_NAME [ChemIDplus:]
+synonym: "BAS 2203F" RELATED [ChemIDplus:]
+synonym: "tridemorphe" RELATED [ChEBI:]
+synonym: "Tridemorph" EXACT [KEGG COMPOUND:]
+xref: HMDB:HMDB31810 "HMDB"
+xref: CiteXplore:IND84012971 "Agricola citation"
+xref: Alan Wood's Pesticides:tridemorph "Pesticides"
+xref: Patent:BE614214 "Patent"
+xref: Patent:US3468885 "Patent"
+xref: CiteXplore:6740510 "PubMed citation"
+xref: ChemIDplus:81412-43-3 "CAS Registry Number"
+xref: Reaxys:8389338 "Reaxys Registry Number"
+xref: CiteXplore:1841872 "PubMed citation"
+xref: KEGG COMPOUND:C11285 "KEGG COMPOUND"
+xref: KEGG COMPOUND:24602-86-6 "CAS Registry Number"
+xref: CiteXplore:IND93043841 "Agricola citation"
+xref: Wikipedia:Tridemorph "Wikipedia"
+xref: CiteXplore:15092713 "PubMed citation"
+xref: Alan Wood's Pesticides:81412-43-3 "CAS Registry Number"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:40909
+name: azoxystrobin
+def: "An aryloxypyrimidine having a 4,6-diphenoxypyrimidine  skeleton in which one of the phenyl rings is cyano-substituted at C-2 and the other carries a 2-methoxy-1-(methoxycarbonyl)vinyl substituent, also at C-2. An inhibitor of mitochondrial respiration by blocking electron transfer between cytochromes b and c1, it is used widely as a fungicide in agriculture." []
+synonym: "methyl (E)-2-[2-[6-(2-cyanophenoxy)pyrimidin-4-yloxy]phenyl]-3-methoxyacrylate" RELATED [ChEBI:]
+synonym: "(alphaE)-2-[[6-(2-cyanophenoxy)-4-pyrimidinyl]oxy]-alpha-(methoxymethylene) benzeneacetic acid methyl ester" RELATED [ChEBI:]
+synonym: "methyl (2E)-2-(2-{[6-(2-cyanophenoxy)pyrimidin-4-yl]oxy}phenyl)-3-methoxyprop-2-enoate" EXACT IUPAC_NAME [IUPAC:]
+synonym: "C22H17N3O5" RELATED FORMULA [ChEBI:]
+synonym: "CO\\C=C(\\C(=O)OC)c1ccccc1Oc1cc(Oc2ccccc2C#N)ncn1" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C22H17N3O5/c1-27-13-17(22(26)28-2)16-8-4-6-10-19(16)30-21-11-20(24-14-25-21)29-18-9-5-3-7-15(18)12-23/h3-11,13-14H,1-2H3/b17-13+" RELATED InChI [ChEBI:]
+synonym: "WFDXOXNFNRHQEC-GHRIWEEISA-N" RELATED InChIKey [ChEBI:]
+xref: CiteXplore:21153804 "PubMed citation"
+xref: Patent:US5395837 "Patent"
+xref: Beilstein:8350244 "Beilstein Registry Number"
+xref: CiteXplore:25196149 "PubMed citation"
+xref: PDBeChem:AZO "PDBeChem"
+xref: KEGG COMPOUND:131860-33-8 "CAS Registry Number"
+xref: CiteXplore:22092932 "PubMed citation"
+xref: CiteXplore:21777591 "PubMed citation"
+xref: Wikipedia:Azoxystrobin "Wikipedia"
+xref: CiteXplore:24700092 "PubMed citation"
+xref: ChemIDplus:131860-33-8 "CAS Registry Number"
+xref: CiteXplore:22278367 "PubMed citation"
+xref: CiteXplore:21671616 "PubMed citation"
+xref: CiteXplore:25011117 "PubMed citation"
+xref: Alan Wood's Pesticides:azoxystrobin "Pesticides"
+xref: CiteXplore:21884765 "PubMed citation"
+xref: CiteXplore:24125711 "PubMed citation"
+xref: KEGG COMPOUND:C18558 "KEGG COMPOUND"
+xref: Patent:EP382375 "Patent"
+xref: Reaxys:8350244 "Reaxys Registry Number"
+xref: CiteXplore:24405376 "PubMed citation"
+xref: CiteXplore:24726979 "PubMed citation"
+xref: CiteXplore:22224459 "PubMed citation"
+xref: CiteXplore:20818521 "PubMed citation"
+xref: CiteXplore:25090100 "PubMed citation"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:28909
+name: iprodione
+alt_id: CHEBI:8902
+alt_id: CHEBI:24871
+def: "An imidazolidine-2,4-dione in which the nitrogen at position 1 is substituted by an N-(isopropyl)carboxamide group while that at position 3 is substituted by a 3,5-dichlorophenyl group. A contact fungicide, it blocks the growth of the fungal mycelium and inhibits the germination of fungal spores. It is used on fruit and vegetable crops affected by various fungal diseases. It is also used as a nematicide." []
+synonym: "Rovral" RELATED [KEGG COMPOUND:]
+synonym: "3-(3,5-dichlorophenyl)-N-isopropyl-2,4-dioxoimidazolidine-1-carboxamide" RELATED [ChemIDplus:]
+synonym: "3-(3,5-dichlorophenyl)-N-(1-methylethyl)-2,4-dioxo-1-imidazolidinecarboxamide" RELATED [UM-BBD:]
+synonym: "3-(3,5-dichlorophenyl)hydantoin-1-carboxylic acid isopropylamide" RELATED [ChemIDplus:]
+synonym: "3-(3,5-dichlorophenyl)-N-(1-methylethyl)-2,4-dioxoimidazolidine-1-carboxamide" RELATED [IUPAC:]
+synonym: "Rovral" RELATED BRAND_NAME [ChEBI:]
+synonym: "Rovrol" RELATED [KEGG COMPOUND:]
+synonym: "3-(3,5-dichlorophenyl)-2,4-dioxo-N-(propan-2-yl)-imidazolidine-1-carboxamide" EXACT IUPAC_NAME [IUPAC:]
+synonym: "3-(3,5-dichlorophenyl)-1-(1-methylethyl)carbamoylhydantoin" RELATED [NIST Chemistry WebBook:]
+synonym: "3-(3,5-dichlorophenyl)-N-(1-methylethyl)-2,4-dioxo-1-imidazolidinecarboxamide" RELATED [ChemIDplus:]
+synonym: "Iprodione" EXACT [KEGG COMPOUND:]
+synonym: "C13H13Cl2N3O3" RELATED FORMULA [ChEBI:]
+synonym: "CC(C)NC(=O)N1CC(=O)N(C1=O)c1cc(Cl)cc(Cl)c1" RELATED SMILES [ChEBI:]
+synonym: "InChI=1S/C13H13Cl2N3O3/c1-7(2)16-12(20)17-6-11(19)18(13(17)21)10-4-8(14)3-9(15)5-10/h3-5,7H,6H2,1-2H3,(H,16,20)" RELATED InChI [ChEBI:]
+synonym: "ONUFESLQCSAYKA-UHFFFAOYSA-N" RELATED InChIKey [ChEBI:]
+xref: Reaxys:895003 "Reaxys Registry Number"
+xref: Patent:CN103392726 "Patent"
+xref: CiteXplore:11451425 "PubMed citation"
+xref: Beilstein:895003 "Beilstein Registry Number"
+xref: HMDB:HMDB31795 "HMDB"
+xref: Patent:CN103053579 "Patent"
+xref: CiteXplore:22262495 "PubMed citation"
+xref: CiteXplore:22115616 "PubMed citation"
+xref: NIST Chemistry WebBook:36734-19-7 "CAS Registry Number"
+xref: Wikipedia:Iprodione "Wikipedia"
+xref: Patent:DE2149923 "Patent"
+xref: Patent:US3755350 "Patent"
+xref: ChemIDplus:36734-19-7 "CAS Registry Number"
+xref: Alan Wood's Pesticides:iprodione "Pesticides"
+xref: KEGG COMPOUND:C11208 "KEGG COMPOUND"
+xref: KEGG COMPOUND:36734-19-7 "CAS Registry Number"
+xref: UM-BBD:c0635 "UM-BBD compID"
+is_a: CHEBI:24431
+
+[Term]
+id: CHEBI:81758
+name: cyproconazole
+def: "A diastereoisomeric mixture composed of the enantiomeric pair (2R,3S)- and (2S,3R)-cyproconazole in ratio 1:1 with the enantiomeric pair (2R,3R)- and (2S,3S)-cyproconazole. A broad spectrum fungicide, it is used on cereals and other field crops used to control Septoria, rust, powdery mildew and other diseases." []
+synonym: "rac-2-(4-chlorophenyl)-3-cyclopropyl-1-(1H-1,2,4-triazol-1-yl)butan-2-ol" EXACT IUPAC_NAME [IUPAC:]
+synonym: "alpha-(4-chlorophenyl)-alpha-(1-cyclopropylethyl)-1N-1,2,4-triazole-1-ethanol" RELATED [Alan Wood's Pesticides:]
+xref: CiteXplore:25182419 "PubMed citation"
+xref: CiteXplore:24691702 "PubMed citation"
+xref: Alan Wood's Pesticides:cyproconazole "Pesticides"
+xref: CiteXplore:23708404 "PubMed citation"
+xref: KEGG COMPOUND:94361-06-5 "CAS Registry Number"
+xref: Reaxys:8324780 "Reaxys Registry Number"
+xref: ChemIDplus:94361-06-5 "CAS Registry Number"
+xref: KEGG COMPOUND:C18456 "KEGG COMPOUND"
+is_a: CHEBI:24431

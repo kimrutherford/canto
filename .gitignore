@@ -26,4 +26,5 @@ pombe_data
 *.sqlite3-shm
 *.sqlite3-wal
 .vagrant
+canto_using_alleles.json
 
