@@ -1,5 +1,5 @@
 format-version: 1.2
-date: 20:11:2015 00:03
+date: 19:11:2015 20:58
 saved-by: irvinea
 auto-generated-by: OBO-Edit 2.3.1
 default-namespace: phi_phenotype
@@ -15,14 +15,13 @@ creation_date: 2015-08-17T11:51:58Z
 [Term]
 id: PHIPO:0000001
 name: effector
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-15T16:18:55Z
 
 [Term]
 id: PHIPO:0000002
 name: PHI pathogen phenotype
-is_a: PHIPO:0000012 ! PHI phenotype
 created_by: irvinea
 creation_date: 2015-07-15T16:15:45Z
 
@@ -107,7 +106,7 @@ creation_date: 2015-07-15T16:27:39Z
 
 [Term]
 id: PHIPO:0000012
-name: PHI phenotype
+name: PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-15T17:09:19Z
 
@@ -115,7 +114,7 @@ creation_date: 2015-07-15T17:09:19Z
 id: PHIPO:0000013
 name: variant host penetration
 synonym: "abnormal host penetration" RELATED []
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-15T17:14:10Z
 
@@ -344,7 +343,6 @@ creation_date: 2015-07-22T15:43:41Z
 [Term]
 id: PHIPO:0000042
 name: PHI host phenotype
-is_a: PHIPO:0000012 ! PHI phenotype
 created_by: irvinea
 creation_date: 2015-07-16T20:37:59Z
 
@@ -967,7 +965,7 @@ name: unaltered interaction phenotype
 synonym: "control interaction phenotype" EXACT []
 synonym: "wild type interaction phenotype" RELATED []
 synonym: "wild-type interaction phenotype" RELATED []
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:34:11Z
 
@@ -995,7 +993,7 @@ creation_date: 2015-07-27T11:35:12Z
 id: PHIPO:0000126
 name: variant host entry
 synonym: "abnormal host entry" RELATED []
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:44:27Z
 
@@ -1073,7 +1071,7 @@ creation_date: 2015-07-27T11:53:00Z
 [Term]
 id: PHIPO:0000137
 name: response to chemistry
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:59:21Z
 
@@ -1247,7 +1245,7 @@ creation_date: 2015-07-29T16:39:10Z
 [Term]
 id: PHIPO:0000161
 name: disease formation
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000012 ! PHI interaction phenotype
 created_by: irvinea
 creation_date: 2015-07-29T16:40:23Z
 

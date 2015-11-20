@@ -10,5 +10,9 @@ implementation_classes:
   go_adaptor: Canto::Track::OntologyLookup
   ontology_adaptor: Canto::Track::OntologyLookup
 extension_conf_files:
-  - t/data/extension_config.tsv
-
+  - t/data/GO_BP_A_E_config.tsv
+  - t/data/GO_CC_A_E_config.tsv
+  - t/data/GO_MF_A_E_config.tsv
+  - t/data/PHI_host_A_E_config.tsv
+  - t/data/PHI_interaction_A_E_config.tsv
+  - t/data/PHI_pathogen_A_E_config.tsv

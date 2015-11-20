@@ -1,0 +1,48 @@
+Domain ID	subset relation	extension relation	range ID	Canto display text	cardinality	role
+GO:0000122	is_a	happens_during	GO:0000278|GO:0044838|GO:0051321|GO:0071277|GO:0071456	regulates transcription during (cell cycle phase or process)	0,1	user
+GO:0000770	is_a	has_input	SPAPB8E5.05|SPAC513.03|SPCC1795.06|SPBPJ4664.03	exports	0,1	user
+GO:0006351	is_a	occurs_at	SO:0001865|SO:0001795	occurs at	0,1	user
+GO:0006355	is_a	has_regulation_target	TranscriptID	regulates transcription of	0,1	user
+GO:0006396	is_a	has_input	TranscriptID	processes	0,1	user
+GO:0006457	is_a	has_input	ProteinID	folds	0,1	user
+GO:0006468	is_a	has_input	ProteinID	phosphorylates	0,1	user
+GO:0006473	is_a	has_input	ProteinID	acetylates	0,1	user
+GO:0006486	is_a	has_input	ProteinID	glycosylates	0,1	user
+GO:0006486	is_a	has_substrate	ProteinID	glycosylates	0,1	user
+GO:0006511	is_a	has_input	ProteinID	degrades	0,1	user
+GO:0006605	is_a	has_input	ProteinID	targets	0,1	user
+GO:0006897	is_a	occurs_at	GO:0032153|GO:0051286	occurs at	0,1	user
+GO:0007015	is_a	occurs_at	GO:0005826|GO:0051286	occurs at	0,1	user
+GO:0008150	is_a	happens_during	GO:0008150	happens during (e.g. cell cycle phase or stage)	0,1	user
+GO:0016485	is_a	has_input	ProteinID	processes	0,1	user
+GO:0016570	is_a	occurs_at	SO:0001798|SO:0001799	occurs at	0,1	user
+GO:0030702	is_a	occurs_at	SO:0001799	occurs at	0,1	user
+GO:0031399	is_a	has_regulation_target	ProteinID	regulates modification of	0,1	user
+GO:0032069	is_a	has_regulation_target	ProteinID	regulates activity of	0,1	user
+GO:0032507	is_a	has_input	ProteinID	maintains localization of	0,1	user
+GO:0033562	is_a	has_regulation_target	TranscriptID	silences	0,1	user
+GO:0033562	is_a	occurs_at	SO:0000286	occurs at	0,1	user
+GO:0034613	is_a	has_input	ProteinID	localizes	0,1	user
+GO:0042325	is_a	has_regulation_target	ProteinID	regulates phosphorylation of	0,1	user
+GO:0043087	is_a	has_regulation_target	ProteinID	regulates activity of	0,1	user
+GO:0043487	is_a	has_regulation_target	TranscriptID	stabilizes	0,1	user
+GO:0045859	is_a	has_regulation_target	ProteinID	regulates activity of	0,1	user
+GO:0050684	is_a	has_regulation_target	TranscriptID	regulates processing of	0,1	user
+GO:0051095	is_a	has_regulation_target	ProteinID	regulates activity of	0,1	user
+GO:0051223	is_a	has_regulation_target	ProteinID	regulates transport of	0,1	user
+GO:0051438	is_a	has_regulation_target	ProteinID	regulates activity of	0,1	user
+GO:0061013	is_a	has_regulation_target	TranscriptID	regulates catabolism of	0,1	user
+GO:0070613	is_a	has_regulation_target	ProteinID	regulates processing of	0,1	user
+GO:0071168	is_a	occurs_at	SO:0001799	occurs at	0,1	user
+GO:0071786	is_a	occurs_at	GO:0005938|GO:0034399	occurs at	0,1	user
+GO:0090365	is_a	has_regulation_target	TranscriptID	regulates modification of	0,1	user
+GO:0097394	is_a	occurs_at	SO:0001926|SO:0001924	occurs at	0,1	user
+GO:1901983	is_a	has_regulation_target	ProteinID	regulates acetylation of	0,1	user
+GO:1902544	is_a	has_regulation_target	ProteinID	regulates activity of	0,1	user
+GO:1902983	is_a	occurs_at	SO:0001914|SO:0002021|SO:0001272	occurs at	0,1	user
+GO:1903533	is_a	has_regulation_target	ProteinID	regulates targeting of	0,1	user
+GO:1903643	is_a	occurs_at	SO:0001900	occurs at	0,1	user
+GO:1903827	is_a	has_regulation_target	ProteinID	regulates localization of	0,1	user
+GO:1904595	is_a	occurs_at	SO:0001637|SO:0001272|SO:0001217	occurs at	0,1	user
+GO:2000152	is_a	has_regulation_target	ProteinID	regulates activity of	0,1	user
+GO:2001215	is_a	has_regulation_target	SPCC162.09c	regulates activity of	0,1	user

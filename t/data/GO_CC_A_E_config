@@ -1,0 +1,4 @@
+domain ID	subset relation	extension relation	range ID	Canto display text	cardinality	role
+GO:0000790	is_a	coincident_with	GeneID|SO:0000296|SO:0001272|SO:0001914|SO:0002021|SO:0002020|SO:0000141|SO:0000186|SO:0000101|SO:0000286|SO:0001263|SO:0001846|SO:0001871|SO:0001846|SO:0001496|SO:0001003|SO:0001843	found at genomic region	0,1	user
+GO:0005575	is_a	exists_during	GO:0008150	observed in this location during (cell cycle phase or process)	0,1	user
+GO:0098687	is_a	coincident_with	GeneID|SO:0000296|SO:0001272|SO:0001914|SO:0002021|SO:0002020|SO:0000141|SO:0000186|SO:0000101|SO:0000286|SO:0001263|SO:0001846|SO:0001871|SO:0001846|SO:0001496|SO:0001003|SO:0001843	found at genomic region	0,1	user
