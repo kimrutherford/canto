@@ -77,6 +77,10 @@ sub parse {
           next;
         }
 
+        if ($subset_rel !~ /^\w+$/) {
+          die qq("$subset_rel" does not look like a relation on line: $line\n");
+        }
+
         if (!defined $display_text) {
           die "config line $. in $extension_conf_file has too few fields: $line\n";
         }
@@ -100,24 +104,31 @@ sub parse {
           if (/:/) {
             push @new_ontology_range_scope, $_;
           } else {
-            if (/^(number|text|\%)$/i) {
-              # hack: treat numbers as free text for now
-              if (!grep { $_->{type} eq 'Text'} @new_range_bits) {
+            if (lc $_ eq 'number') {
+              if (!grep { $_->{type} eq 'Number'} @new_range_bits) {
                 push @new_range_bits, {
-                  type => 'Text',
-                  input_type => lc $_,
+                  type => 'Number',
                 };
               }
             } else {
-              if (/^(Gene|FeatureID|GeneID|ProteinID|TranscriptID|tRNAID|SP.*)$/i) {
-                # hack: treat everything else as a gene (and normalise the case)
-                if (!grep { $_->{type} eq 'Gene'} @new_range_bits) {
+              if (/^(text|\%)$/i) {
+                if (!grep { $_->{type} eq 'Text'} @new_range_bits) {
                   push @new_range_bits, {
-                    type => 'Gene',
-                  }
+                    type => 'Text',
+                    input_type => lc $_,
+                  };
                 }
               } else {
-                die "unsupported range part: $_\n";
+                if (/^(Gene|FeatureID|GeneID|ProteinID|TranscriptID|tRNAID|SP.*)$/i) {
+                  # hack: treat everything else as a gene (and normalise the case)
+                  if (!grep { $_->{type} eq 'Gene'} @new_range_bits) {
+                    push @new_range_bits, {
+                      type => 'Gene',
+                    }
+                  }
+                } else {
+                  die "unsupported range part: $_\n";
+                }
               }
             }
           }
