@@ -1,0 +1,12 @@
+domain ID	subset relation	extension relation	range ID	Canto display text	cardinality	role
+MOD:00000	is_a	added_by	FeatureID	added by	0,1	user
+MOD:00000	is_a	removed_by	FeatureID	removed by	0,1	user
+MOD:00000	is_a	added_during	GO:0008150	added during	0,1	user
+MOD:00000	is_a	removed_during	GO:0008150	removed during	0,1	user
+MOD:00000	is_a	present_during	GO:0008150	present during	0,1	user
+MOD:00000	is_a	absent_during	GO:0008150	absent during	0,1	user
+MOD:00000	is_a	occupancy	Number	proportion of proteins with modification (decimal value)	0,1	user
+MOD:00000	is_a	level_fluctuates_during	GO:0008150	cellular amount of modification fluctuates during	0,1	user
+MOD:00000	is_a	required_for	GO:0003674	required for	0,1	user
+MOD:00000	is_a	required_for	GO:0008150	required for	0,1	user
+MOD:00000	is_a	residue	text	position(s) modified	0,1	user
