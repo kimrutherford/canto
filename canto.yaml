@@ -1581,11 +1581,11 @@ available_annotation_type_list:
     category: ontology
     namespace: phi_phenotype
     #namespace: phi_interaction_phenotype
-    very_short_display_name: 'interaction phenotype'
+    very_short_display_name: 'PHI phenotype'
     #very_short_display_name: 'interaction phenotype'
-    short_display_name: 'interaction phenotype'
+    short_display_name: 'PHI phenotype'
     #short_display_name: 'interaction phenotype'
-    display_name: 'interaction phenotype'
+    display_name: 'PHI phenotype'
     #display_name: 'interaction phenotype'
     feature_type: 'genotype'
     show_synonyms: always

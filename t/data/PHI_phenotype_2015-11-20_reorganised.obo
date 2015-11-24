@@ -1,5 +1,5 @@
 format-version: 1.2
-date: 20:11:2015 00:03
+date: 24:11:2015 23:12
 saved-by: irvinea
 auto-generated-by: OBO-Edit 2.3.1
 default-namespace: phi_phenotype
@@ -15,7 +15,7 @@ creation_date: 2015-08-17T11:51:58Z
 [Term]
 id: PHIPO:0000001
 name: effector
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-15T16:18:55Z
 
@@ -101,7 +101,7 @@ synonym: "control pathogenicity" RELATED []
 synonym: "unaffected pathogenicity" EXACT []
 synonym: "wild type pathogenicity" RELATED []
 synonym: "wild-type pathogenicity" RELATED []
-is_a: PHIPO:0000123 ! unaltered interaction phenotype
+is_a: PHIPO:0000123 ! unaltered pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-15T16:27:39Z
 
@@ -115,7 +115,7 @@ creation_date: 2015-07-15T17:09:19Z
 id: PHIPO:0000013
 name: variant host penetration
 synonym: "abnormal host penetration" RELATED []
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-15T17:14:10Z
 
@@ -963,11 +963,11 @@ creation_date: 2015-07-27T11:27:03Z
 
 [Term]
 id: PHIPO:0000123
-name: unaltered interaction phenotype
+name: unaltered pathogen phenotype
 synonym: "control interaction phenotype" EXACT []
 synonym: "wild type interaction phenotype" RELATED []
 synonym: "wild-type interaction phenotype" RELATED []
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:34:11Z
 
@@ -977,7 +977,7 @@ name: unaltered disease formation
 synonym: "control disease formation" EXACT []
 synonym: "wild type disease formation" RELATED []
 synonym: "wild-type disease formation" RELATED []
-is_a: PHIPO:0000123 ! unaltered interaction phenotype
+is_a: PHIPO:0000123 ! unaltered pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:34:35Z
 
@@ -987,7 +987,7 @@ name: unaltered virulence
 synonym: "control virulence" EXACT []
 synonym: "wild type virulence" RELATED []
 synonym: "wild-type virulence" RELATED []
-is_a: PHIPO:0000123 ! unaltered interaction phenotype
+is_a: PHIPO:0000123 ! unaltered pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:35:12Z
 
@@ -995,7 +995,7 @@ creation_date: 2015-07-27T11:35:12Z
 id: PHIPO:0000126
 name: variant host entry
 synonym: "abnormal host entry" RELATED []
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:44:27Z
 
@@ -1073,7 +1073,7 @@ creation_date: 2015-07-27T11:53:00Z
 [Term]
 id: PHIPO:0000137
 name: response to chemistry
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-27T11:59:21Z
 
@@ -1247,7 +1247,7 @@ creation_date: 2015-07-29T16:39:10Z
 [Term]
 id: PHIPO:0000161
 name: disease formation
-is_a: PHIPO:0000012 ! PHI phenotype
+is_a: PHIPO:0000002 ! PHI pathogen phenotype
 created_by: irvinea
 creation_date: 2015-07-29T16:40:23Z
 
