@@ -1590,6 +1590,7 @@ available_annotation_type_list:
     feature_type: 'genotype'
     show_synonyms: always
     evidence_codes:
+      - asexual sporulation assay
       - cell growth assay
       - chromatin immunoprecipitation
       - co-immunoprecipitation
@@ -1599,6 +1600,7 @@ available_annotation_type_list:
       - enzyme assay
       - epitope-tagged protein immunolocalization
       - functional test in host organism
+      - functional test in non-host organism
       - gel electrophoresis
       - immunolocalization
       - microscopy
@@ -1607,6 +1609,7 @@ available_annotation_type_list:
       - quantitative PCR
       - reporter gene assay
       - sequence analysis
+      - sexual sporulation assay
       - substance quantification
       - transcript expression level
       - transient expression in host organism
@@ -2283,9 +2286,26 @@ available_annotation_type_list:
 #      - Synthetic Lethality
 #      - Synthetic Rescue
 #    detailed_help_path: /docs/genetic_interaction_annotation
+  - name: genetic_interaction_in_path
+    category: interaction
+    display_name: 'Genetic interaction in pathogen'
+    help_text: 'Examples: synthetic lethality, dosage suppression, phenotype enhancement.'
+    evidence_codes:
+      - Dosage Growth Defect
+      - Dosage Lethality
+      - Dosage Rescue
+      - Negative Genetic
+      - Phenotypic Enhancement
+      - Phenotypic Suppression
+      - Positive Genetic
+      - Synthetic Growth Defect
+      - Synthetic Haploinsufficiency
+      - Synthetic Lethality
+      - Synthetic Rescue
+    detailed_help_path: /docs/genetic_interaction_annotation
   - name: physical_interaction_in_path
     category: interaction
-    display_name: 'Interacting protein in pathogen'
+    display_name: 'Physical interaction in pathogen'
     feature_type: 'gene'
     help_text: 'Examples: co-purification, two-hybrid, affinity capture'
     evidence_codes:
@@ -2304,9 +2324,26 @@ available_annotation_type_list:
       - Reconstituted Complex
       - Two-hybrid
     detailed_help_path: /docs/physical_interaction_annotation
+  - name: genetic_interaction_in_host
+    category: interaction
+    display_name: 'First host target genetic interaction'
+    help_text: 'Examples: synthetic lethality, dosage suppression, phenotype enhancement.'
+    evidence_codes:
+      - Dosage Growth Defect
+      - Dosage Lethality
+      - Dosage Rescue
+      - Negative Genetic
+      - Phenotypic Enhancement
+      - Phenotypic Suppression
+      - Positive Genetic
+      - Synthetic Growth Defect
+      - Synthetic Haploinsufficiency
+      - Synthetic Lethality
+      - Synthetic Rescue
+    detailed_help_path: /docs/genetic_interaction_annotation
   - name: physical_interaction_in_host
     category: interaction
-    display_name: 'Interacting protein in host'
+    display_name: 'First host target physical interaction'
     feature_type: 'gene'
     help_text: 'Examples: co-purification, two-hybrid, affinity capture'
     evidence_codes:
@@ -2325,130 +2362,7 @@ available_annotation_type_list:
       - Reconstituted Complex
       - Two-hybrid
     detailed_help_path: /docs/physical_interaction_annotation
-#
-#
-#
-#
-###################### LINES BELOW SHOULD BE DELETED ONCE ITS WORKING ####################################
-#=======
-#      The curators will record this additional information in PomBase.
-#  - name: phenotype
-#    category: ontology
-#    namespace: fission_yeast_phenotype
-#    very_short_display_name: 'phenotype'
-#    short_display_name: 'phenotype'
-#    display_name: 'phenotype'
-#    synonyms_to_display:
-#      - exact
-#    feature_type: 'genotype'
-#    can_have_conditions: 1
-#    evidence_codes:
-#      - Cell growth assay
-#      - Chromatin immunoprecipitation experiment
-#      - Chromatography evidence
-#      - Co-immunoprecipitation experiment
-#      - Competitive growth assay evidence
-#      - Electrophoretic mobility shift assay data
-#      - Enzyme assay data
-#      - Epitope-tagged protein immunolocalization experiment data
-#      - Flow cytometry data
-#      - Gel electrophoresis evidence
-#      - Immunolocalization experiment data
-#      - Microscopy
-#      - Other
-#      - Particle size and count assay
-#      - Plasmid maintenance assay evidence
-#      - Quantitative PCR
-#      - Reporter gene assay
-#      - Substance quantification evidence
-#      - Transcript expression level evidence
-#      - Western blot assay
-#    broad_term_suggestions: >
-#      cell phenotype, multinucleate, abnormal spindle, inviable
-#    specific_term_examples: >
-#      growth auxotrophic for arginine, abnormal cytokinetic cell separation
-#    help_text: >
-#      Annotate normal or abnormal phenotypes, and the associated alleles.
-#      A phenotype is any observable characteristic or trait of an organism; 
-#      examples include multinucleate, abnormal spindle, inviable.
-#    more_help_text: >
-#      Observable characteristics include morphology, development, biochemical or
-#      physiological properties, behaviour, and products of behaviour of the
-#      organism.
-#      Phenotypes result from the expression of the genes of an organism as well
-#      as the influence of environmental factors and the interactions between
-#      the two.
-#    extra_help_text: >
-#      Alleles may be annotated with multiple phenotype terms,
-#      including both normal and abnormal phenotypes for one allele.
-#    detailed_help_path: /docs/fypo_annotation
-#    annotation_comment_help_text: |
-#      Please provide any additional details you have, such as:
-#      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
-#      ii) Penetrance or severity of the phenotype
-#      The curators will record this additional information in PomBase.
-#  - name: post_translational_modification
-#    category: ontology
-#    namespace: PSI-MOD
-#    display_name: 'protein modification'
-#    feature_type: 'gene'
-#    broad_term_suggestions: >
-#      phosphorylated, methylated, lysine
-#    specific_term_examples: >
-#      O-phospho-L-serine, monomethylated L-lysine
-#    help_text: >
-#      A protein modification is a covalent modification or other change that
-#      alters the measured molecular mass of a peptide or protein amino acid
-#      residue
-#    more_help_text: ~
-#    evidence_codes:
-#      - IDA
-#    detailed_help_path: /docs/modification_annotation
-#    annotation_comment_help_text: |
-#      Please provide any additional details you have, such as:
-#      i) The protein that adds or removes the modification
-#      ii) The period or phase (e.g. during S phase; during sporulation) when the modification is observed, added or removed
-#      iii) Any process for which the modification is required
-#      iv) The residue(s) modified
-#      The curators will record this additional information in PomBase.
-#  - name: genetic_interaction
-#    category: interaction
-#    display_name: 'genetic interaction'
-#    feature_type: 'gene'
-#    help_text: 'Examples: synthetic lethality, dosage suppression, phenotype enhancement.'
-#    evidence_codes:
-#      - Dosage Growth Defect
-#      - Dosage Lethality
-#      - Dosage Rescue
-#      - Phenotypic Enhancement
-#      - Phenotypic Suppression
-#      - Synthetic Growth Defect
-#      - Synthetic Haploinsufficiency
-#      - Synthetic Lethality
-#      - Synthetic Rescue
-#    detailed_help_path: /docs/genetic_interaction_annotation
-#  - name: physical_interaction
-#    category: interaction
-#    display_name: 'physical interaction'
-#    feature_type: 'gene'
-#    help_text: 'Examples: co-purification, two-hybrid, affinity capture'
-#    evidence_codes:
-#      - Affinity Capture-Luminescence
-#      - Affinity Capture-MS
-#      - Affinity Capture-RNA
-#      - Affinity Capture-Western
-#      - Co-crystal Structure
-#      - Co-fractionation
-#      - Co-purification
-#      - Far Western
-#      - FRET
-#      - PCA
-#      - Protein-peptide
-#      - Protein-RNA
-#      - Reconstituted Complex
-#      - Two-hybrid
-#    detailed_help_path: /docs/physical_interaction_annotation
-#>>>>>>> upstream/branch/annex-gui
+
 
 default_curation_priority_name: low
 
