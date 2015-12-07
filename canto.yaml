@@ -19,7 +19,7 @@ header_image: logos/curation_tool.png
 
 canto_url: http://localhost:5000/
 
-app_version: v905
+app_version: v906
 
 schema_version: 10
 
@@ -108,6 +108,20 @@ db_initial_data:
           - name: taxon_id
             dbxref:
               accession: taxonId
+              db:
+                name: Canto
+      - name: cvprop_type
+        cvterms:
+          - name: cv_date
+            definition: 'The date the CV was last loaded'
+            dbxref:
+              accession: cv_date
+              db:
+                name: Canto
+          - name: cv_term_count
+            definition: 'The number of non-obsolete, non-relation terms in the CV'
+            dbxref:
+              accession: cv_term_count
               db:
                 name: Canto
       - name: cvterm_property_type
@@ -308,6 +322,11 @@ db_initial_data:
               accession: phenotype_screen
               db:
                 name: Canto
+          - name: Structure
+            dbxref:
+              accession: structure
+              db:
+                name: Canto
           - name: Other
             definition: >
                 Triage status for a publication that will not be curated for
@@ -451,6 +470,18 @@ class_info:
         - name: "term count"
           source:
             sql: 'select count(*) from cvterm where cvterm.cv_id = me.cv_id'
+        - name: "load date"
+          source:
+            sql: "select value from cvprop p join cvterm pt on p.type_id = pt.cvterm_id where p.cv_id = me.cv_id and pt.name = 'cv_date'"
+    cvprop:
+      class_display_name: controlled vocabulary properties
+      display_field: value
+      field_info_list:
+        - name: type
+          source: type_id
+          referenced_class: Cvterm
+        - name: value
+          editable: 1
     cvterm:
       class_display_name: controlled vocabulary term
       editable: 1
@@ -2328,7 +2359,7 @@ available_annotation_type_list:
   - name: post_translational_modification
     category: ontology
     namespace: PSI-MOD
-    display_name: 'protein modification'
+    display_name: 'post-tranlational modification'
     feature_type: 'gene'
     broad_term_suggestions: >
       phosphorylated, methylated, lysine

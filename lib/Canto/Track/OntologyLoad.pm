@@ -58,6 +58,7 @@ use LWP::Simple;
 use File::Temp qw(tempfile);
 
 use Canto::Track::LoadUtil;
+use Canto::Curs::Utils;
 
 has 'schema' => (
   is => 'ro',
@@ -153,40 +154,38 @@ sub _delete_term_by_cv
   $schema->resultset('Cvtermsynonym')->search({ }, { where => $cvtermsynonym_where })->delete();
 }
 
-=head2 load
+sub _store_cv_prop
+{
+  my $schema = shift;
+  my $load_util = shift;
 
- Usage   : my $ont_load = Canto::Track::OntologyLoad->new(schema => $schema);
-           $ont_load->load($file_name, $index, [qw(exact related)]);
- Function: Load the contents an OBO file into the schema
- Args    : $source - the file name or URL of an obo format file
-           $index - the index to add the terms to (optional)
-           $synonym_types_ref - a array ref of synonym types that should be
-                                added to the index
- Returns : Nothing
+  my $cv = shift;
+  my $prop_name = shift;
+  my $value = shift;
 
-=cut
+  my $prop_type_term =
+    $load_util->find_cvterm(cv_name => 'cvprop_type',
+                            name => $prop_name);
 
-sub load
+  my $prop_term =
+    $schema->resultset('Cvprop')->find({ cv_id => $cv->cv_id(),
+                                         type_id => $prop_type_term->cvterm_id() });
+
+  if (defined $prop_term) {
+    $prop_term->value($value);
+    $prop_term->update();
+  } else {
+    $schema->resultset('Cvprop')->create({ cv_id => $cv->cv_id(),
+                                           type_id => $prop_type_term->cvterm_id(),
+                                           value => $value});
+  }
+}
+
+sub _parse_source
 {
   my $self = shift;
+  my $parser = shift;
   my $source = shift;
-  my $index = shift;
-  my $synonym_types_ref = shift;
-
-  if (!defined $source) {
-    croak "no source passed to OntologyLoad::load()";
-  }
-
-  if (!defined $synonym_types_ref) {
-    croak "no synonym_types passed to OntologyLoad::load()";
-  }
-
-  my $schema = $self->load_schema();
-
-  my $guard = $schema->txn_scope_guard;
-
-  my $comment_cvterm = $schema->find_with_type('Cvterm', { name => 'comment' });
-  my $parser = GO::Parser->new({ handler=>'obj' });
 
   my $file_name;
   my $fh;
@@ -203,17 +202,49 @@ sub load
   }
 
   $parser->parse($file_name);
+}
+
+=head2 load
+
+ Usage   : my $ont_load = Canto::Track::OntologyLoad->new(schema => $schema);
+           $ont_load->load($file_name, $index, [qw(exact related)]);
+ Function: Load the contents an OBO file into the schema
+ Args    : $source - the file name or URL of an obo format file
+           $index - the index to add the terms to (optional)
+           $synonym_types_ref - a array ref of synonym types that should be
+                                added to the index
+ Returns : Nothing
+
+=cut
+
+sub load
+{
+  my $self = shift;
+  my $sources = shift;
+  my $index = shift;
+  my $synonym_types_ref = shift;
+
+  if (!defined $sources) {
+    croak "no source passed to OntologyLoad::load()";
+  }
+
+  if (!defined $synonym_types_ref) {
+    croak "no synonym_types passed to OntologyLoad::load()";
+  }
+
+  my $schema = $self->load_schema();
+
+  my $guard = $schema->txn_scope_guard;
+
+  my $comment_cvterm = $schema->find_with_type('Cvterm', { name => 'comment' });
+  my $parser = GO::Parser->new({ handler=>'obj' });
+
+  for my $source (@$sources) {
+    $self->_parse_source($parser, $source);
+  }
 
   my $graph = $parser->handler->graph;
   my %cvterms = ();
-
-  my @synonym_types_to_load = @$synonym_types_ref;
-  my %synonym_type_ids = ();
-
-  for my $synonym_type (@synonym_types_to_load) {
-    $synonym_type_ids{$synonym_type} =
-      $schema->find_with_type('Cvterm', { name => $synonym_type })->cvterm_id();
-  }
 
   my %relationship_cvterms = ();
 
@@ -231,7 +262,7 @@ sub load
 
   my %cvs = ();
 
-  my $collect_cvs_handler =
+  my $collect_cvs =
     sub {
       my $ni = shift;
       my $term = $ni->term;
@@ -239,14 +270,13 @@ sub load
       my $cv_name = $term->namespace();
 
       if (!defined $cv_name) {
-        die "no namespace in $source";
+        die "missing namespace";
       }
 
       $cvs{$cv_name} = 1;
     };
 
-  $graph->iterate($collect_cvs_handler);
-
+  $graph->iterate($collect_cvs);
 
    # delete existing terms
    map {
@@ -271,6 +301,17 @@ sub load
 
   map { $relationships_to_load{$_} = 1; } @{$self->relationships_to_load()};
 
+  my @synonym_types_to_load = @$synonym_types_ref;
+  my %synonym_type_ids = ();
+
+  for my $synonym_type (@synonym_types_to_load) {
+    $synonym_type_ids{$synonym_type} =
+      $load_util->find_cvterm(cv_name => 'synonym_type',
+                              name => $synonym_type)->cvterm_id();
+  }
+
+  my %term_counts = ();
+
   my $store_term_handler =
     sub {
       my $ni = shift;
@@ -279,7 +320,7 @@ sub load
       my $cv_name = $term->namespace();
 
       if (!defined $cv_name) {
-        die "no namespace in $source";
+        die "missing namespace";
       }
 
       my $comment = $term->comment();
@@ -331,10 +372,12 @@ sub load
       # special case for relations, which might be in several ontologies
       my $create_only = !$term->is_relationship_type();
 
+      (my $term_acc = $term->acc()) =~ s/OBO_REL://;
+
       my $cvterm = $load_util->get_cvterm(create_only => $create_only,
                                           cv_name => $cv_name,
                                           term_name => $term_name,
-                                          ontologyid => $term->acc(),
+                                          ontologyid => $term_acc,
                                           definition => $term->definition(),
                                           alt_ids => $term->alt_id_list(),
                                           is_obsolete => $term->is_obsolete(),
@@ -342,7 +385,6 @@ sub load
                                             $term->is_relationship_type());
 
       if ($term->is_relationship_type()) {
-        (my $term_acc = $term->acc()) =~ s/OBO_REL://;
         $relationship_cvterms{$term_acc} = $cvterm;
       }
 
@@ -398,6 +440,8 @@ sub load
           $index->add_to_index($cv_name, $term_name, $cvterm_id,
                                $term->acc(), \@subset_ids, \@synonyms_for_index);
         }
+
+        $term_counts{$cv_name}++;
       }
     };
 
@@ -440,6 +484,16 @@ sub load
                               });
   }
 
+  for my $cv_name (keys %cvs) {
+    my $cv = $load_util->find_or_create_cv($cv_name);
+
+    my $date = Canto::Curs::Utils::get_iso_date();
+    _store_cv_prop($schema, $load_util, $cv, 'cv_date', $date);
+
+    _store_cv_prop($schema, $load_util, $cv, 'cv_term_count',
+                   $term_counts{$cv_name} // 0);
+ }
+
   $guard->commit();
 }
 
@@ -474,7 +528,7 @@ sub finalise
     $dest_dbh->begin_work();
 
     my @table_names =
-      qw(db dbxref cv cvterm cvterm_dbxref cvtermsynonym cvterm_relationship cvtermprop);
+      qw(db dbxref cv cvprop cvterm cvterm_dbxref cvtermsynonym cvterm_relationship cvtermprop);
 
     for my $table_name (reverse @table_names) {
       $dest_dbh->do("DELETE FROM main.$table_name WHERE main.$table_name.${table_name}_id");
