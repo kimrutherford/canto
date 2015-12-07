@@ -7,7 +7,7 @@ $link_text
 <%init>
 use URI::Escape;
 
-my $subject = uri_escape("User enquiry");
+my $subject = uri_escape("PHI-base Canto User enquiry");
 my $contact_address = $c->config()->{contact_email}->{address};
 
 my $escaped_contact_email = "$contact_address?subject=$subject";

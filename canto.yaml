@@ -1604,47 +1604,47 @@ available_annotation_type_list:
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
-  - name: phenotype_outcome
-  #- name: phi_interaction_phenotype
-  #- name: phenotype
-    #needs_allele: 1
-    #gene_cardinality: one_or_more  # default is "one"
-    category: ontology
-    namespace: phenotype_outcome_ontology
-    #namespace: phi_interaction_phenotype
-    very_short_display_name: 'Summary Phenotype'
-    #very_short_display_name: 'interaction phenotype'
-    short_display_name: 'Summary Phenotype'
-    #short_display_name: 'interaction phenotype'
-    display_name: 'PHI Summary Penotype'
-    #display_name: 'interaction phenotype'
-    feature_type: 'genotype'
-    show_synonyms: always
-    evidence_codes:
-      - asexual sporulation assay
-      - cell growth assay
-      - chromatin immunoprecipitation
-      - co-immunoprecipitation
-      - count assay
-      - direct injection into host organism
-      - electrophoretic mobility shift assay
-      - enzyme assay
-      - epitope-tagged protein immunolocalization
-      - functional test in host organism
-      - functional test in non-host organism
-      - gel electrophoresis
-      - immunolocalization
-      - microscopy
-      - particle size
-      - plasmid maintenance assay
-      - quantitative PCR
-      - reporter gene assay
-      - sequence analysis
-      - sexual sporulation assay
-      - substance quantification
-      - transcript expression level
-      - transient expression in host organism
-      - western blot assay
+#  - name: phenotype_outcome
+#  #- name: phi_interaction_phenotype
+#  #- name: phenotype
+#    #needs_allele: 1
+#    #gene_cardinality: one_or_more  # default is "one"
+#    category: ontology
+#    namespace: phenotype_outcome_ontology
+#    #namespace: phi_interaction_phenotype
+#    very_short_display_name: 'Summary Phenotype'
+#    #very_short_display_name: 'interaction phenotype'
+#    short_display_name: 'Summary Phenotype'
+#    #short_display_name: 'interaction phenotype'
+#    display_name: 'PHI Summary Penotype'
+#    #display_name: 'interaction phenotype'
+#    feature_type: 'genotype'
+#    show_synonyms: always
+#    evidence_codes:
+#      - asexual sporulation assay
+#      - cell growth assay
+#      - chromatin immunoprecipitation
+#      - co-immunoprecipitation
+#      - count assay
+#      - direct injection into host organism
+#      - electrophoretic mobility shift assay
+#      - enzyme assay
+#      - epitope-tagged protein immunolocalization
+#      - functional test in host organism
+#      - functional test in non-host organism
+#      - gel electrophoresis
+#      - immunolocalization
+#      - microscopy
+#      - particle size
+#      - plasmid maintenance assay
+#      - quantitative PCR
+#      - reporter gene assay
+#      - sequence analysis
+#      - sexual sporulation assay
+#      - substance quantification
+#      - transcript expression level
+#      - transient expression in host organism
+#      - western blot assay
       #- biochemical analysis
       #- characterised gene mutation
       #- chemical complementation
@@ -1664,21 +1664,21 @@ available_annotation_type_list:
       #- transient expression in host organism
       #- uncharacterised gene mutation
       #- unknown gene expression
-      - other
-    broad_term_suggestions: >
-      disease formation
-    specific_term_examples: >
-      increased virulence, enhanced antagonism, loss of pathogenicity
-    help_text: >
-      Annotate the interaction phenotype of a pathogen-host interaction.
-      This is the change in phenotype that occurs between a pathogen gene mutant and the experimental control of the pathogen gene.
-    more_help_text: >
-      Phenotypes result from the expression of the genes of an organism as well
-      as the influence of environmental factors and the interactions between
-      the two.
-    detailed_help_path: /docs/phi_phenotype_annotation
-    annotation_comment_help_text: |
-      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+#      - other
+#    broad_term_suggestions: >
+#      disease formation
+#    specific_term_examples: >
+#      increased virulence, enhanced antagonism, loss of pathogenicity
+#    help_text: >
+#      Annotate the interaction phenotype of a pathogen-host interaction.
+#      This is the change in phenotype that occurs between a pathogen gene mutant and the experimental control of the pathogen gene.
+#    more_help_text: >
+#      Phenotypes result from the expression of the genes of an organism as well
+#      as the influence of environmental factors and the interactions between
+#      the two.
+#    detailed_help_path: /docs/phi_phenotype_annotation
+#    annotation_comment_help_text: |
+#      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
   - name: phi_phenotype
   #- name: phi_interaction_phenotype
   #- name: phenotype
@@ -2008,107 +2008,6 @@ available_annotation_type_list:
 #       ii) To specify the host tissue use occurs_in(BTO:<tissueID>), where <tissueID> is the BRENDA tissue identifier for the host tissue
 #       iii) Where multiple gene interactions occur, use interaction_partner(UniProt:<geneID>), where <geneID> is the UniProt accession of another gene involved in the interaction
 #       An example would be pathogen_of(NCBItaxon:4530),occurs_in(BTO:0001228),interaction_partner(UniProt:Q0PND3)
-  - name: molecular_function
-    category: ontology
-    abbreviation: F
-    very_short_display_name: 'function'
-    short_display_name: 'molecular function'
-    display_name: 'GO molecular function'
-    feature_type: 'gene'
-    can_have_with: 1
-    evidence_codes:
-      - IDA
-      - IGI
-      - IMP
-      - IPI
-      - EXP
-    broad_term_suggestions: >
-      transporter, transferase activity
-    specific_term_examples: >
-      adenylate cyclase activity or biotin transporter activity
-    help_text: >
-      A molecular function is a catalytic (e.g. protein
-      serine/threonine kinase activity, pyruvate carboxylase activity)
-      or binding activity, or any other activity that occurs at the
-      molecular level.
-    more_help_text: >
-      GO molecular function terms represent activities, rather than
-      the things that perform the actions (gene products or
-      complexes). As a general rule, molecular functions correspond to
-      single step activities performed by individual gene products.
-    detailed_help_path: /docs/go_annotation
-    annotation_comment_help_text: |
-      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
-  - name: biological_process
-    category: ontology
-    abbreviation: P
-    very_short_display_name: 'process'
-    short_display_name: 'biological process'
-    display_name: 'GO biological process'
-    feature_type: 'gene'
-    can_have_with: 1
-    evidence_codes:
-      - IMP
-      - IDA
-      - IGI
-      - IPI
-      - EXP
-    broad_term_suggestions: >
-      cell cycle, transport
-    specific_term_examples: >
-      pyrimidine metabolic process or alpha-glucoside transport
-    help_text: >
-      A biological process is series of events accomplished by one or more
-      ordered assemblies of molecular functions, such as cell cycle, 
-      transport, or signal transduction.
-    more_help_text: >
-      It can be difficult to distinguish between a biological process
-      and a molecular function, but the general rule is that a process must
-      have more than one distinct steps (eg. cell cycle, transport, signal
-      transduction).
-    suggest_term_help_text: >
-      A new term should be differentiated from the parent as a "sub term"  by
-      the mechanism of action, or the genes which are required to perform the
-      action. It should not be differentiated only by its target gene
-      products. For example, histone H2A-S121 phosphorylation
-      is a valid term request because it is performed by a set of genes
-      specific for this process, translation of histone H2a is not a valid
-      term request because there is no translation machinery specifically for
-      histone H2a.
-    detailed_help_path: /docs/go_annotation
-    annotation_comment_help_text: |
-      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
-  - name: cellular_component
-    category: ontology
-    abbreviation: C
-    very_short_display_name: 'component'
-    short_display_name: 'cellular component'
-    display_name: 'GO cellular component'
-    feature_type: 'gene'
-    can_have_with: 1
-    evidence_codes:
-      - IDA
-      - IGI
-      - IMP
-      - IPI
-      - EXP
-    broad_term_suggestions: >
-      rough endoplasmic reticulum, nucleus, ribosome
-    specific_term_examples: >
-      condensed nuclear chromosome, inner kinetochore and GET complex
-    help_text: >
-      Cellular components include subcellular structures and
-      macromolecular complexes, such as nucleus, nuclear inner
-      membrane, nuclear pore, and proteasome complex.
-    more_help_text: >
-      Generally, a gene product is located in or is a subcomponent of a
-      particular cellular component. The cellular component ontology includes
-      multi-subunit enzymes and other protein complexes, but not individual
-      proteins or nucleic acids. Cellular component also does not include
-      multicellular anatomical terms.
-    detailed_help_path: /docs/go_annotation
-    annotation_comment_help_text: |
-      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
 #  - name: phenotype
 #    needs_allele: 1
 #    gene_cardinality: one_or_more  # default is "one"
@@ -2356,25 +2255,6 @@ available_annotation_type_list:
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
-  - name: post_translational_modification
-    category: ontology
-    namespace: PSI-MOD
-    display_name: 'post-tranlational modification'
-    feature_type: 'gene'
-    broad_term_suggestions: >
-      phosphorylated, methylated, lysine
-    specific_term_examples: >
-      O-phospho-L-serine, monomethylated L-lysine
-    help_text: >
-      A protein modification is a covalent modification or other change that
-      alters the measured molecular mass of a peptide or protein amino acid
-      residue
-    more_help_text: ~
-    evidence_codes:
-      - IDA
-    detailed_help_path: /docs/modification_annotation
-    annotation_comment_help_text: |
-      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
 #  - name: genetic_interaction
 #    category: interaction
 #    display_name: 'genetic interaction'
@@ -2470,6 +2350,126 @@ available_annotation_type_list:
       - Reconstituted Complex
       - Two-hybrid
     detailed_help_path: /docs/physical_interaction_annotation
+  - name: molecular_function
+    category: ontology
+    abbreviation: F
+    very_short_display_name: 'function'
+    short_display_name: 'molecular function'
+    display_name: 'GO molecular function'
+    feature_type: 'gene'
+    can_have_with: 1
+    evidence_codes:
+      - IDA
+      - IGI
+      - IMP
+      - IPI
+      - EXP
+    broad_term_suggestions: >
+      transporter, transferase activity
+    specific_term_examples: >
+      adenylate cyclase activity or biotin transporter activity
+    help_text: >
+      A molecular function is a catalytic (e.g. protein
+      serine/threonine kinase activity, pyruvate carboxylase activity)
+      or binding activity, or any other activity that occurs at the
+      molecular level.
+    more_help_text: >
+      GO molecular function terms represent activities, rather than
+      the things that perform the actions (gene products or
+      complexes). As a general rule, molecular functions correspond to
+      single step activities performed by individual gene products.
+    detailed_help_path: /docs/go_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+  - name: biological_process
+    category: ontology
+    abbreviation: P
+    very_short_display_name: 'process'
+    short_display_name: 'biological process'
+    display_name: 'GO biological process'
+    feature_type: 'gene'
+    can_have_with: 1
+    evidence_codes:
+      - IMP
+      - IDA
+      - IGI
+      - IPI
+      - EXP
+    broad_term_suggestions: >
+      cell cycle, transport
+    specific_term_examples: >
+      pyrimidine metabolic process or alpha-glucoside transport
+    help_text: >
+      A biological process is series of events accomplished by one or more
+      ordered assemblies of molecular functions, such as cell cycle, 
+      transport, or signal transduction.
+    more_help_text: >
+      It can be difficult to distinguish between a biological process
+      and a molecular function, but the general rule is that a process must
+      have more than one distinct steps (eg. cell cycle, transport, signal
+      transduction).
+    suggest_term_help_text: >
+      A new term should be differentiated from the parent as a "sub term"  by
+      the mechanism of action, or the genes which are required to perform the
+      action. It should not be differentiated only by its target gene
+      products. For example, histone H2A-S121 phosphorylation
+      is a valid term request because it is performed by a set of genes
+      specific for this process, translation of histone H2a is not a valid
+      term request because there is no translation machinery specifically for
+      histone H2a.
+    detailed_help_path: /docs/go_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+  - name: cellular_component
+    category: ontology
+    abbreviation: C
+    very_short_display_name: 'component'
+    short_display_name: 'cellular component'
+    display_name: 'GO cellular component'
+    feature_type: 'gene'
+    can_have_with: 1
+    evidence_codes:
+      - IDA
+      - IGI
+      - IMP
+      - IPI
+      - EXP
+    broad_term_suggestions: >
+      rough endoplasmic reticulum, nucleus, ribosome
+    specific_term_examples: >
+      condensed nuclear chromosome, inner kinetochore and GET complex
+    help_text: >
+      Cellular components include subcellular structures and
+      macromolecular complexes, such as nucleus, nuclear inner
+      membrane, nuclear pore, and proteasome complex.
+    more_help_text: >
+      Generally, a gene product is located in or is a subcomponent of a
+      particular cellular component. The cellular component ontology includes
+      multi-subunit enzymes and other protein complexes, but not individual
+      proteins or nucleic acids. Cellular component also does not include
+      multicellular anatomical terms.
+    detailed_help_path: /docs/go_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+  - name: post_translational_modification
+    category: ontology
+    namespace: PSI-MOD
+    display_name: 'post-tranlational modification'
+    feature_type: 'gene'
+    broad_term_suggestions: >
+      phosphorylated, methylated, lysine
+    specific_term_examples: >
+      O-phospho-L-serine, monomethylated L-lysine
+    help_text: >
+      A protein modification is a covalent modification or other change that
+      alters the measured molecular mass of a peptide or protein amino acid
+      residue
+    more_help_text: ~
+    evidence_codes:
+      - IDA
+    detailed_help_path: /docs/modification_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
 
 
 default_curation_priority_name: low
