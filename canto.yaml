@@ -1573,6 +1573,81 @@ available_annotation_type_list:
 #      i) Genes or proteins used in the assay (especially for phenotypes that affect protein or RNA level, or protein localization)
 #      ii) Penetrance or severity of the phenotype
 #      The curators will record this additional information in PHI-base.
+  - name: phenotype_outcome
+  #- name: phi_interaction_phenotype
+  #- name: phenotype
+    #needs_allele: 1
+    #gene_cardinality: one_or_more  # default is "one"
+    category: ontology
+    namespace: phenotype_outcome_ontology
+    #namespace: phi_interaction_phenotype
+    very_short_display_name: 'Summary Phenotype'
+    #very_short_display_name: 'interaction phenotype'
+    short_display_name: 'Summary Phenotype'
+    #short_display_name: 'interaction phenotype'
+    display_name: 'PHI Summary Penotype'
+    #display_name: 'interaction phenotype'
+    feature_type: 'genotype'
+    show_synonyms: always
+    evidence_codes:
+      - asexual sporulation assay
+      - cell growth assay
+      - chromatin immunoprecipitation
+      - co-immunoprecipitation
+      - count assay
+      - direct injection into host organism
+      - electrophoretic mobility shift assay
+      - enzyme assay
+      - epitope-tagged protein immunolocalization
+      - functional test in host organism
+      - functional test in non-host organism
+      - gel electrophoresis
+      - immunolocalization
+      - microscopy
+      - particle size
+      - plasmid maintenance assay
+      - quantitative PCR
+      - reporter gene assay
+      - sequence analysis
+      - sexual sporulation assay
+      - substance quantification
+      - transcript expression level
+      - transient expression in host organism
+      - western blot assay
+      #- biochemical analysis
+      #- characterised gene mutation
+      #- chemical complementation
+      #- cluster deletion
+      #- direct injection into host organism
+      #- full gene deletion
+      #- gene complementation
+      #- gene disruption
+      #- gene downregulation
+      #- gene overexpression
+      #- gene silencing
+      #- heterologous expression
+      #- partial gene deletion
+      #- promoter mutation
+      #- sequence analysis of sensitive and resistant strains
+      #- sequencing of resistance conferring allele
+      #- transient expression in host organism
+      #- uncharacterised gene mutation
+      #- unknown gene expression
+      - other
+    broad_term_suggestions: >
+      disease formation
+    specific_term_examples: >
+      increased virulence, enhanced antagonism, loss of pathogenicity
+    help_text: >
+      Annotate the interaction phenotype of a pathogen-host interaction.
+      This is the change in phenotype that occurs between a pathogen gene mutant and the experimental control of the pathogen gene.
+    more_help_text: >
+      Phenotypes result from the expression of the genes of an organism as well
+      as the influence of environmental factors and the interactions between
+      the two.
+    detailed_help_path: /docs/phi_phenotype_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
   - name: phi_phenotype
   #- name: phi_interaction_phenotype
   #- name: phenotype
@@ -2288,7 +2363,8 @@ available_annotation_type_list:
 #    detailed_help_path: /docs/genetic_interaction_annotation
   - name: genetic_interaction_in_path
     category: interaction
-    display_name: 'Genetic interaction in pathogen'
+    display_name: 'Genetic interaction within pathogen'
+    feature_type: 'gene'
     help_text: 'Examples: synthetic lethality, dosage suppression, phenotype enhancement.'
     evidence_codes:
       - Dosage Growth Defect
@@ -2305,7 +2381,7 @@ available_annotation_type_list:
     detailed_help_path: /docs/genetic_interaction_annotation
   - name: physical_interaction_in_path
     category: interaction
-    display_name: 'Physical interaction in pathogen'
+    display_name: 'Physical interaction within pathogen'
     feature_type: 'gene'
     help_text: 'Examples: co-purification, two-hybrid, affinity capture'
     evidence_codes:
@@ -2327,6 +2403,7 @@ available_annotation_type_list:
   - name: genetic_interaction_in_host
     category: interaction
     display_name: 'First host target genetic interaction'
+    feature_type: 'gene'
     help_text: 'Examples: synthetic lethality, dosage suppression, phenotype enhancement.'
     evidence_codes:
       - Dosage Growth Defect
