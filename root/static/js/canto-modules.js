@@ -1630,7 +1630,7 @@ canto.controller('OntologyWorkflowCtrl',
                   ontologyWorkflowCtrl]);
 
 
-var interactionWizardCtrl =
+var interactionWorkflowCtrl =
   function($scope, $http, toaster, $attrs) {
 
     $scope.annotationTypeName = $attrs.annotationTypeName;
@@ -1673,9 +1673,9 @@ var interactionWizardCtrl =
     };
   };
 
-canto.controller('InteractionWizardCtrl',
+canto.controller('InteractionWorkflowCtrl',
                  ['$scope', '$http', 'toaster', '$attrs',
-                  interactionWizardCtrl]);
+                  interactionWorkflowCtrl]);
 
 
 var annotationEvidence =
@@ -3610,17 +3610,17 @@ var termNameComplete =
         $scope.allTerms = [];
         $scope.chosenTermId = null;
 
-        AnnotationTypeConfig.getByName($scope.annotationTypeName)
-          .then(function(annotationType) {
-            $scope.annotationType = annotationType;
-            if (annotationType.use_select_element) {
-              CantoService.lookup('ontology', [$scope.annotationTypeName,
-                                               'ALLTERMS'], {})
-                .then(function(results) {
-                  $scope.allTerms = results.data;
-                });
-            }
-          })
+        // AnnotationTypeConfig.getByName($scope.annotationTypeName)
+        //   .then(function(annotationType) {
+        //     $scope.annotationType = annotationType;
+        //     if (annotationType.use_select_element) {
+        //       CantoService.lookup('ontology', [$scope.annotationTypeName,
+        //                                        'ALLTERMS'], {})
+        //         .then(function(results) {
+        //           $scope.allTerms = results.data;
+        //         });
+        //     }
+        //   })
 
         $scope.render_term_item =
           function(ul, item, search_string) {
