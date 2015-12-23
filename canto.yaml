@@ -1710,6 +1710,7 @@ available_annotation_type_list:
       - gel electrophoresis
       - immunolocalization
       - microscopy
+      - non-host bioassay
       - particle size
       - plasmid maintenance assay
       - quantitative PCR
@@ -1752,6 +1753,84 @@ available_annotation_type_list:
       as the influence of environmental factors and the interactions between
       the two.
     detailed_help_path: /docs/phi_phenotype_annotation
+    annotation_comment_help_text: |
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+#  - name: disease_formation
+#    #needs_allele: 1
+#    #gene_cardinality: one_or_more  # default is "one"
+#    category: ontology
+#    namespace: phi_disease_formation
+#    very_short_display_name: 'disease formation'
+#    short_display_name: 'disease formation'
+#    display_name: 'disease formation'
+#    #feature_type: 'genotype'
+#    feature_type: 'gene'
+#    show_synonyms: always
+#    evidence_codes:
+#      - asexual sporulation assay
+#      - cell growth assay
+#      - chromatin immunoprecipitation
+#      - co-immunoprecipitation
+#      - count assay
+#      - direct injection into host organism
+#      - electrophoretic mobility shift assay
+#      - enzyme assay
+#      - epitope-tagged protein immunolocalization
+#      - functional test in host organism
+#      - functional test in non-host organism
+#      - gel electrophoresis
+#      - immunolocalization
+#      - microscopy
+#      - non-host bioassay
+#      - particle size
+#      - plasmid maintenance assay
+#      - quantitative PCR
+#      - reporter gene assay
+#      - sequence analysis
+#      - sexual sporulation assay
+#      - substance quantification
+#      - transcript expression level
+#      - transient expression in host organism
+#      - western blot assay
+#      - other
+#    broad_term_suggestions: >
+#      level of disease, stress resistance
+#    specific_term_examples: >
+#      increased virulence, loss of pathogenicity, decreased osmotic stress resistance
+#    help_text: >
+#      Annotate the change in disease formation base on the pathogen-host interaction.
+#      This is the change in disease formation that occurs between a pathogen gene mutant and the experimental control of the pathogen gene.
+#    more_help_text: >
+#      Disease formation results from the expression of the genes of an organism as well
+#      as the influence of environmental factors and the interactions between
+#      the two.
+#    detailed_help_path: /docs/disease_formation
+#    annotation_comment_help_text: |
+#      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+  - name: effector
+    category: ontology
+    namespace: phi_effector
+    #abbreviation: E
+    very_short_display_name: 'effector'
+    short_display_name: 'effector gene'
+    display_name: 'effector gene'
+    feature_type: 'gene'
+    can_have_with: 1
+    evidence_codes:
+      - IDA
+      - IGI
+      - IMP
+      - IPI
+      - EXP
+    broad_term_suggestions: >
+      avirulence effector, effector location, effector host
+    specific_term_examples: >
+      plant avirulence determinant effector, cytoplasmic effector
+    help_text: >
+      Describe different aspects of the effector, including the type of effector, location in host, and the effector target.
+    more_help_text: >
+      MORE HELP TEXT FOR EFFECTOR HERE
+    detailed_help_path: /docs/effector
     annotation_comment_help_text: |
       Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
 #  - name: phi_pathogen_phenotype
@@ -2311,45 +2390,45 @@ available_annotation_type_list:
       - Reconstituted Complex
       - Two-hybrid
     detailed_help_path: /docs/physical_interaction_annotation
-  - name: genetic_interaction_in_host
-    category: interaction
-    display_name: 'First host target genetic interaction'
-    feature_type: 'gene'
-    help_text: 'Examples: synthetic lethality, dosage suppression, phenotype enhancement.'
-    evidence_codes:
-      - Dosage Growth Defect
-      - Dosage Lethality
-      - Dosage Rescue
-      - Negative Genetic
-      - Phenotypic Enhancement
-      - Phenotypic Suppression
-      - Positive Genetic
-      - Synthetic Growth Defect
-      - Synthetic Haploinsufficiency
-      - Synthetic Lethality
-      - Synthetic Rescue
-    detailed_help_path: /docs/genetic_interaction_annotation
-  - name: physical_interaction_in_host
-    category: interaction
-    display_name: 'First host target physical interaction'
-    feature_type: 'gene'
-    help_text: 'Examples: co-purification, two-hybrid, affinity capture'
-    evidence_codes:
-      - Affinity Capture-Luminescence
-      - Affinity Capture-MS
-      - Affinity Capture-RNA
-      - Affinity Capture-Western
-      - Co-crystal Structure
-      - Co-fractionation
-      - Co-purification
-      - Far Western
-      - FRET
-      - PCA
-      - Protein-peptide
-      - Protein-RNA
-      - Reconstituted Complex
-      - Two-hybrid
-    detailed_help_path: /docs/physical_interaction_annotation
+#  - name: genetic_interaction_in_host
+#    category: interaction
+#    display_name: 'First host target genetic interaction'
+#    feature_type: 'gene'
+#    help_text: 'Examples: synthetic lethality, dosage suppression, phenotype enhancement.'
+#    evidence_codes:
+#      - Dosage Growth Defect
+#      - Dosage Lethality
+#      - Dosage Rescue
+#      - Negative Genetic
+#      - Phenotypic Enhancement
+#      - Phenotypic Suppression
+#      - Positive Genetic
+#      - Synthetic Growth Defect
+#      - Synthetic Haploinsufficiency
+#      - Synthetic Lethality
+#      - Synthetic Rescue
+#    detailed_help_path: /docs/genetic_interaction_annotation
+#  - name: physical_interaction_in_host
+#    category: interaction
+#    display_name: 'First host target physical interaction'
+#    feature_type: 'gene'
+#    help_text: 'Examples: co-purification, two-hybrid, affinity capture'
+#    evidence_codes:
+#      - Affinity Capture-Luminescence
+#      - Affinity Capture-MS
+#      - Affinity Capture-RNA
+#      - Affinity Capture-Western
+#      - Co-crystal Structure
+#      - Co-fractionation
+#      - Co-purification
+#      - Far Western
+#      - FRET
+#      - PCA
+#      - Protein-peptide
+#      - Protein-RNA
+#      - Reconstituted Complex
+#      - Two-hybrid
+#    detailed_help_path: /docs/physical_interaction_annotation
   - name: molecular_function
     category: ontology
     abbreviation: F

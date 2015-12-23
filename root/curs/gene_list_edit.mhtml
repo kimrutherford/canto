@@ -59,7 +59,7 @@ $multi_organism_mode
 % }
 
 <div class="upload-genes-link">
-  <a href="<% $upload_path %>">Add more genes from <% $pub->uniquename() %> ...</a>
+  <a href="<% $upload_path %>">Add more pathogen genes from <% $pub->uniquename() %> ...</a>
 </div>
 </form>
 </div>

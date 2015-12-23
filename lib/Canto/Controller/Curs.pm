@@ -496,9 +496,9 @@ sub _edit_genes_helper
   }
 
   if ($confirm_genes) {
-    $st->{title} = 'Confirm gene list for ' . $st->{pub}->uniquename();
+    $st->{title} = 'Confirm pathogen gene list for ' . $st->{pub}->uniquename();
   } else {
-    $st->{title} = 'Gene list for ' . $st->{pub}->uniquename();
+    $st->{title} = 'Pathogen gene list for ' . $st->{pub}->uniquename();
   }
   $st->{show_title} = 0;
   $st->{template} = 'curs/gene_list_edit.mhtml';
@@ -534,9 +534,9 @@ sub gene_upload : Chained('top') Args(0) Form
   my $return_path = $c->req()->param("return_path");
 
   if (defined $return_path) {
-    $st->{title} = 'Add to gene list for ' . $st->{pub}->uniquename();
+    $st->{title} = 'Add to pathogen gene list for ' . $st->{pub}->uniquename();
   } else {
-    $st->{title} = 'Create gene list for ' . $st->{pub}->uniquename();
+    $st->{title} = 'Create pathogen gene list for ' . $st->{pub}->uniquename();
   }
 
   $st->{show_title} = 0;
@@ -563,7 +563,7 @@ sub gene_upload : Chained('top') Args(0) Form
     @no_genes_elements = (
       {
         name => 'no-genes', type => 'Checkbox',
-        label => 'This paper does not contain any gene-specific information',
+        label => 'This paper does not contain any pathogen gene-specific information',
         label_tag => 'formfu-label',
         default_empty_value => 1,
         attributes => { 'ng-model' => 'data.noAnnotation',
@@ -765,7 +765,7 @@ sub genotype_manage : Chained('top')
     $st->{read_only_curs} = 1;
   }
 
-  $st->{title} = 'Genotypes for: ' . $st->{pub}->uniquename();
+  $st->{title} = 'Pathogen genotypes for: ' . $st->{pub}->uniquename();
   $st->{template} = 'curs/genotype_manage.mhtml';
 }
 
@@ -1497,9 +1497,9 @@ sub _feature_edit_helper
       my $display_name = $st->{feature}->display_name();
 
       if ($edit_or_duplicate eq 'edit') {
-        $st->{title} = "Editing genotype: $display_name";
+        $st->{title} = "Editing pathogen genotype: $display_name";
       } else {
-        $st->{title} = "Adding a genotype";
+        $st->{title} = "Adding a pathogen genotype";
       }
       $st->{template} = "curs/${feature_type}_edit.mhtml";
     }
@@ -1610,7 +1610,7 @@ sub genotype_store : Chained('feature') PathPart('store')
 
         $guard->commit();
 
-        $c->flash()->{message} = 'Created new genotype';
+        $c->flash()->{message} = 'Created new pathogen genotype';
 
         $c->stash->{json_data} = {
           status => "success",

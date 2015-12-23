@@ -15,11 +15,11 @@ $edit_or_duplicate
      class="curs-box ng-cloak">
     <div class="curs-box-title">
       <span ng-if="isEditing">
-Add, edit, or delete alleles of genes from the list until the genotype is
+Add, edit, or delete alleles of pathogen genes from the list until the genotype is
 correctly described.
       </span>
       <span ng-if="!isEditing">
-Specify alleles of genes from the list, until the new genotype is complete.
+Specify alleles of pathogen genes from the list, until the new genotype is complete.
       </span>
     </div>
     <div class="curs-box-body">
@@ -127,12 +127,12 @@ The alleles of this genotype:
       <button type="submit" class="btn btn-warning curs-finish-button"
               ng-click="cancel()">Cancel</button>
       <div class="upload-genes-link">
-        <a ng-click="openSingleGeneAddDialog()">Add another gene from the paper ...</a>
+        <a ng-click="openSingleGeneAddDialog()">Add another pathogen gene from the paper ...</a>
       </div>
       <div class="clearall"></div>
       <label class="curs-finish-checkbox"
              title="If selected you can immediately add another genotype. Otherwise, go to genotype details page">
-        <input type="checkbox" ng-model="data.addAnother">Add another genotype
+        <input type="checkbox" ng-model="data.addAnother">Add another pathogen genotype
       </label>
   </div>
 </div>

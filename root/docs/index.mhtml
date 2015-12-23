@@ -60,18 +60,18 @@ data types listed in the next section.
 </p>
 
 <p>
-If the paper does not mention individual genes -- typical of methods
+If the paper does not mention individual pathogen genes -- typical of methods
 papers, many types of high-throughput study, reviews, etc. -- check
-the box labeled "This paper does not contain any gene-specific
+the box labeled "This paper does not contain any pathogen gene-specific
 information", and select a reason from the pulldown that
 appears. Complete the session by clicking "Continue" and then
 "Finish"; further comment is optional.
 </p>
 
 <p>
-If the paper mentions specific genes, but does not contain any data
+If the paper mentions specific pathogen genes, but does not contain any data
 that can be curated in Canto for them (see the list of available
-annotation types below), enter the genes and finish the session as
+annotation types below), enter the pathogen genes and finish the session as
 described below.
 </p>
 

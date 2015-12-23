@@ -10,7 +10,7 @@ $read_only_curs => 0
   <div class="row">
 % if (!$read_only_curs) {
     <div class="curs-top-help">
-Search, view, and edit genotypes for phenotype annotation in this session
+Search, view, and edit pathogen genotypes for phenotype annotation in this session
     </div>
     <div class="col-sm-5 col-md-5">
     <div class="curs-box">
@@ -19,10 +19,10 @@ Actions
       </div>
       <div class="curs-box-body">
         <div class="feature-list-action">
-          <a ng-click="startSearch()" href="#">Find an existing genotype ...</a>
+          <a ng-click="startSearch()" href="#">Find an existing pathogen genotype ...</a>
         </div>
         <div class="feature-list-action">
-          <a href="<% $start_path . '/feature/genotype/add' %>">Add a genotype ...</a>
+          <a href="<% $start_path . '/feature/genotype/add' %>">Add a pathogen genotype ...</a>
         </div>
       </div>
     </div>
@@ -32,7 +32,7 @@ Actions
     <div class="curs-box">
       <div class="curs-box-title">
         <div>
-Genotypes used in this session
+Pathogen genotypes used in this session
         </div>
       </div>
       <div class="curs-box-body ng-cloak">
@@ -49,7 +49,7 @@ Click a description to view <% !$read_only_curs ? 'and edit' : '' %> genotype de
           <genotype-list-view genotype-list="data.genotypes"></genotype-list-view>
         </div>
         <div ng-show="data.genotypes.length == 0">
-No genotypes in this session.  Try adding one.
+No pathogen genotypes in this session.  Try adding one.
 
         </div>
         </div>
@@ -65,7 +65,7 @@ No genotypes in this session.  Try adding one.
   </div>
   <div ng-show="data.genotypeSearching" class="curs-box ng-cloak">
     <div class="curs-box-title">
-Genotype search
+Pathogen genotype search
     </div>
     <div class="curs-box-body">
       <genotype-search></genotype-search>

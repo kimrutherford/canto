@@ -66,7 +66,7 @@ Choose curation type for <% $gene->display_name() %>:
 
 <div id="curs-gene-details" class="curs-box curs-half-width-section">
   <div class="curs-box-title">
-Gene details
+Pathogen gene details
   </div>
   <div class="curs-box-body">
 <& /linkouts.mhtml, object => $gene, context => 'gene' &>
@@ -103,7 +103,7 @@ Gene details
 
 <div id="curs-gene-details" class="curs-box curs-half-width-section">
   <div class="curs-box-title">
-Genotypes for this gene
+Genotypes for this pathogen gene
   </div>
   <div class="curs-box-body">
     <single-gene-genotype-list gene-primary-identifier="'<% $gene->primary_identifier() %>'"></single-gene-genotype-list>
