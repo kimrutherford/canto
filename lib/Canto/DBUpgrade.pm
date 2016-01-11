@@ -49,10 +49,28 @@ my %procs = (
     my $track_schema = shift;
     my $load_util = shift;
 
+    my $cvprop_type_cv =
+      $load_util->find_or_create_cv('cvprop_type');
+
+    $load_util->get_cvterm(cv => $cvprop_type_cv,
+                           term_name => 'cv_date',
+                           ontologyid => 'Canto:cv_date');
+    $load_util->get_cvterm(cv => $cvprop_type_cv,
+                           term_name => 'cv_term_count',
+                           ontologyid => 'Canto:cv_term_count');
+
     $load_util->get_cvterm(cv_name => 'cvterm_property_type',
                            term_name => 'canto_subset',
                            ontologyid => 'Canto:canto_subset');
 
+    my $dbh = $track_schema->storage()->dbh();
+    $dbh->do("CREATE INDEX cvtermprop_value_idx ON cvtermprop(value)");
+
+    $dbh->do("insert into cv(name) values('canto_core')");
+
+    $load_util->get_cvterm(cv_name => 'canto_core',
+                           term_name => 'is_a',
+                           ontologyid => 'Canto:is_a');
 
     my $update_proc = sub {
       my $curs = shift;

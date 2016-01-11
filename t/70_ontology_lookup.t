@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 74;
+use Test::More tests => 75;
 use Test::Deep;
 
 use Canto::TestUtil;
@@ -17,7 +17,6 @@ my $lookup = Canto::Track::get_adaptor($config, 'ontology');
 my $search_string = 'transporter';
 my $transport_id = 'GO:0005215';
 my $transport_name = 'transporter activity';
-my $transport_definition = 'Enables the directed movement of substances (such as macromolecules, small molecules, ions) into, out of or within a cell, or between cells.';
 
 my $ont_name = 'molecular_function';
 
@@ -51,7 +50,6 @@ my $ont_name = 'molecular_function';
 
   is($results->[0]->{name}, $ont_name);
   is($results->[0]->{id}, 'GO:0003674');
-  like($results->[0]->{definition}, qr/Elemental activities/);
 }
 
 {
@@ -65,8 +63,7 @@ my $ont_name = 'molecular_function';
   is(scalar(@$results), 3);
 
   ok(grep { $_->{id} eq $transport_id &&
-            $_->{name} eq $transport_name &&
-            $_->{definition} eq $transport_definition
+            $_->{name} eq $transport_name
           } @$results);
 
   is(scalar(map { $_->{name} =~ /^$search_string/ } @$results), 1);
@@ -103,7 +100,6 @@ is(scalar(@$id_result), 1);
 is($id_result->[0]->{id}, 'GO:0006810');
 is($id_result->[0]->{name}, 'transport');
 is($id_result->[0]->{annotation_namespace}, 'biological_process');
-like($id_result->[0]->{definition}, qr/^The directed movement of substances/);
 is($id_result->[0]->{synonyms}, undef);
 
 
@@ -177,7 +173,6 @@ is(scalar(@$id_result), 1);
 is($id_result->[0]->{id}, 'GO:0030133');
 is($id_result->[0]->{name}, 'transport vesicle');
 is($id_result->[0]->{annotation_namespace}, 'cellular_component');
-like($id_result->[0]->{definition}, qr/^Any of the vesicles of the constitutive/);
 
 my $child_results =
   $lookup->lookup(ontology_name => $ont_name,
@@ -221,7 +216,7 @@ my $expected_fypo_term = {
   name => 'cellular process phenotype',
   annotation_namespace => 'fission_yeast_phenotype',
   annotation_type_name => 'phenotype',
-  definition => 'A phenotype that affects a cellular process.',
+  definition => undef,
   is_obsolete => 0,
 };
 
@@ -251,7 +246,7 @@ my $expected_fypo_obsolete_term = {
   name => 'viable elongated vegetative cell population',
   annotation_namespace => 'fission_yeast_phenotype',
   annotation_type_name => 'phenotype',
-  definition => 'A cell population phenotype in which all cells in the population are viable but longer than normal in the vegetative growth phase of the life cycle.',
+  definition => undef,
   is_obsolete => 1,
   comment => 'This term was made obsolete because it is redundant with annotating to the equivalent cell phenotype plus a full-penetrance extension.',
 };
@@ -311,11 +306,6 @@ $fypo_term = $lookup->lookup_by_id(id => 'FYPO:0000028',
 cmp_deeply($fypo_term, $expected_fypo_term);
 
 
-# test get_all()
-my @all_pco_terms = $lookup->get_all(ontology_name => 'phenotype_condition');
-is (@all_pco_terms, 10);
-
-
 # test that we follow has_part
 my $elongated_cell = 'elongated cell';
 my $elongated_cell_results =
@@ -369,3 +359,67 @@ $test_util->load_test_ontologies($ontology_index, 1, 1, 1);
              ]);
 }
 
+
+# test get_all()
+my @all_pco_terms = $lookup->get_all(ontology_name => 'phenotype_condition');
+is (@all_pco_terms, 10);
+
+# test get_all() for a subset
+my @all_subset_1_terms =
+  sort {
+    $a->{name} cmp $b->{name};
+  } map {
+    {
+      name => $_->{name},
+      id => $_->{id},
+    }
+  } $lookup->get_all(ontology_name => '[GO:0005215]');
+is (@all_subset_1_terms, 3);
+
+
+my $two_term_subset = '[GO:0005215|GO:0016023]';
+
+# test get_all() for a subset defined by two IDs
+my @all_subset_2_terms =
+  sort {
+    $a->{name} cmp $b->{name};
+  } map {
+    {
+      name => $_->{name},
+      id => $_->{id},
+    }
+  } $lookup->get_all(ontology_name => $two_term_subset);
+is (@all_subset_2_terms, 6);
+
+cmp_deeply(\@all_subset_2_terms,
+           [
+             {
+               'name' => 'cytoplasmic membrane-bounded vesicle',
+               'id' => 'GO:0016023'
+             },
+             {
+               'id' => 'GO:0005487',
+               'name' => 'nucleocytoplasmic transporter activity'
+             },
+             {
+               'id' => 'GO:0030141',
+               'name' => 'stored secretory granule'
+             },
+             {
+               'id' => 'GO:0022857',
+               'name' => 'transmembrane transporter activity'
+             },
+             {
+               'id' => 'GO:0030133',
+               'name' => 'transport vesicle'
+             },
+             {
+               'name' => 'transporter activity',
+               'id' => 'GO:0005215'
+             }]);
+
+
+my $subset_2_count =
+  $lookup->get_count(ontology_name => $two_term_subset);
+
+is($subset_2_count, scalar(@all_subset_2_terms));

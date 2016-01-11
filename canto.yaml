@@ -19,7 +19,7 @@ header_image: logos/curation_tool.png
 
 canto_url: http://localhost:5000/
 
-app_version: v910
+app_version: v912
 
 schema_version: 10
 
@@ -108,6 +108,11 @@ db_initial_data:
           - name: is_a
             dbxref:
               accession: is_a
+              db:
+                name: Canto
+          - name: has_qualifier
+            dbxref:
+              accession: has_qualifier
               db:
                 name: Canto
       - name: organismprop_types
@@ -2686,7 +2691,10 @@ config_service:
     ontology_external_links: 1
     instance_organism: 1
     extension_configuration: 1
+    max_term_name_select_count: 1
     help_text: 1
+
+max_term_name_select_count: 20
 
 curs_settings_service:
   allowed_keys:

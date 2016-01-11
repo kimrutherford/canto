@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 46;
+use Test::More tests => 50;
 use Test::Deep;
 
 use Canto::TestUtil;
@@ -16,7 +16,7 @@ my $schema = Canto::TrackDB->new(config => $config);
 
 my @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is (@loaded_cvterms, 119);
+is (@loaded_cvterms, 123);
 
 my $test_go_file =
   $test_util->root_dir() . '/' . $config->{test_config}->{test_go_obo_file};
@@ -35,7 +35,7 @@ $test_util->load_test_ontologies($ontology_index, 1);
 
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is(@loaded_cvterms, 95);
+is(@loaded_cvterms, 182);
 
 my $cvprop_rs = $schema->resultset('Cvprop');
 
@@ -52,15 +52,21 @@ my %expected_cv_term_counts = (
   'PSI-MOD' => '15',
   'molecular_function' => '8',
   'cellular_component' => '4',
-  'relationship' => '0',
+  'relationship' => '62',
   'biological_process' => '8',
+  'sequence' => 20,
 );
 
-is(@loaded_cvterms, 158);
+cmp_deeply(\%actual_cv_term_counts,
+           \%expected_cv_term_counts);
 
-my @cvterm_relationships = $schema->resultset('CvtermRelationship')->all();
+is(@loaded_cvterms, 182);
 
-is(@cvterm_relationships, 102);
+my @cvterm_relationships = $schema->resultset('CvtermRelationship')
+  ->search({}, { join => { subject => 'cv', type => 'cv' } })->all();
+
+is(@cvterm_relationships, 124);
+
 
 ok((grep {
   $_->name() eq 'regulation of transmembrane transport'
@@ -154,7 +160,11 @@ undef $ontology_index;
 $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
 
 # try re-loading
+<<<<<<< HEAD
 load_all($ontology_index);
+=======
+$test_util->load_test_ontologies($ontology_index);
+>>>>>>> upstream/branch/annex-gui
 is($cvterm_dbxref_rs->count(), 11);
 
 undef $ontology_index;
@@ -165,7 +175,11 @@ $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
 $test_util->load_test_ontologies($ontology_index, 1, 1);
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
+<<<<<<< HEAD
 is(@loaded_cvterms, 173);
+=======
+is(@loaded_cvterms, 197);
+>>>>>>> upstream/branch/annex-gui
 
 ok((grep {
   $_->name() eq 'viable elongated vegetative cell population'
@@ -191,3 +205,40 @@ ok(!(grep {
 } @results), qq("$viable_elongated" shouldn't be returned));
 
 undef $ontology_index;
+
+
+# check that allow relations are present
+@cvterm_relationships = $schema->resultset('CvtermRelationship')
+  ->search({}, { join => 'type' })->all();
+
+my %rel_type_cv_counts = ();
+my %has_part_rels = ();
+
+for my $rel (@cvterm_relationships) {
+  $rel_type_cv_counts{$rel->subject()->cv()->name()}{$rel->type()->name()}++;
+
+  if ($rel->type()->name() eq 'has_part') {
+    $has_part_rels{$rel->subject()->name()}{$rel->type()->name()} = $rel->object()->name();
+  }
+}
+
+cmp_deeply($rel_type_cv_counts{fission_yeast_phenotype},
+           {
+             'is_a' => 14,
+             'has_part' => 2
+           });
+cmp_deeply($rel_type_cv_counts{sequence},
+           {
+             'part_of' => 3,
+             'is_a' => 18,
+             'has_part' => 1
+           });
+cmp_deeply(\%has_part_rels,
+           {
+             'elongated multinucleate cell' => {
+               'has_part' => 'multinucleate'
+             },
+             'edited_transcript' => {
+               'has_part' => 'anchor_binding_site'
+             }
+           });

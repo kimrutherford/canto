@@ -91,29 +91,36 @@ sub _ontology_results
   my $include_subset_ids = $c->req()->param('subset_ids');
 
   if (defined $component_name) {
-    my @results;
-    if ($search_string eq 'ALLTERMS') {
-      @results =
-        $lookup->get_all(ontology_name => $ontology_name,
-                        include_definition => $include_definition,
-                        include_children => $include_children,
-                        include_synonyms => \@include_synonyms,
-                        include_subset_ids => $include_subset_ids);
+    if ($search_string eq ':COUNT:') {
+      return { count => $lookup->get_count(ontology_name => $ontology_name) };
     } else {
-      @results =
-        @{$lookup->lookup(ontology_name => $ontology_name,
-                          search_string => $search_string,
-                          max_results => $max_results,
-                          include_definition => $include_definition,
-                          include_children => $include_children,
-                          include_synonyms => \@include_synonyms,
-                          include_subset_ids => $include_subset_ids)};
+      my @results;
+      if ($search_string eq ':ALL:') {
+        @results =
+          $lookup->get_all(ontology_name => $ontology_name,
+                           include_definition => $include_definition,
+                           include_children => $include_children,
+                           include_synonyms => \@include_synonyms,
+                           include_subset_ids => $include_subset_ids);
+      } else {
+        @results =
+          @{$lookup->lookup(ontology_name => $ontology_name,
+                            search_string => $search_string,
+                            max_results => $max_results,
+                            include_definition => $include_definition,
+                            include_children => $include_children,
+                            include_synonyms => \@include_synonyms,
+                            include_subset_ids => $include_subset_ids)};
+      }
+
+      map { $_->{value} = $_->{name} } @results;
+
+      return \@results;
     }
-
-    map { $_->{value} = $_->{name} } @results;
-
-    return \@results;
   } else {
+    $search_string =~ s/^\s+//;
+    $search_string =~ s/\s+$//;
+
     my $result =
       $lookup->lookup_by_id(id => $search_string,
                             include_definition => $include_definition,
@@ -220,7 +227,13 @@ sub lookup : Local
     $results = { error => "unknown lookup type: $type_name" };
   }
 
-  $c->stash->{json_data} = $results;
+  if (defined $results) {
+    $c->stash->{json_data} = $results;
+  } else {
+    $c->stash->{json_data} = {
+      error => 'No results',
+    };
+  }
 
   # FIXME - this is a bit dodgy
   $c->cache_page(100) unless $ENV{CANTO_DEBUG};
@@ -281,7 +294,13 @@ sub canto_config : Local
   if ($allowed_keys->{$config_key}) {
     my $key_config = $config->for_json($config_key);
     if (defined $key_config) {
-      $c->stash->{json_data} = $key_config;
+      if (ref $key_config) {
+        $c->stash->{json_data} = $key_config;
+      } else {
+        $c->stash->{json_data} = {
+          value => $key_config,
+        };
+      }
 
       # FIXME - the URL for canto_config should have a version number so
       # we can have a far future expiry date
