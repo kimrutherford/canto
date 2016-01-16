@@ -15,4 +15,5 @@ extension_conf_files:
   - t/data/GO_MF_A_E_config
   - t/data/PSI-MOD_A_E_config
   - t/data/PHI_phenotype_A_E_config
+  - t/data/PHI_effector_A_E_config
 canto_demo_url: http://curation.phi-base.org/

@@ -1,9 +1,11 @@
-PHIPO:0000012	is_a	pathogen_strain	Number	Pathogen Strain NCBI taxon ID	0,1	user
+PHIPO:0000012	is_a	pathogen_strain_id	Number	Pathogen Strain NCBI taxon ID	0,1	user
+PHIPO:0000012	is_a	pathogen_strain_name	text	Pathogen Strain Name	0,1	user
 PHIPO:0000012	is_a	infects_tissue	BTO:0000000	Tissue Infected	0,1	user
 PHIPO:0000012	is_a	causes_disease	DOID:4|PDO:0000001|PHID:0000000	Disease Caused	0,1	user
-PHIPO:0000012	is_a	disease_formation	PHIPO:0000161	Disease Formation	0,1	user
-PHIPO:0000012	is_a	experimental_host	Number	Host NCBI Taxon ID	0,1	user
-PHIPO:0000012	is_a	induced_by_chemical	CHEBI:24431|Number	Induced By Chemical	0,1	user
+PHIPO:0000012	is_a	disease_formation	PHIDF:0000161	Disease Formation	0,1	user
+PHIPO:0000012	is_a	experimental_host_id	Number	Host NCBI Taxon ID	0,1	user
+PHIPO:0000012	is_a	experimental_host_strain	text	Host Strain Name	0,1	user
+PHIPO:0000012	is_a	induced_by_chemical	CHEBI:24431|text	Induced By Chemical	0,1	user
 PHIPO:0000012	is_a	induced_by_gene	GeneID	Induced By Gene	0,1	user
 PHIPO:0000012	is_a	anti_infective	CHEBI:24431|Number	Anti-infective Chemical	0,1	user
 PHIPO:0000012	is_a	host_interacting_protein	text	Host Interacting Protein UniProt Accession	0,1	user

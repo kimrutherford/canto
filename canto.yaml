@@ -1823,9 +1823,9 @@ available_annotation_type_list:
     category: ontology
     namespace: phi_effector
     #abbreviation: E
-    very_short_display_name: 'effector'
-    short_display_name: 'effector gene'
-    display_name: 'effector gene'
+    very_short_display_name: 'Effector'
+    short_display_name: 'Effector gene'
+    display_name: 'Effector gene'
     feature_type: 'gene'
     can_have_with: 1
     evidence_codes:

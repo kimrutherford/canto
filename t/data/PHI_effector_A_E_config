@@ -1,0 +1,2 @@
+PHIEO:0000001	is_a	target_in_host	text	Host Target Protein UniProt Accession	0,1	user
+PHIEO:0000001	is_a	location_in_host	GO:0005575	Location of Effector in Host	0,1	user
