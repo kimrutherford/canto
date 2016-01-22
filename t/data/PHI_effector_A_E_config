@@ -1,2 +1,8 @@
 PHIEO:0000001	is_a	target_in_host	text	Host Target Protein UniProt Accession	0,1	user
 PHIEO:0000001	is_a	location_in_host	GO:0005575	Location of Effector in Host	0,1	user
+PHIEO:0000001	is_a	pathogen_strain_id	Number	Pathogen Strain NCBI taxon ID	0,1	user
+PHIEO:0000001	is_a	pathogen_strain_name	text	Pathogen Strain Name	0,1	user
+PHIEO:0000001	is_a	experimental_host_id	Number	Host NCBI Taxon ID	0,1	user
+PHIEO:0000001	is_a	experimental_host_strain	text	Host Strain Name	0,1	user
+PHIEO:0000001	is_a	infects_tissue	BTO:0000000	Host Tissue Infected	0,1	user
+PHIEO:0000001	is_a	causes_disease	DOID:4|PDO:0000001|PHID:0000000	Disease Caused	0,1	user

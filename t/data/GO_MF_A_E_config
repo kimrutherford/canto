@@ -19,6 +19,8 @@ GO:0015035	is_a	has_substrate	ProteinID	modifies	0,1	user
 GO:0016530	is_a	has_substrate	ProteinID	chaperone for	0,1	user
 GO:0019706	is_a	has_regulation_target	ProteinID	palmitoylates	0,1	user
 GO:0019787	is_a	has_substrate	ProteinID	modifies	0,1	user
-GO:0030234	is_a	has_substrate	ProteinID	regulates activity of	0,1	user
+#GO:0030234	is_a	has_substrate	ProteinID	regulates activity of	0,1	user
 GO:0032542	is_a	has_substrate	SPBC32F12.03c|SPBC1773.02c|SPCC330.06c|SPCC576.03c|SPAC27D7.12c|SPBC17D11.03c|SPBC17D11.03c	acts on	0,1	user
 GO:0050265	is_a	has_substrate	TranscriptID	uridylylates	0,1	user
+GO:0030234	is_a	has_substrate	ProteinID	regulates activity of gene within pathogen	0,1	user
+GO:0030234	is_a	has_substrate	text	regulates activity of host target gene UniProt accession	0,1	user

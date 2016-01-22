@@ -1766,7 +1766,7 @@ available_annotation_type_list:
       the two.
     detailed_help_path: /docs/phi_phenotype_annotation
     annotation_comment_help_text: |
-      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc.
 #  - name: disease_formation
 #    #needs_allele: 1
 #    #gene_cardinality: one_or_more  # default is "one"
@@ -1829,11 +1829,37 @@ available_annotation_type_list:
     feature_type: 'gene'
     can_have_with: 1
     evidence_codes:
-      - IDA
-      - IGI
-      - IMP
-      - IPI
-      - EXP
+      #- IDA
+      #- IGI
+      #- IMP
+      #- IPI
+      #- EXP
+      - asexual sporulation assay
+      - cell growth assay
+      - chromatin immunoprecipitation
+      - co-immunoprecipitation
+      - count assay
+      - direct injection into host organism
+      - electrophoretic mobility shift assay
+      - enzyme assay
+      - epitope-tagged protein immunolocalization
+      - functional test in host organism
+      - functional test in non-host organism
+      - gel electrophoresis
+      - immunolocalization
+      - microscopy
+      - non-host bioassay
+      - particle size
+      - plasmid maintenance assay
+      - quantitative PCR
+      - reporter gene assay
+      - sequence analysis
+      - sexual sporulation assay
+      - substance quantification
+      - transcript expression level
+      - transient expression in host organism
+      - western blot assay
+      - other
     broad_term_suggestions: >
       avirulence effector, effector location, effector host
     specific_term_examples: >
@@ -1844,7 +1870,7 @@ available_annotation_type_list:
       MORE HELP TEXT FOR EFFECTOR HERE
     detailed_help_path: /docs/effector
     annotation_comment_help_text: |
-      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc. The curators will record this additional information in PHI-base.
+      Please provide any additional details you have for this annotation that do not fit into the available evidence, extension options, etc.
 #  - name: phi_pathogen_phenotype
 #    #needs_allele: 1
 #    #gene_cardinality: one_or_more  # default is "one"
