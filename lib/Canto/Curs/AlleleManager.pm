@@ -38,6 +38,8 @@ under the same terms as Perl itself.
 use Carp;
 use Moose;
 
+use utf8;
+
 has curs_schema => (is => 'rw', isa => 'Canto::CursDB', required => 1);
 has gene_manager => (is => 'rw', isa => 'Canto::Curs::GeneManager',
                      lazy_build => 1);
@@ -91,6 +93,21 @@ sub allele_from_json
 
   my $primary_identifier = $json_allele->{primary_identifier};
   my $name = $json_allele->{name};
+
+  # store deltas as "delta"
+  my @deltas = (
+    "\N{GREEK CAPITAL LETTER DELTA}",
+    "\N{MATHEMATICAL BOLD CAPITAL DELTA}",
+    "\N{MATHEMATICAL ITALIC CAPITAL DELTA}",
+    "\N{MATHEMATICAL BOLD ITALIC CAPITAL DELTA}",
+    "\N{MATHEMATICAL SANS-SERIF BOLD CAPITAL DELTA}",
+    "\N{MATHEMATICAL SANS-SERIF BOLD ITALIC CAPITAL DELTA}",
+  );
+  my $delta_string = join '|', @deltas;
+  if ($name) {
+    $name =~ s/($delta_string)$/delta/;
+  }
+
   my $description = $json_allele->{description};
   my $expression = $json_allele->{expression};
   my $allele_type = $json_allele->{type};
@@ -150,8 +167,6 @@ sub allele_from_json
 
   my %search_args = (
     type => $allele_type,
-    description => $description,
-    name => $name,
     gene => $gene_id,
   );
 
@@ -159,7 +174,9 @@ sub allele_from_json
     ->search({ %search_args });
 
   while (defined (my $allele = $allele_rs->next())) {
-    if (($allele->expression() // '') eq ($expression // '')) {
+    if (($allele->name() // '') eq ($name // '') &&
+        ($allele->description() // '') eq ($description // '') &&
+        ($allele->expression() // '') eq ($expression // '')) {
       return $allele;
     }
   }
@@ -178,7 +195,9 @@ sub allele_from_json
   my %create_args = (
     primary_identifier => $new_primary_identifier,
     %search_args,
-    expression => $expression,
+    name => $name || undef,
+    description => $description || undef,
+    expression => $expression || undef,
   );
 
   if ($allele_type =~ /_/) {

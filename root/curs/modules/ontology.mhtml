@@ -7,7 +7,8 @@ $pub
 </%args>
 
 <div ng-controller="OntologyWorkflowCtrl"
-     annotation-type-name="<% $annotation_type_name %>">
+     annotation-type-name="<% $annotation_type_name %>"
+     feature-id="<% $feature->feature_id %>">
   <div ng-show="getState() == 'searching'" class="ng-cloak">
     <ontology-term-select ng-hide="currentTerm()"
                           annotation-type="annotationType"
@@ -24,17 +25,24 @@ $pub
                            feature-display-name="<% $feature->display_name() %>"></ontology-term-confirm>
   </div>
 
-  <div ng-show="getState() == 'selectingEvidence'" class="ng-cloak">
+  <div ng-show="getState() == 'selectingEvidence'" class="ng-cloak curs-box">
     <div class="curs-box-title">
 Choose evidence <span ng-show="annotationType.can_have_conditions">and conditions</span>
-for annotating <% $feature->display_name() %> with {{data.term_ontid}}
+for annotating <% $feature->display_name() %> with {{termDetails.id}}
     </div>
     <div class="curs-box-body">
       <annotation-evidence evidence-code="data.evidence_code"
-                           conditions="data.conditions"
+                           show-conditions="showConditions"
                            with-gene-id="data.with_gene_id"
                            valid-evidence="data.validEvidence"
                            annotation-type-name="<% $annotation_type_name %>"></annotation-evidence>
+
+      <div ng-if="showConditions" class="curs-evidence-conditions">
+        Please add experimental conditions.  Conditions are the aspects of the
+        experimental setup that are independent of what cells (strain, genotype,
+        constructs, etc.) are used.
+        <condition-picker conditions="data.conditions"></condition-picker>
+      </div>
     </div>
   </div>
 
@@ -45,7 +53,8 @@ Annotation extensions
     <div class="curs-box-body">
       <extension-builder extension="data.extension"
                          feature-display-name='<% $feature->display_name() %>'
-                         term-id="{{currentTerm()}}"></extension-builder>
+                         term-id="{{currentTerm()}}"
+                         is-valid="extensionBuilderIsValid"></extension-builder>
     </div>
   </div>
 
@@ -63,11 +72,11 @@ Annotation extensions
             title="&lt;- Back"
             ng-click="back()">&lt;- Back</button>
     <button type="submit" class="btn btn-primary curs-finish-button"
-            ng-disabled="!isValid()"
+            ng-disabled="!isValid() || postInProgress"
             ng-click="proceed()" >Proceed -&gt;</button>
   </div>
 
-  <a ng-show="!prevState() && !currentTerm()"
-     href="<% $curs_root_uri %>/feature/<% $feature_type %>/view/<% $feature->feature_id() %>"
+  <a ng-show="!prevState() && !currentTerm() && backToFeatureUrl"
+     href="{{backToFeatureUrl}}"
      class="btn btn-primary curs-back-button">&lt;- Back</a>
 </div>

@@ -240,14 +240,14 @@ sub initialise_core_data
 
     my $index_path = "$db_dir/ontology_index_dir";
 
-    my $index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+    my $index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
     $index->initialise_index();
 
     my @relationships_to_load = @{$config->{load}->{ontology}->{relationships_to_load}};
 
     my $ontology_load = Canto::Track::OntologyLoad->new(schema => $schema,
-                                                        relationships_to_load => \@relationships_to_load,
-                                                        default_db_name => $config->{default_db_name});
+                                                        config => $config,
+                                                        relationships_to_load => \@relationships_to_load);
     my $synonym_types = $config->{load}->{ontology}->{synonym_types};
 
     $ontology_load->load([$config->{relationship_ontology_path}], $index, $synonym_types);

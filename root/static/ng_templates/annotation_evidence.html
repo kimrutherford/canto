@@ -17,12 +17,5 @@
     <div ng-show="isValidEvidenceCode() && !isValidWithGene()"
           class="help-block">Please select a 'with' gene</div>
   </div>
-
-  <div ng-if="showConditions()" class="curs-evidence-conditions">
-Please add experimental conditions.  Conditions are the aspects of the
-experimental setup that are independent of what cells (strain, genotype,
-constructs, etc.) are used.
-    <condition-picker conditions="conditions"></condition-picker>
-  </div>
 </div>
 

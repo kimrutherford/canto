@@ -1,11 +1,11 @@
-<tr>
+<tr ng-class="{ 'curs-row-checked' : sessionState == 'APPROVAL_IN_PROGRESS' && checked == 'yes' }">
   <td ng-if="annotationType.feature_type == 'genotype'">
     <div style="white-space: nowrap" ng-repeat="allele in annotation.alleles">
       {{allele.gene_display_name}}
     </div>
   </td>
   <td ng-if="annotationType.feature_type == 'genotype' && !data.hideColumns.genotype_background">
-    {{annotation.genotype_background}}
+    <span ng-bind-html="annotation.genotype_background | encodeAlleleSymbols | toTrusted"></span>
   </td>
   <td ng-if="annotationType.feature_type == 'genotype' && !data.hideColumns.genotype_name">
     <span ng-bind-html="annotation.genotype_name | encodeAlleleSymbols | toTrusted"></span>
@@ -15,17 +15,24 @@
        href="{{featureLink(annotationType.feature_type, annotation.feature_id)}}">
       {{annotation.gene_name_or_identifier}}
     </a>
-    <span ng-if="annotation.status === 'existing'">
+    <span ng-if="annotation.status === 'existing' || !addLinks()">
       {{annotation.gene_name_or_identifier}}
     </span>
   </td>
   <td ng-if="annotationType.feature_type != 'gene'">
-    <a ng-if="annotation.status === 'new' && addLinks()"
-       href="{{featureLink(annotationType.feature_type, annotation.feature_id)}}">
-      <div style="white-space: nowrap" ng-repeat="allele in annotation.alleles">
-        <span ng-bind-html="allele.long_display_name | encodeAlleleSymbols | toTrusted"></span>
-      </div>
-    </a>
+    <span ng-if="annotation.status === 'new'">
+      <a ng-if="addLinks()"
+         href="{{featureLink(annotationType.feature_type, annotation.feature_id)}}">
+        <div style="white-space: nowrap" ng-repeat="allele in annotation.alleles">
+          <span ng-bind-html="allele.long_display_name | encodeAlleleSymbols | toTrusted"></span>
+        </div>
+      </a>
+      <span ng-if="!addLinks()">
+        <div style="white-space: nowrap" ng-repeat="allele in annotation.alleles">
+          <span ng-bind-html="allele.long_display_name | encodeAlleleSymbols | toTrusted"></span>
+        </div>
+      </span>
+    </span>
     <span ng-if="annotation.status === 'existing'">
       <div style="white-space: nowrap" ng-repeat="allele in annotation.alleles">
         <span ng-bind-html="allele.long_display_name | encodeAlleleSymbols | toTrusted"></span>
@@ -47,12 +54,15 @@
         {{annotation.with_or_from_display_name || annotation.with_or_from_identifier}}
       </a>
     </span>
-    <span ng-if="!annotation.with_gene_id">
+    <span ng-if="!annotation.with_gene_id || !addLinks()">
       {{annotation.with_or_from_display_name || annotation.with_or_from_identifier}}
     </span>
   </td>
+  <td ng-if="!data.hideColumns.gene_product_form_id">
+    {{annotation.gene_product_form_id || ''}}
+  </td>
   <td ng-if="annotationType.can_have_conditions">
-    {{annotation.conditionsString}}
+    <span ng-bind-html="annotation.conditionsString | toTrusted"></span>
   </td>
   <td ng-if="!data.hideColumns.qualifiers">
     {{annotation.qualifiersString}}
@@ -68,7 +78,8 @@
     </div>
   </td>
   <td ng-if="!data.hideColumns.submitter_comment">
-    <initially-hidden-text text="{{annotation.submitter_comment}}" link-label="View comment..."></initially-hidden-text>
+    <initially-hidden-text text="{{annotation.submitter_comment}}" preview-char-count="80"
+                           link-label=" [more...]"></initially-hidden-text>
   </td>
   <td ng-if="!data.hideColumns.extension">
     <extension-display extension="annotation.extension"></extension-display>
@@ -77,16 +88,25 @@
     {{annotation.curator}}
   </td>
   <td class="table-row-actions">
-    <div ng-if="annotationType && addLinks()">
+    <div ng-if="addLinks()">
       <div>
-        <a ng-click="edit()">Edit</a>
+        <a title="Edit this annotation" ng-click="edit()">Edit</a>
       </div>
       <div>
-        <a ng-click="duplicate()">Duplicate</a>
+        <a title="Make copy of this annotation and then edit the details"
+           ng-click="duplicate()">Copy and edit</a>
       </div>
       <div>
-        <a confirm="Are you sure you want to delete this annotation?"
+        <a title="Delete this annotation"
+           confirm="Are you sure you want to delete this annotation?"
            ng-click="deleteAnnotation()">Delete</a>
+      </div>
+      <div ng-if="sessionState == 'APPROVAL_IN_PROGRESS'">
+        <a ng-if="checked == 'no'" href="#" ng-click="setChecked($event)">Checked</a>
+        <span ng-if="checked == 'yes'">
+          <span style="color: green" class="glyphicon glyphicon-ok"></span>
+          <a href="#" ng-click="clearChecked($event)">Clear</a>
+        </span>
       </div>
     </div>
   </td>

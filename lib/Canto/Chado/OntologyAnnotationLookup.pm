@@ -47,10 +47,23 @@ use feature "state";
 
 use Canto::Cache;
 
+has gene_lookup => (
+  is => 'ro',
+  lazy_build => 1
+);
+
 with 'Canto::Role::Configurable';
 with 'Canto::Chado::ChadoLookup';
 with 'Canto::Role::SimpleCache';
 with 'Canto::Role::ChadoFeatureCache';
+with 'Canto::Role::ChadoExtensionDisplayer';
+
+sub _build_gene_lookup
+{
+  my $self = shift;
+
+  return Canto::Track::get_adaptor($self->config(), 'gene');
+}
 
 # if the $feature is an mRNA, return it's gene feature, otherwise return
 # the $feature
@@ -62,14 +75,13 @@ sub _gene_of_feature
   my $mrna_cvterm = $self->schema()->get_cvterm('sequence', 'mRNA');
 
   if ($feature->type_id() == $mrna_cvterm->cvterm_id()) {
-    my $gene_cvterm = $self->schema()->get_cvterm('sequence', 'gene');
-    my $part_of_cvterm = $self->schema()->get_cvterm('relationship', 'part_of');
-
     return $feature->feature_relationship_subjects()
-                   ->search({ 'me.type_id' => $part_of_cvterm->cvterm_id() })
+                   ->search({ 'type.name' => 'part_of' }, { join => 'type' })
                    ->search_related('object')
                    ->search({
-                     'object.type_id' => $gene_cvterm->cvterm_id()
+                     'type_2.name' => 'gene',
+                   }, {
+                     join => 'type',
                    })->single();
   } else {
     return $feature;
@@ -185,7 +197,7 @@ sub lookup
   if (defined $pub) {
     my $prop_type_cv =
       $schema->find_with_type('Cv', name => 'feature_cvtermprop_type');
-    my @prop_type_names = qw[evidence with from condition qualifier];
+    my @prop_type_names = qw[evidence with from condition qualifier gene_product_form_id];
     my %prop_cvterm_ids = ();
     for my $prop_type_name (@prop_type_names) {
       $prop_cvterm_ids{$prop_type_name} =
@@ -268,6 +280,7 @@ sub lookup
       my %prop_type_values = (evidence => 'Unknown',
                               with => undef,
                               from => undef,
+                              gene_product_form_id => undef,
                               qualifier => [],
                               condition => [],
                               );
@@ -299,16 +312,12 @@ sub lookup
         next;
       }
 
-      my $real_cvterm;
+      my ($extension_object, $extension_text, $parent_term) = $self->make_gaf_extension($row);
 
-      if ($cvterm->cv_id() == $ext_cv->cv_id()) {
-        $real_cvterm =
-          $cvterm->cvterm_relationship_subjects()
-                 ->search({ type_id => $is_a_term->cvterm_id() })
-                 ->first()
-                 ->object();
-      } else {
-        $real_cvterm = $cvterm;
+      my $real_cvterm = $cvterm;
+
+      if ($parent_term) {
+        $real_cvterm = $parent_term;
       }
 
       my $new_res =
@@ -321,6 +330,7 @@ sub lookup
           is_not => $row->is_not(),
           with => $prop_type_values{with},
           from => $prop_type_values{from},
+          gene_product_form_id => $prop_type_values{gene_product_form_id},
           publication => {
             uniquename => $pub_uniquename,
           },
@@ -329,6 +339,10 @@ sub lookup
           qualifiers => $prop_type_values{qualifier},
           annotation_id => $row->feature_cvterm_id(),
         };
+
+      if ($extension_object) {
+        $new_res->{extension} = $extension_object;
+      }
 
       if ($feature->type()->name() eq 'genotype') {
         $new_res->{genotype} = $self->get_cached_genotype_details($feature);

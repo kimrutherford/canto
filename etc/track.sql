@@ -15,7 +15,6 @@ CREATE TABLE pub (
        triage_status_id integer NOT NULL REFERENCES cvterm (cvterm_id),
        load_type_id integer NOT NULL REFERENCES cvterm (cvterm_id),
        curation_priority_id integer REFERENCES cvterm (cvterm_id),
-       community_curatable boolean DEFAULT false,
        added_date timestamp
 );
 CREATE INDEX pub_triage_status_idx ON pub(triage_status_id);
@@ -163,6 +162,7 @@ CREATE TABLE person (
        name text NOT NULL,
        known_as text,
        email_address text NOT NULL UNIQUE,
+       orcid text UNIQUE,
        role integer REFERENCES cvterm(cvterm_id) DEFERRABLE INITIALLY DEFERRED  NOT NULL,
        lab INTEGER REFERENCES lab (lab_id),
        session_data text,

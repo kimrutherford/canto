@@ -1,10 +1,10 @@
-<span>
+<span class="curs-feature-chooser">
   <span ng-hide="features">
 Loading ...
   </span>
   <span ng-show="features">
     <select class="form-control" ng-model="chosenFeatureId"
-            ng-options="feature.feature_id as feature.display_name for feature in features">
+            ng-options="feature.feature_id as (feature | featureChooserFilter) for feature in features">
       <option value="">Choose a {{featureType}} ...</option>
     </select>
     <span ng-if="featureType === 'gene'" >

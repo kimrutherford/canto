@@ -1,21 +1,41 @@
-<div ng-show="genotypeList.length > 0">
-  <table class="list">
+<div>
+  <div ng-if="genotypeList.length > 0">
+  <table class="curs-genotype-list">
     <thead>
       <tr>
-        <th>
-Description
+        <th style="border-bottom: 1px solid grey" colspan="3">
+Genotype
         </th>
-        <th>
-Name (optional)
+        <th rowspan="2" ng-hide="columnsToHide.background">
+Background
         </th>
-        <th>
+        <th rowspan="2" ng-hide="columnsToHide.name">
+Name
+        </th>
+        <th rowspan="2">
 Annotations
         </th>
       </tr>
-    </thead>
-    <tbody>
-      <tr genotype-list-row ng-repeat="genotype in genotypeList">
+      <tr>
+        <th>
+          Genes
+        </th>
+        <th>
+          Alleles
+        </th>
+        <th>
+          Expression
+        </th>
       </tr>
+    </thead>
+    <tbody genotype-list-row ng-repeat="currentGenotype in genotypeList"
+           set-selected-genotype-id="setSelectedGenotypeId(genotypeId)"
+           selected-genotype-id="{{selectedGenotypeId}}"
+          navigate-on-click="{{navigateOnClick}}"
+          columns-to-hide="columnsToHide"
+          genotypes="genotypeList"
+          genotype="currentGenotype">
     </tbody>
   </table>
+  </div>
 </div>

@@ -16,7 +16,7 @@ my $config_single = Canto::Config->new($config_yaml_1);
 
 is($config_single->{some_key}, 'some_value_1');
 
-is(keys %{$config_single}, 9);
+is(keys %{$config_single}, 10);
 
 ok(!$config_single->{annotation_types}->{phenotype}->{needs_with_or_from});
 ok($config_single->{annotation_types}->{cellular_component}->{needs_with_or_from});
@@ -36,7 +36,7 @@ my $config_two = Canto::Config->new($config_yaml_1, $config_yaml_2);
 
 is($config_two->{some_key}, 'some_value_1');
 is($config_two->{some_key_for_overriding}, 'overidden_value');
-is(keys %{$config_two}, 9);
+is(keys %{$config_two}, 10);
 
 
 # test loading then merging
@@ -45,7 +45,7 @@ $config_merge->merge_config($config_yaml_2);
 
 is($config_merge->{some_key}, 'some_value_1');
 is($config_merge->{some_key_for_overriding}, 'overidden_value');
-is(keys %{$config_merge}, 9);
+is(keys %{$config_merge}, 10);
 
 my $lc_app_name = lc Canto::Config::get_application_name();
 my $uc_app_name = uc $lc_app_name;
@@ -77,131 +77,191 @@ is($config_with_suffix->{extra_css}, '/static/css/test_style.css');
 # check extension configuration
 ok ($config_with_suffix->{extension_configuration});
 
+
 cmp_deeply($config_with_suffix->{extension_configuration},
           [
             {
-              'display_text' => 'kinase substrate',
+              'allowed_relation' => 'has_substrate',
               'cardinality' => [
-                '0',
-                '1'
-              ],
-              'domain' => 'GO:0016023',
-              'subset_rel' => 'is_a',
-              'role' => 'user',
+                                 '0',
+                                 '1'
+                               ],
+              'display_text' => 'kinase substrate',
               'range' => [
-                {
-                  'type' => 'Gene'
-                }
-              ],
-              'allowed_relation' => 'has_substrate'
+                           {
+                             'type' => 'Gene'
+                           }
+                         ],
+              'help_text' => '',
+              'domain' => 'GO:0016023',
+              'role' => 'user',
+              'subset_rel' => [
+                                'is_a'
+                              ]
             },
             {
-              'cardinality' => [
-                '*'
-              ],
-              'domain' => 'GO:0016023',
+              'subset_rel' => [
+                                'is_a'
+                              ],
               'role' => 'user',
+              'domain' => 'GO:0016023',
               'range' => [
-                {
-                  'type' => 'Ontology',
-                  'scope' => [
-                    'GO:0005215'
-                  ]
-                }
-              ],
-              'subset_rel' => 'is_a',
+                           {
+                             'type' => 'Ontology',
+                             'scope' => [
+                                          'GO:0005215'
+                                        ]
+                           }
+                         ],
+              'help_text' => '',
               'allowed_relation' => 'happens_during',
+              'cardinality' => [
+                                 '*'
+                               ],
               'display_text' => 'Something that happens during'
             },
             {
+              'subset_rel' => [
+                                'is_a'
+                              ],
+              'role' => 'user',
+              'domain' => 'GO:0022857',
+              'help_text' => '',
+              'range' => [
+                           {
+                             'type' => 'Gene'
+                           }
+                         ],
               'display_text' => 'localizes',
-              'domain' => 'GO:0022857',
-              'role' => 'user',
-              'range' => [
-                {
-                  'type' => 'Gene'
-                }
-              ],
-              'allowed_relation' => 'localizes',
-              'subset_rel' => 'is_a',
               'cardinality' => [
-                '0',
-                '1'
-              ]
+                                 '0',
+                                 '1'
+                               ],
+              'allowed_relation' => 'localizes'
             },
             {
+              'cardinality' => [
+                                 '0',
+                                 '1'
+                               ],
               'allowed_relation' => 'occurs_at',
-              'role' => 'user',
+              'display_text' => 'occurs at',
+              'help_text' => '',
               'range' => [
-                {
-                  'type' => 'Ontology',
-                  'scope' => [
-                    'SO:0001799'
-                  ]
-                }
-              ],
-              'subset_rel' => 'is_a',
+                           {
+                             'scope' => [
+                                          'SO:0001799'
+                                        ],
+                             'type' => 'Ontology'
+                           }
+                         ],
               'domain' => 'GO:0022857',
-              'cardinality' => [
-                '0',
-                '1'
-              ],
-              'display_text' => 'occurs at'
+              'role' => 'user',
+              'subset_rel' => [
+                                'is_a'
+                              ]
             },
             {
-              'role' => 'user',
               'allowed_relation' => 'modifies_residue',
+              'cardinality' => [
+                                 '0',
+                                 '1'
+                               ],
+              'display_text' => 'occurs at',
               'range' => [
-                {
-                  'input_type' => 'text',
-                  'type' => 'Text'
-                }
-              ],
-              'subset_rel' => 'is_a',
+                           {
+                             'type' => 'Text',
+                             'input_type' => 'text'
+                           }
+                         ],
+              'help_text' => '',
               'domain' => 'GO:0022857',
-              'cardinality' => [
-                '0',
-                '1'
-              ],
-              'display_text' => 'occurs at'
+              'role' => 'user',
+              'subset_rel' => [
+                                'is_a'
+                              ]
             },
             {
-              'display_text' => 'assayed using',
+              'exclude_subset_ids' => ['GO:0055085'],
+              'domain' => 'GO:0006810',
+              'role' => 'user',
+              'allowed_relation' => 'localizes',
+              'subset_rel' => [
+                                'is_a'
+                              ],
+              'help_text' => '',
               'cardinality' => [
-                '0',
-                '2'
-              ],
+                                 '0',
+                                 '1'
+                               ],
+              'range' => [
+                           {
+                             'type' => 'Gene'
+                           }
+                         ],
+              'display_text' => 'localizes'
+            },
+            {
+              'help_text' => '',
+              'range' => [
+                           {
+                             'type' => 'Gene'
+                           }
+                         ],
+              'domain' => 'GO:0034762',
+              'display_text' => 'occurs at',
+              'cardinality' => [
+                                 '0',
+                                 '1'
+                               ],
+              'allowed_relation' => 'occurs_at',
+              'subset_rel' => [
+                                'is_a'
+                              ],
+              'role' => 'user'
+            },
+            {
+              'role' => 'user',
+              'subset_rel' => [
+                                'is_a'
+                              ],
+              'cardinality' => [
+                                 '0',
+                                 '2'
+                               ],
               'allowed_relation' => 'assayed_using',
-              'role' => 'user',
+              'display_text' => 'assayed using',
+              'domain' => 'FYPO:0000002',
+              'help_text' => '',
               'range' => [
-                {
-                  'type' => 'Gene'
-                }
-              ],
-              'subset_rel' => 'is_a',
-              'domain' => 'FYPO:0000002'
+                           {
+                             'type' => 'Gene'
+                           }
+                         ]
             },
             {
-              'allowed_relation' => 'has_penetrance',
+              'subset_rel' => [
+                                'is_a'
+                              ],
               'role' => 'user',
               'range' => [
-                {
-                  'scope' => [
-                    'FYPO_EXT:1000000'
-                  ],
-                  'type' => 'Ontology'
-                },
-                {
-                  'type' => 'Text',
-                  'input_type' => '%'
-                }
-              ],
-              'subset_rel' => 'is_a',
+                           {
+                             'scope' => [
+                                          'FYPO_EXT:1000000'
+                                        ],
+                             'type' => 'Ontology'
+                           },
+                           {
+                             'type' => '%'
+                           }
+                         ],
+              'help_text' => '',
               'domain' => 'FYPO:0000002',
+              'allowed_relation' => 'has_penetrance',
               'cardinality' => [
-                '0',
-                '1'
-              ],
+                                 '0',
+                                 '1'
+                               ],
               'display_text' => 'penetrance'
             }
           ]);

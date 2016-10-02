@@ -28,14 +28,13 @@ use Canto::Track::OntologyIndex;
 use Canto::Track::LoadUtil;
 use Canto::Track::PubmedUtil;
 use Canto::Curs::TermUpdate;
-use Canto::Config::ExtensionSubsetProcess;
+use Canto::Config::ExtensionProcess;
 
 my $do_genes = 0;
 my $do_pubmed_xml = 0;
 my $for_taxon = 0;
 my @ontology_args = ();
 my $do_process_extension_config = 0;
-my $do_organism = 0;
 my $dry_run = 0;
 my $verbose = 0;
 my $do_help = 0;
@@ -47,7 +46,6 @@ if (@ARGV == 0) {
 my $result = GetOptions ("genes=s" => \$do_genes,
                          "ontology=s" => \@ontology_args,
                          "process-extension-config" => \$do_process_extension_config,
-                         "organism=s" => \$do_organism,
                          "pubmed-xml=s" => \$do_pubmed_xml,
                          "for-taxon=i" => \$for_taxon,
                          "verbose|v" => \$verbose,
@@ -73,24 +71,19 @@ or:
   $0 --process-extension-config --ontology ontology_file.obo --ontology another_ontology.obo
 or:
   $0 --pubmed-xml pubmed_entries.xml
-or:
-  $0 --organism "<genus> <species> <taxon_id>"
 or in combination:
-  $0 --organism "<genus> <species> <taxon_id>" \
-     --ontology ontology_2.obo --ontology ontology_2.obo \
+  $0 --ontology ontology_2.obo --ontology ontology_2.obo \
      --genes genes_file --for-taxon=<taxon_id>
 
 Options:
   --genes     - load a tab delimited gene data file, must also specify
                 the organism with --for-taxon
   --ontology  - load an ontology data file in OBO format
-  --organism  - add an organism to the database
   --pubmed-xml - load publications from a PubMed XML file; only loads
                  publications that aren't already in the database
 
 Any combination of options is valid (eg. genes and ontologies can be
-loaded at once) but at most one "--genes" and at most one "--organism"
-option is allowed.
+loaded at once) but at most one "--genes" option is allowed.
 
 File formats
 ~~~~~~~~~~~~
@@ -180,31 +173,24 @@ if ($do_genes) {
 if (@ontology_args) {
   my $index_path = $config->data_dir_path('ontology_index_dir');
 
-  my $index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+  my $index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
   $index->initialise_index();
   my @relationships_to_load = @{$config->{load}->{ontology}->{relationships_to_load}};
 
-  my $extension_subset_process = undef;
-  my $subset_data = undef;
+  my $extension_process = undef;
 
   if ($do_process_extension_config) {
-    $extension_subset_process =
-      Canto::Config::ExtensionSubsetProcess->new(config => $config);
-    $subset_data = $extension_subset_process->get_subset_data(@ontology_args);
+    $extension_process =
+      Canto::Config::ExtensionProcess->new(config => $config);
   }
 
   my $ontology_load = Canto::Track::OntologyLoad->new(schema => $schema,
-                                                      relationships_to_load => \@relationships_to_load,
-                                                      default_db_name => $config->{default_db_name},
-                                                      subset_data => $subset_data);
+                                                      config => $config,
+                                                      extension_process => $extension_process,
+                                                      relationships_to_load => \@relationships_to_load);
   my $synonym_types = $config->{load}->{ontology}->{synonym_types};
 
   $ontology_load->load([@ontology_args], $index, $synonym_types);
-
-  if ($subset_data) {
-    $extension_subset_process->process_subset_data($ontology_load->load_schema(),
-                                                   $subset_data);
-  }
 
   if (!$dry_run) {
     $ontology_load->finalise();
@@ -216,22 +202,6 @@ if (@ontology_args) {
   my $iter = Canto::Track::curs_iterator($config, $schema);
   while (my ($curs, $cursdb) = $iter->()) {
     $term_update->update_curs_terms($cursdb);
-  }
-}
-
-if ($do_organism) {
-  if ($do_organism =~ /(\S+)\s+(.*?)\s+(\d+)/) {
-    my $genus = $1;
-    my $species = $2;
-    my $taxon_id = $3;
-
-    my $load_util = Canto::Track::LoadUtil->new(schema => $schema);
-    my $guard = $schema->txn_scope_guard;
-    print "loading $genus $species - $taxon_id\n" if $verbose;
-    $load_util->get_organism($genus, $species, $taxon_id);
-    $guard->commit unless $dry_run;
-  } else {
-    usage "organism option not in the correct format";
   }
 }
 

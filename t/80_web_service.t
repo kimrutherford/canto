@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 36;
+use Test::More tests => 35;
 use Test::Deep;
 
 use Canto::TestUtil;
@@ -15,6 +15,7 @@ use Canto::Track;
 my $test_util = Canto::TestUtil->new();
 $test_util->init_test();
 
+my $config = $test_util->config();
 my $cookie_jar = $test_util->cookie_jar();
 
 my $app = $test_util->plack_app()->{app};
@@ -53,11 +54,8 @@ test_psgi $app, sub {
       die "$@\n", $res->content();
     }
 
-    is (@$obj, 1);
-
-    ok(grep { $_->{id} =~ /GO:0003674/ } @$obj);
-    ok(grep { $_->{name} =~ /molecular_function/ } @$obj);
-    ok(grep { $_->{comment} =~ /Note that, in addition to forming the root/ } @$obj);
+    # root terms aren't returned
+    is (@$obj, 0);
   }
 
   # test "phenotype_condition" which is an ontology but not an
@@ -96,7 +94,8 @@ test_psgi $app, sub {
       die "$@\n", $res->content();
     }
 
-    is (@$obj, 10);
+    is (@$obj, 9);
+
     ok(grep { $_->{id} =~ /PECO:0000137/ } @$obj);
     ok(grep { $_->{name} =~ /glucose rich medium/ } @$obj);
     ok(grep { $_->{annotation_namespace} =~ /phenotype_condition/ } @$obj);
@@ -104,7 +103,7 @@ test_psgi $app, sub {
 
   # add the closure subsets: cvtermprops with type 'canto_subset'
   my $index_path = $test_util->config()->data_dir_path('ontology_index_dir');
-  my $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+  my $ontology_index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
   $test_util->load_test_ontologies($ontology_index, 1, 1, 1);
 
   my $two_term_subset = '[GO:0005215|GO:0016023]';
@@ -135,10 +134,6 @@ test_psgi $app, sub {
     cmp_deeply(\@res,
                [
                  {
-                   'id' => 'GO:0016023',
-                   'name' => 'cytoplasmic membrane-bounded vesicle'
-                 },
-                 {
                    'name' => 'nucleocytoplasmic transporter activity',
                    'id' => 'GO:0005487'
                  },
@@ -164,6 +159,25 @@ test_psgi $app, sub {
   # test counting a subset
   {
     my $url = "http://localhost:5000/ws/lookup/ontology/$two_term_subset/?term=:COUNT:";
+    my $req = HTTP::Request->new(GET => $url);
+    my $res = $cb->($req);
+
+    is $res->code, 200;
+
+    my $obj;
+    eval { $obj = decode_json($res->content()); };
+    if ($@) {
+      die "$@\n", $res->content();
+    }
+
+    is ($obj->{count}, 5);
+  }
+
+  # test counting a subset, in extension_lookup mode - uses subsets to ignore
+  # from $config->{ontology_namespace_config}{subsets_to_ignore}{extension}
+  # instead of ...{primary}
+  {
+    my $url = "http://localhost:5000/ws/lookup/ontology/$two_term_subset/?term=:COUNT:&extension_lookup=1";
     my $req = HTTP::Request->new(GET => $url);
     my $res = $cb->($req);
 

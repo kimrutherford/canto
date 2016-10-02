@@ -324,10 +324,12 @@ sub _get_genotypes
 
   my $filter = undef;
   my $max = undef;
+  my $include_allele = 0;
 
   if (defined $options) {
     $filter = $options->{filter};
     $max = $options->{max};
+    $include_allele = $options->{include_allele} // 0;
   }
 
   if ($filter) {
@@ -344,7 +346,7 @@ sub _get_genotypes
 
   if ($arg eq 'curs_only' || $arg eq 'all') {
     @res = map {
-      $self->_genotype_details_hash($_);
+      $self->_genotype_details_hash($_, $include_allele);
     } $genotype_rs->all();
   }
 
@@ -424,12 +426,14 @@ sub _get_alleles
 
   my $allele_lookup = $self->allele_lookup();
 
-  if (@res < 10 && $allele_lookup) {
+  my $max_results = 15;
+
+  if (@res < $max_results && $allele_lookup) {
     my $lookup_res = $allele_lookup->lookup(gene_primary_identifier =>
                                               $gene_primary_identifier,
                                             search_string => $search_string);
 
-    while (@res < 10 && @$lookup_res > 0) {
+    while (@res < $max_results && @$lookup_res > 0) {
       my $new_res = shift @$lookup_res;
       # add if there are no alleles with that name
       if (!grep {
@@ -535,10 +539,12 @@ sub _get_session_details
 
   my $pub_id = $self->get_metadata($self->curs_schema(), 'curation_pub_id');
   my $pub = $curs_schema->find_with_type('Pub', $pub_id);
+  my ($state) = $self->state()->get_state($curs_schema);
 
   return {
     publication_uniquename => $pub->uniquename(),
     curator => $self->_get_curator_details(),
+    state => $state,
   };
 }
 
@@ -904,7 +910,7 @@ sub _store_change_hash
     my $conf = $valid_change_keys{$key};
 
     if (!defined $conf) {
-      die "no such annotation field type: $key\n";
+      die "No such annotation field type: $key\n";
     }
 
     my $value = $changes->{$key};

@@ -45,6 +45,7 @@ use File::Path qw(remove_tree);
 use Lucene;
 
 has index_path => (is => 'rw', required => 1);
+has config => (is => 'ro', required => 1);
 
 =head2 initialise_index
 
@@ -108,13 +109,13 @@ sub _get_all_names
           } @$synonym_details);
 }
 
-my %boosts =
-  (
-    name => 1.1,
-    exact => 1.1,
-    broad => 0.2,
-    related => 0.2,
-  );
+sub _id_for_lucene
+{
+  my $id = lc shift;
+  $id =~ s/:/_/g;
+  $id =~ s/(.*)\((.*)\)/$1__$2/;
+  return $id;
+}
 
 =head2 add_to_index
 
@@ -141,6 +142,9 @@ sub add_to_index
   my $subset_ids = shift;
   my $synonym_details = shift;
 
+  my %synonym_boosts = %{$self->config()->{load}->{ontology}->{synonym_boosts}};
+  my %term_boosts = %{$self->config()->{load}->{ontology}->{term_boosts} // {}};
+
   $cv_name =~ s/-/_/g;
 
   my $writer = $self->{_index};
@@ -157,15 +161,20 @@ sub add_to_index
       Lucene::Document::Field->Keyword(ontid => $db_accession),
       Lucene::Document::Field->Keyword(cv_name => $cv_name),
       (map {
-        my $id_for_lucene = lc s/:/_/gr;
+        # change "is_a(GO:0005215)" to "is_a__GO_0005215"
+        my $id_for_lucene = _id_for_lucene($_);
         Lucene::Document::Field->Keyword(subset_id => $id_for_lucene)
       } @$subset_ids),
       Lucene::Document::Field->UnIndexed(cvterm_id => $cvterm_id),
       Lucene::Document::Field->UnIndexed(term_name => $term_name),
     );
 
-    if (exists $boosts{$type}) {
-      map { $_->setBoost($boosts{$type}); } @fields;
+    if (exists $synonym_boosts{$type}) {
+      map { $_->setBoost($synonym_boosts{$type}); } @fields;
+    }
+
+    if (exists $term_boosts{$db_accession}) {
+      map { $_->setBoost($term_boosts{$db_accession}); } @fields;
     }
 
     map { $doc->add($_) } @fields;
@@ -212,11 +221,17 @@ sub _init_lookup
 
 =head2 lookup
 
- Usage   : my $hits = $index->lookup("cellular_component", $search_string, 10);
+ Usage   : my $hits = $index->lookup("cellular_component", \@exclude_subsets,
+                                     $search_string, 10);
  Function: Return the search results for the $search_string
  Args    : $search_scope - the ontology_name or subset IDs to restrict the the
-                           search to; the subset IDs should be passed as an
-                           array ref
+                           search to; the subset IDs should be passed as a
+                           reference to an array eg.
+                           ['GO:0016023',
+                           { include => 'GO:0055085', exclude => 'GO:0034762' }]
+           $search_exclude - a list of subsets to exclude ie. ignore a result if
+                             any of these subset names is a subset_id of a
+                             document
            $search_string - the text to search for
            $max_results - the maximum number of results to return
  Returns : the Lucene hits object
@@ -227,6 +242,7 @@ sub lookup
   my $self = shift;
 
   my $search_scope = shift;
+  my $search_exclude = shift;
   my $search_string = shift;
   my $max_results = shift;
 
@@ -262,8 +278,16 @@ sub lookup
   if (ref $search_scope) {
     $query_string .=
       '(' . (join ' OR ', (map {
-        my $id_for_lucene = lc s/:/_/gr;
-        qq{subset_id:$id_for_lucene};
+        if (ref $_) {
+          # change "is_a(GO:0005215)" to "is_a__GO_0005215"
+          my $include_id_for_lucene = _id_for_lucene($_->{include});
+          my $exclude_id_for_lucene = _id_for_lucene($_->{exclude});
+
+          "(subset_id:$include_id_for_lucene AND NOT subset_id:$exclude_id_for_lucene)";
+        } else {
+          my $id_for_lucene = _id_for_lucene($_);
+          "subset_id:$id_for_lucene";
+        }
       } @$search_scope)) . ')';
     $query_string .= ' AND ';
   } else {
@@ -275,6 +299,13 @@ sub lookup
 
   $query_string .=
     qq{(text:($search_string)$wildcard)};
+
+  if ($search_exclude && @$search_exclude > 0) {
+    map {
+      my $id_for_lucene = _id_for_lucene($_);
+      $query_string .= " AND NOT (subset_id:$id_for_lucene)";
+    } @$search_exclude;
+  }
 
   my $query = $parser->parse($query_string);
 

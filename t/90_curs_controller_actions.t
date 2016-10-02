@@ -31,7 +31,7 @@ my $curs_schema = Canto::Curs::get_schema_for_key($config, $curs_key);
 
 my $root_url = "http://localhost:5000/curs/$curs_key";
 my $uniquename = "PMID:19664060";
-my @gene_identifiers = qw(cdc11 wtf22 SPCC1739.10 klp1);
+my @gene_identifiers = qw(cdc11 mot1 SPNCRNA.119 klp1);
 
 # test submitting a list of genes
 sub upload_genes
@@ -243,14 +243,14 @@ test_psgi $app, sub {
     my $redirect_res = $cb->($redirect_req);
 
     my $page_scrape = scraper {
-      process ".gene-list", "gene_list" => 'TEXT';
-      process ".pub-title", "pub_title" => 'TEXT';
+      process ".curs-front-gene-list", "gene_list" => 'TEXT';
+      process ".curs-front-pub-details", "pub_title" => 'TEXT';
       result 'gene_list', 'pub_title';
     };
 
     my $scrape_res = $page_scrape->scrape($redirect_res->content());
 
-    like ($scrape_res->{gene_list}, qr/Click on a gene name to start entering data/);
+    like ($scrape_res->{gene_list}, qr/Annotate genes and genotypes/);
     like ($scrape_res->{pub_title}, qr/Inactivating pentapeptide insertions/);
   }
 

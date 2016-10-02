@@ -1,32 +1,53 @@
-<tr>
+<tbody ng-mouseover="mouseOver($event)"
+    ng-class="{ selected: isSelected() }">
+  <tr>
   <td>
-    <span>
-      <a href="{{curs_root_uri + '/feature/genotype/view/' + genotype.id_or_identifier + (read_only_curs ? '/ro' : '')}}">
-        <p ng-bind-html="genotype.allele_string | wrapAtSpaces | toTrusted"></p></a>
-    </span>
+    <a href="{{curs_root_uri + '/feature/gene/view/' + firstAllele.gene_id + (read_only_curs ? '/ro' : '')}}">{{firstAllele.gene_display_name}}</a>
   </td>
   <td>
-    <span style="font-weight: bold"  ng-bind-html="genotype.background | wrapAtSpaces | toTrusted"></span>
+    <span ng-bind-html="firstAllele.display_name | encodeAlleleSymbols | toTrusted"></span>
+  </td>
+  <td>
+    <span>{{firstAllele.expression}}</span>
+  </td>
+  <td rowspan="{{genotype.alleles.length}}" ng-hide="columnsToHide.background">
+    <span ng-bind-html="genotype.background | wrapAtSpaces | encodeAlleleSymbols | toTrusted"></span>
+  </td>
+  <td rowspan="{{genotype.alleles.length}}" ng-hide="columnsToHide.name">
     <span ng-bind-html="genotype.name | wrapAtSpaces | encodeAlleleSymbols | toTrusted"></span>
   </td>
-  <td>
+  <td rowspan="{{genotype.alleles.length}}">
     {{genotype.annotation_count}}
-  </td>
-  <td ng-if="!read_only_curs" class="table-row-actions">
-    <div ng-if="!genotype.genotype_id">
-      <a href="{{curs_root_uri + '/feature/genotype/view/' + genotype.id_or_identifier}}">
-Use this genotype ...
-      </a>
-    </div>
-    <div ng-if="genotype.genotype_id">
-      <a href="{{curs_root_uri + '/feature/genotype/annotate/' + genotype.genotype_id + '/start/phenotype'}}">Add phenotype ...</a>
-    </div>
-    <div ng-if="genotype.genotype_id">
-      <a href="{{curs_root_uri + '/feature/genotype/duplicate/' + genotype.genotype_id}}">Duplicate ...</a>
-    </div>
-    <div ng-if="genotype.genotype_id">
-      <a confirm="Are you sure you want to delete this genotype?"
-         ng-click="deleteGenotype()">Delete ...</a>
+    <div ng-if="navigateOnClick == 'false'" class="table-row-actions"
+         style="float: right; position: relative; right: -20px">
+      <img ng-show="!isSelected()" ng-src="{{app_static_path + '/images/right_triangle.png'}}"></img>
     </div>
   </td>
-</tr>
+  <td rowspan="{{genotype.alleles.length}}"
+      ng-if="navigateOnClick == 'true'" class="table-row-actions">
+    <a href="{{detailsUrl}}">
+      <span style="white-space: nowrap">Details ...</span>
+    </a>
+  </td>
+  <td style="width: 0; border: 0px; padding: 0; margin: 0; background-color: white;">
+    <div ng-if="isSelected()" class="curs-genotype-list-row-actions">
+      <img style="position: absolute; right: -20px; padding: 4px; padding-left: 10px;"
+           ng-click="clearSelection()" ng-src="{{closeIconPath}}"></img>
+      <genotype-list-row-links genotypes="genotypes" genotype-id="genotype.genotype_id" annotation-count="{{genotype.annotation_count}}">
+      </genotype-list-row-links>
+    </div>
+  </td>
+  </tr>
+  </tr>
+  <tr ng-repeat="currentAllele in otherAlleles">
+    <td>
+      <a href="{{curs_root_uri + '/feature/gene/view/' + currentAllele.gene_id + (read_only_curs ? '/ro' : '')}}">{{currentAllele.gene_display_name}}</a>
+    </td>
+    <td>
+      <span ng-bind-html="currentAllele.display_name | encodeAlleleSymbols | toTrusted"></span>
+    </td>
+    <td>
+      <span>{{currentAllele.expression}}</span>
+    </td>
+  </tr>
+</tbody>

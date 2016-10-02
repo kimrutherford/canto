@@ -1,30 +1,30 @@
-GO:0016023	is_a	has_substrate	GeneID	kinase substrate	0,1	user
+GO:0016023	is_a	has_substrate	GeneID	kinase substrate		0,1	user
 GO:0016023	is_a	happens_during	GO:0005215	Something that happens during	*	user
-GO:0022857	is_a	localizes	GeneID	localizes	0,1	user
-PHIPO:0000002	is_a	pathogen_strain	Number	Pathogen Strain NCBI taxon ID	0,1	user
-PHIPO:0000002	is_a	infects_tissue	BTO:0000000	Tissue Infected	0,1	user
-PHIPO:0000002	is_a	causes_disease	DOID:4	Disease Caused	0,1	user
-PHIPO:0000002	is_a	experimental_host	Number	Host NCBI Taxon ID	0,1	user
-PHIPO:0000002	is_a	induced_by_chemical	CHEBI:24431	Induced By Chemical	0,1	user
-PHIPO:0000002	is_a	induced_by_gene	GeneID	Induced By Gene	0,1	user
-PHIPO:0000002	is_a	anti_infective	CHEBI:24431	Anti-infective Chemical	0,1	user
-PHIPO:0000002	is_a	host_interacting_protein	GeneID	Host Interacting Protein	0,1	user
-PHIPO:0000002	is_a	pathogen_interacting_protein	GeneID	Pathogen Interacting Protein	0,1	user
-PHIPO:0000012	is_a	pathogen_strain	Number	Pathogen Strain NCBI taxon ID	0,1	user
-PHIPO:0000012	is_a	infects_tissue	BTO:0000000	Tissue Infected	0,1	user
-PHIPO:0000012	is_a	causes_disease	DOID:4	Disease Caused	0,1	user
-PHIPO:0000012	is_a	experimental_host	Number	Host NCBI Taxon ID	0,1	user
-PHIPO:0000012	is_a	induced_by_chemical	CHEBI:24431	Induced By Chemical	0,1	user
-PHIPO:0000012	is_a	induced_by_gene	GeneID	Induced By Gene	0,1	user
-PHIPO:0000012	is_a	anti_infective	CHEBI:24431	Anti-infective Chemical	0,1	user
-PHIPO:0000012	is_a	host_interacting_protein	GeneID	Host Interacting Protein	0,1	user
-PHIPO:0000012	is_a	pathogen_interacting_protein	GeneID	Pathogen Interacting Protein	0,1	user
-PHIPO:0000042	is_a	pathogen_strain	Number	Pathogen Strain NCBI taxon ID	0,1	user
-PHIPO:0000042	is_a	infects_tissue	BTO:0000000	Tissue Infected	0,1	user
-PHIPO:0000042	is_a	causes_disease	DOID:4	Disease Caused	0,1	user
-PHIPO:0000042	is_a	experimental_host	Number	Host NCBI Taxon ID	0,1	user
-PHIPO:0000042	is_a	induced_by_chemical	CHEBI:24431	Induced By Chemical	0,1	user
-PHIPO:0000042	is_a	induced_by_gene	GeneID	Induced By Gene	0,1	user
-PHIPO:0000042	is_a	anti_infective	CHEBI:24431	Anti-infective Chemical	0,1	user
-PHIPO:0000042	is_a	host_interacting_protein	GeneID	Host Interacting Protein	0,1	user
-PHIPO:0000042	is_a	pathogen_interacting_protein	GeneID	Pathogen Interacting Protein	0,1	user
+GO:0022857	is_a	localizes	GeneID	localizes		0,1	user
+PHIPO:0000002	is_a	pathogen_strain	Number	Pathogen Strain NCBI taxon ID		0,1	user
+PHIPO:0000002	is_a	infects_tissue	BTO:0000000	Tissue Infected		0,1	user
+PHIPO:0000002	is_a	causes_disease	DOID:4	Disease Caused		0,1	user
+PHIPO:0000002	is_a	experimental_host	Number	Host NCBI Taxon ID		0,1	user
+PHIPO:0000002	is_a	induced_by_chemical	CHEBI:24431	Induced By Chemical		0,1	user
+PHIPO:0000002	is_a	induced_by_gene	GeneID	Induced By Gene		0,1	user
+PHIPO:0000002	is_a	anti_infective	CHEBI:24431	Anti-infective Chemical		0,1	user
+PHIPO:0000002	is_a	host_interacting_protein	GeneID	Host Interacting Protein		0,1	user
+PHIPO:0000002	is_a	pathogen_interacting_protein	GeneID	Pathogen Interacting Protein		0,1	user
+PHIPO:0000012	is_a	pathogen_strain	Number	Pathogen Strain NCBI taxon ID		0,1	user
+PHIPO:0000012	is_a	infects_tissue	BTO:0000000	Tissue Infected		0,1	user
+PHIPO:0000012	is_a	causes_disease	DOID:4	Disease Caused		0,1	user
+PHIPO:0000012	is_a	experimental_host	Number	Host NCBI Taxon ID		0,1	user
+PHIPO:0000012	is_a	induced_by_chemical	CHEBI:24431	Induced By Chemical		0,1	user
+PHIPO:0000012	is_a	induced_by_gene	GeneID	Induced By Gene		0,1	user
+PHIPO:0000012	is_a	anti_infective	CHEBI:24431	Anti-infective Chemical		0,1	user
+PHIPO:0000012	is_a	host_interacting_protein	GeneID	Host Interacting Protein		0,1	user
+PHIPO:0000012	is_a	pathogen_interacting_protein	GeneID	Pathogen Interacting Protein		0,1	user
+PHIPO:0000042	is_a	pathogen_strain	Number	Pathogen Strain NCBI taxon ID		0,1	user
+PHIPO:0000042	is_a	infects_tissue	BTO:0000000	Tissue Infected		0,1	user
+PHIPO:0000042	is_a	causes_disease	DOID:4	Disease Caused		0,1	user
+PHIPO:0000042	is_a	experimental_host	Number	Host NCBI Taxon ID		0,1	user
+PHIPO:0000042	is_a	induced_by_chemical	CHEBI:24431	Induced By Chemical		0,1	user
+PHIPO:0000042	is_a	induced_by_gene	GeneID	Induced By Gene		0,1	user
+PHIPO:0000042	is_a	anti_infective	CHEBI:24431	Anti-infective Chemical		0,1	user
+PHIPO:0000042	is_a	host_interacting_protein	GeneID	Host Interacting Protein		0,1	user
+PHIPO:0000042	is_a	pathogen_interacting_protein	GeneID	Pathogen Interacting Protein		0,1	user

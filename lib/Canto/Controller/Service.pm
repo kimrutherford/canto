@@ -90,9 +90,26 @@ sub _ontology_results
   my @include_synonyms = $c->req()->param('synonyms');
   my $include_subset_ids = $c->req()->param('subset_ids');
 
+  # we're looking up the range of an extension
+  my $extension_lookup = $c->req()->param('extension_lookup') // 0;
+
+  my $config_subsets_to_ignore =
+    $config->{ontology_namespace_config}{subsets_to_ignore};
+
+  my @exclude_subsets = ();
+
+  if ($config_subsets_to_ignore) {
+    if ($extension_lookup) {
+      push @exclude_subsets, @{$config_subsets_to_ignore->{extension}};
+    } else {
+      push @exclude_subsets, @{$config_subsets_to_ignore->{primary}};
+    }
+  }
+
   if (defined $component_name) {
     if ($search_string eq ':COUNT:') {
-      return { count => $lookup->get_count(ontology_name => $ontology_name) };
+      return { count => $lookup->get_count(ontology_name => $ontology_name,
+                                           exclude_subsets => \@exclude_subsets) };
     } else {
       my @results;
       if ($search_string eq ':ALL:') {
@@ -101,7 +118,8 @@ sub _ontology_results
                            include_definition => $include_definition,
                            include_children => $include_children,
                            include_synonyms => \@include_synonyms,
-                           include_subset_ids => $include_subset_ids);
+                           include_subset_ids => $include_subset_ids,
+                           exclude_subsets => \@exclude_subsets);
       } else {
         @results =
           @{$lookup->lookup(ontology_name => $ontology_name,
@@ -110,7 +128,8 @@ sub _ontology_results
                             include_definition => $include_definition,
                             include_children => $include_children,
                             include_synonyms => \@include_synonyms,
-                            include_subset_ids => $include_subset_ids)};
+                            include_subset_ids => $include_subset_ids,
+                            exclude_subsets => \@exclude_subsets)};
       }
 
       map { $_->{value} = $_->{name} } @results;
@@ -204,6 +223,26 @@ sub _person_results
   }
 }
 
+sub _pubs_results
+{
+  my ($c, $search_type, $search_string) = @_;
+
+  my $lookup = Canto::Track::get_adaptor($c->config(), 'pubs');
+
+  if ($search_type eq 'by_curator_email') {
+    my $data = $lookup->lookup_by_curator_email($search_string, -1);
+
+    return {
+      pub_results => $data->{results},
+      count => $data->{count},
+      status => 'success',
+    };
+  } else {
+    return { message => "Unknown search type: $search_type",
+             status => 'error' };
+  }
+}
+
 sub lookup : Local
 {
   my $self = shift;
@@ -217,6 +256,7 @@ sub lookup : Local
     allele => \&_allele_results,
     ontology => \&_ontology_results,
     person => \&_person_results,
+    pubs => \&_pubs_results,
   );
 
   my $res_sub = $dispatch{$type_name};
@@ -304,7 +344,7 @@ sub canto_config : Local
 
       # FIXME - the URL for canto_config should have a version number so
       # we can have a far future expiry date
-      $c->cache_page(600) unless $ENV{CANTO_DEBUG};
+      $c->cache_page(120) unless $ENV{CANTO_DEBUG};
     } else {
       $c->stash->{json_data} = {};
     }

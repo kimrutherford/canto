@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 50;
+use Test::More tests => 52;
 use Test::Deep;
 
 use Canto::TestUtil;
@@ -16,7 +16,7 @@ my $schema = Canto::TrackDB->new(config => $config);
 
 my @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is (@loaded_cvterms, 123);
+is (@loaded_cvterms, 62);
 
 my $test_go_file =
   $test_util->root_dir() . '/' . $config->{test_config}->{test_go_obo_file};
@@ -29,13 +29,13 @@ my $psi_mod_obo_file = $config->{test_config}->{test_psi_mod_obo_file};
 my $synonym_types = $config->{load}->{ontology}->{synonym_types};
 
 my $index_path = $config->data_dir_path('ontology_index_dir');
-my $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+my $ontology_index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
 
 $test_util->load_test_ontologies($ontology_index, 1);
 
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-is(@loaded_cvterms, 182);
+is(@loaded_cvterms, 123);
 
 my $cvprop_rs = $schema->resultset('Cvprop');
 
@@ -52,20 +52,20 @@ my %expected_cv_term_counts = (
   'PSI-MOD' => '15',
   'molecular_function' => '8',
   'cellular_component' => '4',
-  'relationship' => '62',
-  'biological_process' => '8',
+  'relationship' => '0',
+  'biological_process' => '9',
   'sequence' => 20,
 );
 
 cmp_deeply(\%actual_cv_term_counts,
            \%expected_cv_term_counts);
 
-is(@loaded_cvterms, 182);
+is(@loaded_cvterms, 123);
 
 my @cvterm_relationships = $schema->resultset('CvtermRelationship')
   ->search({}, { join => { subject => 'cv', type => 'cv' } })->all();
 
-is(@cvterm_relationships, 124);
+is(@cvterm_relationships, 59);
 
 
 ok((grep {
@@ -81,9 +81,9 @@ ok(grep {
 } @loaded_cvterms);
 
 
-# biological_process
+# test lookup in biological_process
 my @results =
-  $ontology_index->lookup('biological_process', 'transmembrane transport', 100);
+  $ontology_index->lookup('biological_process', [], 'transmembrane transport', 100);
 
 for my $result (@results) {
   my $doc = $result->{doc};
@@ -111,8 +111,15 @@ for (my $i = 0; $i < @expected_transport; $i++) {
 }
 
 
+# look for root term
+@results = $ontology_index->lookup('biological_process', [], 'biological_process', 100);
+
+is (@results, 1);
+my $biological_process_doc = $results[0]->{doc};
+is ($biological_process_doc->get('subset_id'), 'is_a__canto_root_subset');
+
 # psi-mod
-@results = $ontology_index->lookup('psi-mod', 'secondary neutral', 100);
+@results = $ontology_index->lookup('psi-mod', [], 'secondary neutral', 100);
 
 is(@results, 3);
 
@@ -128,7 +135,7 @@ is($results[0]->{doc}->get('term_name'), 'modified residue with a secondary neut
 
 # molecular_function with synonym
 my $long_ugly_synonym_query = 'aminobenzoate methenyltransferase activity';
-@results = $ontology_index->lookup('molecular_function', $long_ugly_synonym_query, 100);
+@results = $ontology_index->lookup('molecular_function', [], $long_ugly_synonym_query, 100);
 
 is(@results, 6);
 
@@ -142,7 +149,7 @@ for my $result (@results) {
 is($results[0]->{doc}->get('text'), '2-amino-4-hydroxy-6-hydroxymethyl-7,8-dihydropteridine-diphosphate:4-aminobenzoate 2-amino-4-hydroxydihydropteridine-6-methenyltransferase activity');
 is($results[0]->{doc}->get('term_name'), 'dihydropteroate synthase activity');
 
-@results = $ontology_index->lookup('molecular_function',
+@results = $ontology_index->lookup('molecular_function', [],
                                    'dihydropteroate synthetase activity', 100);
 
 is(@results, 6);
@@ -153,33 +160,26 @@ is($results[0]->{doc}->get('term_name'), 'dihydropteroate synthase activity');
 
 # check loading of alt_ids
 my $cvterm_dbxref_rs = $schema->resultset('CvtermDbxref');
-is($cvterm_dbxref_rs->count(), 11);
+is($cvterm_dbxref_rs->count(), 13);
 
 undef $ontology_index;
 
-$ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+$ontology_index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
 
 # try re-loading
-<<<<<<< HEAD
 load_all($ontology_index);
-=======
 $test_util->load_test_ontologies($ontology_index);
->>>>>>> upstream/branch/annex-gui
-is($cvterm_dbxref_rs->count(), 11);
+is($cvterm_dbxref_rs->count(), 13);
 
 undef $ontology_index;
 
-$ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+$ontology_index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
 
 # test that obsolete terms are loaded but aren't indexed by Lucene
 $test_util->load_test_ontologies($ontology_index, 1, 1);
 @loaded_cvterms = $schema->resultset('Cvterm')->all();
 
-<<<<<<< HEAD
-is(@loaded_cvterms, 173);
-=======
 is(@loaded_cvterms, 197);
->>>>>>> upstream/branch/annex-gui
 
 ok((grep {
   $_->name() eq 'viable elongated vegetative cell population'
@@ -187,7 +187,7 @@ ok((grep {
 
 # test that non-obsolete term is indexed
 my $viable = 'viable vegetative cell population';
-@results = $ontology_index->lookup('fission_yeast_phenotype', $viable, 100);
+@results = $ontology_index->lookup('fission_yeast_phenotype', [], $viable, 100);
 is(@results, 7);
 
 ok((grep {
@@ -197,7 +197,7 @@ ok((grep {
 
 # test that obsolete terms aren't indexed
 my $viable_elongated = 'viable elongated vegetative cell population';
-@results = $ontology_index->lookup('fission_yeast_phenotype', $viable_elongated, 100);
+@results = $ontology_index->lookup('fission_yeast_phenotype', [], $viable_elongated, 100);
 is(@results, 7);
 
 ok(!(grep {
@@ -224,7 +224,7 @@ for my $rel (@cvterm_relationships) {
 
 cmp_deeply($rel_type_cv_counts{fission_yeast_phenotype},
            {
-             'is_a' => 14,
+             'is_a' => 15,
              'has_part' => 2
            });
 cmp_deeply($rel_type_cv_counts{sequence},

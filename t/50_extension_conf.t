@@ -15,9 +15,10 @@ my @conf = Canto::Config::ExtensionConf::parse($config->{test_config}->{test_ext
 cmp_deeply($conf[0],
            {
              'domain' => 'GO:0016023',
-             'subset_rel' => 'is_a',
+             'subset_rel' => ['is_a'],
              'range' => [{ type => 'Gene' }],
              'display_text' => 'kinase substrate',
+             'help_text' => '',
              'cardinality' => [0,1],
              'allowed_relation' => 'has_substrate',
              'role' => 'user',

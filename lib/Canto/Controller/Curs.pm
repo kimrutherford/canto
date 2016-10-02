@@ -118,8 +118,6 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
 
   my $st = $c->stash();
 
-  my $all_sessions = $c->session()->{all_sessions} //= {};
-
   $st->{curs_key} = $curs_key;
   my $schema = Canto::Curs::get_schema($c);
 
@@ -171,19 +169,20 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
       grep { $config->{evidence_types}->{$_}->{with_gene} } keys %{$config->{evidence_types}} };
   $st->{with_gene_evidence_codes} = $with_gene_evidence_codes;
 
-  my $evidence_by_annotation_type =
-    { map { ($_->{name}, $_->{evidence_codes}); } @{$config->{annotation_type_list}} };
-  $st->{evidence_by_annotation_type} = $evidence_by_annotation_type;
+  my $genotype_annotation_configured = 0;
+
+  map {
+    if ($_->{feature_type} eq 'genotype') {
+      $genotype_annotation_configured = 1;
+    }
+  } @{$config->{annotation_type_list}};
+
+  $st->{genotype_annotation_configured} = $genotype_annotation_configured;
 
   # curation_pub_id will be set if we are annotating a particular publication,
   # rather than annotating genes without a publication
   my $pub_id = $self->get_metadata($schema, 'curation_pub_id');
   $st->{pub} = $schema->find_with_type('Pub', $pub_id);
-
-  $all_sessions->{$curs_key} = {
-    key => $curs_key,
-    pubid => $st->{pub}->uniquename(),
-  };
 
   die "internal error, can't find Pub for pub_id $pub_id"
     if not defined $st->{pub};
@@ -202,23 +201,34 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
 
   if ($path =~ m!/ro/?$!) {
     $st->{read_only_curs} = 1;
+    my $message;
     if ($state eq EXPORTED) {
-      $st->{message} =
-        ["Review only - this session has been exported so no changes are possible"];
+      $message = "Review only - this session has been exported so no changes are possible";
     } else {
       if ($state eq NEEDS_APPROVAL || $state eq APPROVAL_IN_PROGRESS) {
-        $st->{message} =
-          ["Review only - this session has been submitted for approval so no changes are possible"];
+        $message = "Review only - this session has been submitted for approval so no changes are possible";
       } else {
-        $st->{message} =
-          ["Review only - this session can be viewed but not edited"];
+        $message = "Review only - this session can be viewed but not edited";
       }
     }
+    $st->{message} = [$message];
   }
 
   my $use_dispatch = 1;
 
   my $current_user = $c->user();
+
+  if (defined $current_user && $current_user->is_admin()) {
+    $st->{current_user_is_admin} = 1;
+
+    my $annotation_mode = $self->get_metadata($schema, 'annotation_mode');
+
+    if (!defined $annotation_mode) {
+      $self->set_metadata($schema, 'annotation_mode', 'advanced');
+    }
+  } else {
+    $st->{current_user_is_admin} = 0;
+  }
 
   if ($config->{canto_offline} && !$st->{read_only_curs} &&
         (!defined $current_user || !$current_user->is_admin()) &&
@@ -264,7 +274,7 @@ sub top : Chained('/') PathPart('curs') CaptureArgs(1)
     $use_dispatch = 0;
   }
 
-  if ($state eq CURATION_PAUSED && $path =~ m:/(restart_curation|ro):) {
+  if ($state eq CURATION_PAUSED && $path =~ m:/(ws/.*/list|restart_curation|ro):) {
     $use_dispatch = 0;
   }
 
@@ -563,7 +573,8 @@ sub gene_upload : Chained('top') Args(0) Form
     @no_genes_elements = (
       {
         name => 'no-genes', type => 'Checkbox',
-        label => 'This paper does not contain any pathogen gene-specific information',
+        label => 'If this paper does not contain any pathogen gene-specific information, ' .
+          'check this box and select a reason from the pulldown menu that will appear:',
         label_tag => 'formfu-label',
         default_empty_value => 1,
         attributes => { 'ng-model' => 'data.noAnnotation',
@@ -1179,10 +1190,12 @@ sub annotation_set_term : Chained('annotate') PathPart('set_term') Args(1)
     $self->_create_annotation($c, $annotation_type_name,
                                   $feature_type, [$feature], \%annotation_data);
 
+  my $location = $st->{curs_root_uri} . "/feature/$feature_type/view/" .
+    $feature->feature_id();
+
   $c->stash->{json_data} = {
     status => "success",
-    location => $st->{curs_root_uri} . "/feature/$feature_type/view/" .
-      $feature->feature_id(),
+    location => $location,
   };
 
   $c->forward('View::JSON');
@@ -1357,6 +1370,9 @@ sub feature_view : Chained('feature') PathPart('view')
 
     $st->{feature} = $st->{gene};
     $st->{features} = $st->{genes};
+
+    my $display_name = $st->{feature}->display_name();
+    $st->{title} = "Gene: $display_name";
  } else {
     if ($feature_type eq 'genotype') {
       my $genotype;
@@ -1372,7 +1388,6 @@ sub feature_view : Chained('feature') PathPart('view')
           Canto::Curs::GenotypeManager->new(config => $c->config(),
                                             curs_schema => $schema);
 
-
         # pull from Chado and store in CursDB, $genotype_id is an
         # identifier/uniquename
         $genotype =
@@ -1384,37 +1399,14 @@ sub feature_view : Chained('feature') PathPart('view')
 
       $st->{feature} = $genotype;
       $st->{features} = [$genotype];
+
+      $st->{title} = 'Genotype';
     } else {
       die "no such feature type: $feature_type\n";
     }
   }
 
-  my $display_name = $st->{feature}->display_name();
-
-  $st->{title} = ucfirst $feature_type . ": $display_name";
   $st->{template} = "curs/${feature_type}_page.mhtml";
-}
-
-sub feature_add : Chained('feature') PathPart('add')
-{
-  my ($self, $c) = @_;
-
-  my $st = $c->stash();
-
-  $st->{show_title} = 1;
-
-  my $feature_type = $st->{feature_type};
-
-  if ($feature_type eq 'genotype') {
-    _set_allele_select_stash($c);
-  }
-
-  $st->{annotation_count} = 0;
-
-  $st->{edit_or_duplicate} = 'edit';
-
-  $st->{title} = "Add a $feature_type";
-  $st->{template} = "curs/${feature_type}_edit.mhtml";
 }
 
 sub _feature_edit_helper
@@ -1439,6 +1431,23 @@ sub _feature_edit_helper
       my @alleles_data = @{$body_data->{alleles}};
       my $genotype_name = $body_data->{genotype_name};
       my $genotype_background = $body_data->{genotype_background};
+
+      if (defined $genotype_name && length $genotype_name > 0) {
+        my $trimmed_name = $genotype_name =~ s/^\s*(.*?)\s*$/$1/r;
+        my $existing_genotype =
+          $schema->resultset('Genotype')->find({ name => $genotype_name }) //
+          $schema->resultset('Genotype')->find({ name => $trimmed_name });
+
+        if ($existing_genotype && $existing_genotype->genotype_id() != $genotype_id) {
+          $c->stash->{json_data} = {
+            status => "error",
+            message => "Storing changes to genotype failed: a genotype with " .
+              "that name already exists",
+          };
+          $c->forward('View::JSON');
+          return;
+        }
+      }
 
       try {
         my $guard = $schema->txn_scope_guard();
@@ -1470,7 +1479,7 @@ sub _feature_edit_helper
 
         $c->stash->{json_data} = {
           status => "success",
-          location => $st->{curs_root_uri} . "/feature/genotype/view/" . $genotype->genotype_id(),
+          location => $st->{curs_root_uri} . "/genotype_manage#/select/" . $genotype->genotype_id(),
         };
       } catch {
         $c->stash->{json_data} = {
@@ -1583,7 +1592,8 @@ sub genotype_store : Chained('feature') PathPart('store')
         Canto::Curs::GenotypeManager->new(config => $c->config(),
                                           curs_schema => $schema);
 
-      my $existing_genotype = $genotype_manager->find_with_alleles(\@alleles);
+      my $existing_genotype =
+        $genotype_manager->find_with_bg_and_alleles($genotype_background, \@alleles);
 
       if ($existing_genotype) {
         my $alleles_string = "allele";
@@ -1591,16 +1601,20 @@ sub genotype_store : Chained('feature') PathPart('store')
           $alleles_string = "alleles";
         }
         if (defined $existing_genotype->name()) {
-          $c->flash()->{message} = "Using existing genotype with the same $alleles_string: " .
-            $existing_genotype->name();
+          $c->flash()->{message} = qq(Using existing genotype with the same $alleles_string: ") .
+            $existing_genotype->name() . '"'
         } else {
           $c->flash()->{message} = "Using existing genotype with the same $alleles_string";
+        }
+
+        if ($genotype_background) {
+          $c->flash()->{message} .= " and background";
         }
 
         $c->stash->{json_data} = {
           status => "existing",
           genotype_display_name => $existing_genotype->display_name(),
-          location => $st->{curs_root_uri} . "/feature/genotype/view/" . $existing_genotype->genotype_id(),
+          genotype_id => $existing_genotype->genotype_id(),
         };
       } else {
         my $guard = $schema->txn_scope_guard();
@@ -1615,7 +1629,7 @@ sub genotype_store : Chained('feature') PathPart('store')
         $c->stash->{json_data} = {
           status => "success",
           genotype_display_name => $genotype->display_name(),
-          location => $st->{curs_root_uri} . "/feature/genotype/view/" . $genotype->genotype_id(),
+          genotype_id => $genotype->genotype_id(),
         };
       }
     } catch {
@@ -1950,11 +1964,27 @@ sub _assign_session :Private
         constraints => [ { type => 'Length',  min => 1 }, 'Required', 'Email' ],
         default => $default_submitter_email,
      },
-      {
-        name => 'submit', type => 'Submit', value => 'Continue',
-        attributes => { class => 'btn btn-primary curs-finish-button', },
-      },
     );
+
+  if (!$reassign) {
+    push @all_elements,
+      {
+        type => 'Block', tag => 'p',
+        attributes => { style => 'margin-top: 15px', },
+        content_xml => 'Your <a href="http://www.orcid.org">ORCID</a> (optional but recommended):'
+      },
+      {
+        name => 'submitter_orcid',
+        label_tag => 'formfu-label',
+        type => 'Text', size => 40,
+      };
+  }
+
+  push @all_elements,
+    {
+      name => 'submit', type => 'Submit', value => 'Continue',
+      attributes => { class => 'btn btn-primary curs-finish-button', },
+    };
 
   $form->elements([@all_elements]);
 
@@ -1984,6 +2014,7 @@ sub _assign_session :Private
 
     my $submitter_name = trim($form->param_value('submitter_name'));
     my $submitter_email = trim($form->param_value('submitter_email'));
+    my $submitter_orcid = trim($form->param_value('submitter_orcid'));
 
     if ($submitter_name =~ /\@/) {
       $c->stash()->{message} =
@@ -2007,10 +2038,12 @@ sub _assign_session :Private
           $submitter_email ne $current_submitter_email ||
           $submitter_name ne $current_submitter_name) {
         $curator_manager->set_curator($curs_key, $submitter_email,
-                                      $submitter_name);
+                                      $submitter_name, $submitter_orcid);
       }
       if (!$reassign) {
         $curator_manager->accept_session($curs_key);
+
+        $c->session()->{last_submitter_email} = $submitter_email;
       }
     };
 
@@ -2034,9 +2067,6 @@ sub _assign_session :Private
                                          reassigner_email => $reassigner_email } );
 
       $c->flash()->{message} = "Session has been reassigned to: $submitter_email";
-
-      my $all_sessions = $c->session()->{all_sessions} //= {};
-      delete $all_sessions->{$curs_key};
 
       _redirect_to_top_and_detach($c);
     } else {
@@ -2378,6 +2408,72 @@ sub ws_change_annotation : Chained('ws_annotation') PathPart('change')
 
   $c->stash->{json_data} =
     $service_utils->change_annotation($annotation_id, $status, $json_data);
+
+  $c->forward('View::JSON');
+}
+
+sub _set_annotation_data
+{
+  my $annotation = shift;
+  my $key = shift;
+  my $value = shift;
+
+  my $data = $annotation->data();
+
+  if ($value) {
+    $data->{$key} = $value;
+  } else {
+    delete $data->{$key};
+  }
+
+  $annotation->data($data);
+  $annotation->update();
+}
+
+sub ws_annotation_data_set : Chained('top') PathPart('ws/annotation/data/set') Args(3)
+{
+  my ($self, $c, $annotation_id, $key, $value) = @_;
+
+  my $st = $c->stash();
+
+  my $schema = $st->{schema};
+
+  my $allowed_keys = $c->config()->{curs_settings_service}->{allowed_data_keys};
+
+  if (!$allowed_keys->{$key}) {
+    $st->{json_data} = {
+      status => 'error',
+      message => qq(setting with key "$key" not allowed),
+    };
+    $c->forward('View::JSON');
+    return;
+  }
+
+  $st->{json_data} = {
+    status => 'success',
+  };
+
+  $schema->txn_begin();
+
+  if ($annotation_id =~ /^\d+$/) {
+    my $annotation = $schema->resultset('Annotation')->find($annotation_id);
+    _set_annotation_data($annotation, $key, $value);
+  } else {
+    if ($annotation_id eq 'all') {
+      my @annotations = $schema->resultset('Annotation')->all();
+
+      map {
+        _set_annotation_data($_, $key, $value);
+      } @annotations;
+    } else {
+      $st->{json_data} = {
+        status => 'error',
+        message => qq(no annotation with id "$annotation_id"),
+      };
+    }
+  }
+
+  $schema->txn_commit();
 
   $c->forward('View::JSON');
 }

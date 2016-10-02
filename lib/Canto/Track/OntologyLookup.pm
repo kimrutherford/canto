@@ -220,6 +220,18 @@ sub _parse_search_scope
   if ($string =~ /^\[(.*)\]$/) {
     my $id_string = $1;
     my @ids = split /\|/, $id_string;
+
+    @ids = map {
+      if (/(\w+:\d+)-(\w+:\d+)/) {
+        {
+          include => "is_a($1)",
+          exclude => "is_a($2)",
+        };
+      } else {
+        "is_a($_)";
+      }
+    } @ids;
+
     return \@ids;
   } else {
     return $string;
@@ -242,6 +254,8 @@ sub _parse_search_scope
            include_definition - include the definition for terms (default: 0)
            include_synonyms - if defined this is a include all the synonyms in
                               the result (default: [])
+           exclude_subsets - exclude from the results any terms that are in the
+                             listed subsets (default: [])
  Returns : [ { id => '...', name => '...', definition => '...',
                matching_synonym => '...',  # set only if a synonym matched
                synonyms => [     # set only if include_synonyms is set
@@ -267,10 +281,11 @@ sub lookup
   my $include_definition = $args{include_definition};
   my $include_children = $args{include_children};
   my $include_synonyms = $args{include_synonyms};
+  my $exclude_subsets = $args{exclude_subsets} // [];
 
   my $config = $self->config();
   my $index_path = $config->data_dir_path('ontology_index_dir');
-  my $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+  my $ontology_index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
 
   my @results;
 
@@ -291,7 +306,9 @@ sub lookup
 
     my $search_scope = _parse_search_scope($ontology_name);
 
-    @results = $ontology_index->lookup($search_scope, _clean_string($search_string),
+    @results = $ontology_index->lookup($search_scope,
+                                       $exclude_subsets,
+                                       _clean_string($search_string),
                                        $max_results);
 
     my $schema = $self->schema();
@@ -521,33 +538,82 @@ sub _get_all_count_rs
   my $self = shift;
   my $schema = $self->schema();
   my $search_scope = shift;
+  my $exclude_subsets = shift;
+
+  my $rs = undef;
 
   if (ref $search_scope) {
-    # we got eg. "[GO:000123,SO:000345]" from user so $search_scope is an array
-    # of IDs
-    my $subset_cvtermprop_rs =
-      $schema->resultset('Cvtermprop')
-      ->search(
-        {
-          value => { -in => $search_scope },
-          'type.name' => 'canto_subset',
-        },
-        {
-          join => 'type',
-        });
+    # we got eg. "[GO:000123|SO:000345]" or "[GO:0008150-GO:0000770|GO:0000123]"
+    # from the user so $search_scope is an array of IDs or hashes like
+    # { include => 'GO:0008150', exclude => 'GO:0000770' }
+    # (meaning exclude a term and children)
+    my $place_holder_count = 0;
 
-    return $schema->resultset('Cvterm')->search({
-      cvterm_id => {
-        -in => $subset_cvtermprop_rs->get_column('cvterm_id')->as_query(),
+    my $where =
+      join ' OR ', map {
+        my $where_bit = <<"END";
+cvterm_id in
+  (SELECT p.cvterm_id FROM cvtermprop p
+     JOIN cvterm pt ON p.type_id = pt.cvterm_id
+    WHERE pt.name = 'canto_subset' AND value = ?)
+END
+
+        if (ref $_) {
+          $where_bit .= <<"END";
+AND cvterm_id NOT IN
+  (SELECT p.cvterm_id FROM cvtermprop p
+     JOIN cvterm pt ON p.type_id = pt.cvterm_id
+    WHERE pt.name = 'canto_subset' AND value = ?)
+END
+          $place_holder_count += 2;
+        } else {
+          $place_holder_count++;
+        }
+
+        $where_bit;
+      } @$search_scope;
+
+    my @flat_ids = map {
+      if (ref $_) {
+        ($_->{include}, $_->{exclude});
+      } else {
+        $_;
       }
-    });
+    } @$search_scope;
+
+    my @bind_params = map {
+      ['value', $_];
+    } @flat_ids;
+
+    $rs = $schema->resultset('Cvterm')->search(\[$where, @bind_params]);
   } else {
     my $cv = $self->_find_cv($search_scope);
-    return $schema->resultset('Cvterm')->search({
+    $rs = $schema->resultset('Cvterm')->search({
       cv_id => $cv->cv_id(),
       is_relationshiptype => 0,
     });
   }
+
+  if (@$exclude_subsets) {
+    my $subset_cvtermprop_rs =
+      $schema->resultset('Cvtermprop')
+        ->search(
+          {
+            value => { -in => $exclude_subsets },
+            'type.name' => 'canto_subset',
+          },
+          {
+            join => 'type',
+          });
+
+    $rs = $rs->search({
+      cvterm_id => {
+        -not_in => $subset_cvtermprop_rs->get_column('cvterm_id')->as_query(),
+      }
+    });
+  }
+
+  return $rs;
 }
 
 
@@ -565,6 +631,8 @@ sub _get_all_count_rs
            include_definition - include the definition for terms (default: 0)
            include_synonyms - if defined this is a include all the synonyms in
                               the result (default: [])
+           exclude_subsets - exclude from the results any terms that are in the
+                             listed subsets (default: [])
  Returns : returns an array of hashes in the same format as lookup()
            but with no matching_synonym keys
 
@@ -583,13 +651,14 @@ sub get_all
   my $include_children = $args{include_children};
   my $include_synonyms = $args{include_synonyms};
   my $include_subset_ids = $args{include_subset_ids};
+  my $exclude_subsets = $args{exclude_subsets} // [];
 
   my $schema = $self->schema();
   my @ret_list = ();
 
   my $search_scope = _parse_search_scope($ontology_name);
 
-  my $cvterm_rs = $self->_get_all_count_rs($search_scope);
+  my $cvterm_rs = $self->_get_all_count_rs($search_scope, $exclude_subsets);
 
   while (defined (my $cvterm = $cvterm_rs->next())) {
     my %term_hash =
@@ -610,6 +679,8 @@ sub get_all
  Function: Return the count of the non-relation terms from an ontology or subset
  Args    : ontology_name - the ontology or subset to search, subsets look like:
                            "[GO:000123|SO:000345]"
+           exclude_subsets - exclude from the results any terms that are in the
+                             listed subsets (default: [])
 
 =cut
 
@@ -623,10 +694,12 @@ sub get_count
     croak "no ontology_name passed to OntologyLookup::get_count()";
   }
 
+  my $exclude_subsets = $args{exclude_subsets} // [];
+
   my $schema = $self->schema();
 
   my $search_scope = _parse_search_scope($ontology_name);
-  my $cvterm_rs = $self->_get_all_count_rs($search_scope);
+  my $cvterm_rs = $self->_get_all_count_rs($search_scope, $exclude_subsets);
 
   return $cvterm_rs->count();
 }

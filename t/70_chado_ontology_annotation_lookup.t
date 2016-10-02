@@ -11,6 +11,7 @@ my $test_util = Canto::TestUtil->new();
 $test_util->init_test();
 
 my $config = $test_util->config();
+$config->{database_name} = "PomBaseTest";
 
 my $lookup =
   Canto::Chado::OntologyAnnotationLookup->new(config => $test_util->config());
@@ -40,6 +41,7 @@ sub check_res {
                evidence_code => 'IMP',
                with => 'PomBase:SPBC2G2.01c',
                from => undef,
+               gene_product_form_id => 'PR:000027576',
                is_not => 0,
                conditions => [],
                qualifiers => [],
@@ -144,7 +146,17 @@ cmp_deeply($res->[0],
                'uniquename' => 'PMID:19756689'
              },
              'is_not' => 1,
-             'with' => undef
+             'with' => undef,
+             'gene_product_form_id' => undef,
+             'extension' =>
+               [
+                 [
+                   {
+                     'rangeValue' => 'PomBaseTest:cdc11',
+                     'relation' => 'requires_direct_regulator'
+                   }
+                 ]
+               ],
            });
 
 
@@ -163,6 +175,7 @@ my $cycloheximide_annotation_res = $Canto::TestUtil::shared_test_results{cyclohe
 cmp_deeply($res->[0],
            {
              'with' => undef,
+             'gene_product_form_id' => undef,
              'qualifiers' => [],
              'is_not' => 'false',
              'conditions' => [],

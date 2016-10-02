@@ -250,6 +250,7 @@ sub make_ontology_annotation
     curator => $curator,
     status => $annotation->status(),
     is_not => JSON::false,
+    checked => $data->{checked} || 'no',
   };
 
   return $ret;
@@ -367,6 +368,7 @@ sub make_interaction_annotation
       status => $annotation->status(),
       curator => $curator,
       is_inferred_annotation => $is_inferred_annotation,
+      checked => $data->{checked} || 'no',
     };
 
   return $entry;
@@ -500,10 +502,10 @@ sub _process_existing_db_ontology
   my $ontology_term = $row->{ontology_term};
   my $publication = $row->{publication};
   my $evidence_code = $row->{evidence_code};
+  my $gene_product_form_id = $row->{gene_product_form_id};
   my $ontology_name = $ontology_term->{ontology_name};
 
-  my $term_name =
-    $row->{ontology_term}->{extension_term_name} // $row->{ontology_term}->{term_name};;
+  my $term_name = $row->{ontology_term}->{term_name};;
 
   my $term_ontid = $ontology_term->{ontid};
 
@@ -575,6 +577,7 @@ sub _process_existing_db_ontology
     evidence_code => $evidence_code,
     status => 'existing',
     is_not => $is_not,
+    extension => $row->{extension},
   );
 
   if ($gene) {
@@ -587,6 +590,7 @@ sub _process_existing_db_ontology
     $ret{with_or_from_identifier} = $with_or_from_identifier;
     $ret{with_or_from_display_name} = $with_or_from_identifier;
     $ret{with_gene_id} = $with_gene_id;
+    $ret{gene_product_form_id} = $gene_product_form_id;
   } else {
     $ret{genotype_identifier} = $genotype->{identifier};
     $ret{genotype_name} = $genotype->{name} || '';
@@ -930,7 +934,7 @@ sub canto_allele_type
 
 =head2 make_allele_display_name
 
- Usage   : $dis_name = make_allele_display_name($name, $description);
+ Usage   : $dis_name = make_allele_display_name($name, $description, $type);
  Function: make an allele display name from a name and description
  Args    : $name - the allele name (can be undef)
            $description - the allele description (can be undef)
@@ -946,11 +950,26 @@ sub make_allele_display_name
   my $description = shift;
   my $type = shift;
 
+  if ($type eq 'deletion' && $name =~ /delta$/ ||
+      $type =~ /^wild[\s_]?type$/ && $name =~ /\+$/) {
+    if ($description &&
+        $description =~ s/[\s_]+//gr ne $type =~ s/[\s_]+//gr) {
+      return "$name($description)";
+    } else {
+      return $name;
+    }
+  }
+
   $description ||= $type || 'unknown';
 
-  if ($type && ($type eq 'deletion' || $type =~ /^wild[\s_]?type$/)
-      && $name ne 'noname') {
-    return $name;
+  if ($type =~ /^mutation/) {
+    if ($type =~ /amino acid/) {
+      $description =~ s/(^|,\s*)/${1}aa/g;
+    } else {
+      if ($type =~ /nucleotide/) {
+        $description =~ s/(^|,\s*)/${1}nt/g;
+      }
+    }
   }
 
   return "$name($description)";

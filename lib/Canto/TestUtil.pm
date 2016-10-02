@@ -42,8 +42,9 @@ use Canto::Track::OntologyIndex;
 use Canto::Track::LoadUtil;
 use Canto::Track::PubmedUtil;
 use Canto::Track::CuratorManager;
-use Canto::Config::ExtensionSubsetProcess;
+use Canto::Config::ExtensionProcess;
 use Canto::DBUtil;
+use Canto::Chado::SubsetProcess;
 
 use Moose;
 
@@ -78,7 +79,7 @@ our %shared_test_results = (
         },
         {
           'description' => 'del_x1',
-          'display_name' => 'ste20delta',
+          'display_name' => 'ste20delta(del_x1)',
           'name' => 'ste20delta',
           'type' => 'deletion',
           'uniquename' => 'SPBC12C2.02c:allele-1',
@@ -125,8 +126,8 @@ our %shared_test_results = (
     'genotype_id' => undef,
     'evidence_code' => 'UNK',
     'genotype_name_or_identifier' => 'cdc11-33 ssm4delta',
-    'annotation_type' => 'phenotype'
-
+    'annotation_type' => 'phenotype',
+    'extension' => undef,
   },
   post_translational_modification => {
     'evidence_code' => 'ISS',
@@ -725,13 +726,13 @@ sub make_base_track_db
 
     my $index_path = $config->data_dir_path('ontology_index_dir');
 
-    my $ontology_index = Canto::Track::OntologyIndex->new(index_path => $index_path);
+    my $ontology_index = Canto::Track::OntologyIndex->new(config => $config, index_path => $index_path);
     $ontology_index->initialise_index();
 
     my @relationships_to_load = @{$config->{load}->{ontology}->{relationships_to_load}};
 
     my $ontology_load =
-      Canto::Track::OntologyLoad->new(default_db_name => $config->{default_db_name},
+      Canto::Track::OntologyLoad->new(config => $config,
                                       relationships_to_load => \@relationships_to_load,
                                       schema => $schema);
 
@@ -857,7 +858,13 @@ sub _load_curs_db_data
         $gene_identifier = $gene_details;
       }
       my $result = $gene_lookup->lookup([$gene_identifier]);
-      my @found = @{$result->{found}};
+      # might return a matching synonym
+      my @found = grep {
+        $_->{primary_identifier} eq $gene_identifier
+          ||
+        $_->{primary_name} eq $gene_identifier;
+      } @{$result->{found}};
+
       if (@found != 1) {
         die "Expected 1 result for $gene_identifier not ", scalar(@found)
       }
@@ -1212,22 +1219,20 @@ sub get_a_person
     return $admin_person_rs->first();
   }
 
-=head2
+=head2 get_mock_extension_process
 
- Usage   :
- Function:
- Args    :
- Return  :
+ Function: return a Mock ExtensionProcess object that doesn't need to
+           run owltools
 
 =cut
 
-sub get_mock_subset_processor
+sub get_mock_extension_process
   {
     my $self = shift;
     my $config = $self->config();
-    my $extension_subset_process = Canto::Config::ExtensionSubsetProcess->new(config => $config);
+    my $extension_process = Canto::Config::ExtensionProcess->new(config => $config);
 
-    $extension_subset_process = Test::MockObject::Extends->new($extension_subset_process);
+    $extension_process = Test::MockObject::Extends->new($extension_process);
     my $get_owltools_results = sub {
       my @results = ();
       open my $fh, '<', $self->root_dir() . '/t/data/owltools_out.txt';
@@ -1238,9 +1243,9 @@ sub get_mock_subset_processor
       close $fh;
       return @results;
     };
-    $extension_subset_process->mock('get_owltools_results', $get_owltools_results);
+    $extension_process->mock('get_owltools_results', $get_owltools_results);
 
-    return $extension_subset_process;
+    return $extension_process;
   }
 
 
@@ -1253,7 +1258,7 @@ sub get_mock_subset_processor
            $include_ro - if true, load RO too
            $include_fypo - load FYPO if true
            $include_closure_subsets - load closure subsets from
-              ExtensionSubsetProcess::get_subset_data()
+              ExtensionProcess::get_subset_data()
  Return  :
 
 =cut
@@ -1279,25 +1284,23 @@ sub load_test_ontologies
     $self->root_dir() . '/' . $config->{relationship_ontology_path};
   my $psi_mod_obo_file = $config->{test_config}->{test_psi_mod_obo_file};
   my $so_obo_file = $config->{test_config}->{test_so_obo_file};
+  my $peco_obo_file = $config->{test_config}->{test_peco_obo_file};
 
   my @relationships_to_load = @{$load_config->{ontology}->{relationships_to_load}};
 
-  my $extension_subset_process = undef;
-  my $subset_data = undef;
+  my $extension_process = undef;
 
   if ($include_closure_subsets) {
     my @ontology_args = ($test_go_file, $test_fypo_file, $psi_mod_obo_file,
                          $so_obo_file);
-    $extension_subset_process = $self->get_mock_subset_processor();
-
-    $subset_data = $extension_subset_process->get_subset_data(@ontology_args);
+    $extension_process = $self->get_mock_extension_process();
   }
 
   my $ontology_load =
     Canto::Track::OntologyLoad->new(schema => $self->track_schema(),
                                     relationships_to_load => \@relationships_to_load,
-                                    default_db_name => 'Canto',
-                                    subset_data => $subset_data);
+                                    extension_process => $extension_process,
+                                    config => $self->config());
 
   $ontology_index->initialise_index();
 
@@ -1309,16 +1312,12 @@ sub load_test_ontologies
   push @sources, $test_go_file;
   if ($include_fypo) {
     push @sources, $test_fypo_file;
+    push @sources, $peco_obo_file;
   }
   push @sources, $psi_mod_obo_file;
   push @sources, $so_obo_file;
 
   $ontology_load->load(\@sources, $ontology_index, $synonym_types);
-
-  if ($include_closure_subsets) {
-    $extension_subset_process->process_subset_data($ontology_load->load_schema(),
-                                                   $subset_data);
-  }
 
   $ontology_load->finalise();
   $ontology_index->finish_index();

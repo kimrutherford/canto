@@ -3,9 +3,12 @@ $title => 'Genes'
 $pub
 </%args>
 
-<div class="gene-list curs-box">
+<div class="curs-box">
   <div class="curs-box-title">
     <div>
+% my $and_genotypes = '';
+% $and_genotypes = ' and genotypes' if $genotype_annotation_configured;
+
 % if ($read_only_curs) {
 Pathogen genes from this publication
 % } else {
@@ -15,11 +18,6 @@ Pathogen genes and genotypes
     </div>
   </div>
   <div class="curs-box-body">
-% if (!$read_only_curs) {
-   <div class="gene-list-instructions">
-Click on a pathogen gene name to start entering data
-   </div>
-% }
 % if (@gene_hashes) {
   <table>
 %   for (my $y = 0; $y < $row_max; $y++) {
@@ -29,7 +27,7 @@ Click on a pathogen gene name to start entering data
 %       my $gene = $gene_hashes[$index];
 %       if (defined $gene) {
       <td>
-        <a href="<% $start_path . '/feature/gene/view/' . $gene->{gene_id} . ($read_only_curs ? '/ro' : '') %>"
+        <a href="<% $start_path . '/feature/gene/view/' . $gene->{gene_id} . ($read_only_curs ? '/ro' : '') %>">
           <span>
             <% $gene->{identifier} %>
           </span>
@@ -46,15 +44,18 @@ Click on a pathogen gene name to start entering data
   </div>
 % }
 
+  <div style="margin-top: 20px;">
 % if (!$read_only_curs) {
   <div class="feature-list-action">
     <a href="<% $edit_path %>">Edit pathogen gene list ...</a>
   </div>
 % }
+% if ($genotype_annotation_configured) {
   <div class="feature-list-action">
     <a href="<% $genotype_manage_url %>"><% $read_only_curs ? 'View pathogen genotypes ...' : 'Pathogen genotype management ...' %></a>
   </div>
-  </div>
+% }
+</div>
 </div>
 </div>
 
@@ -62,7 +63,8 @@ Click on a pathogen gene name to start entering data
 use Canto::Curs;
 use Canto::Curs::GeneProxy;
 
-my $schema = $c->stash()->{schema};
+my $st = $c->stash();
+my $schema = $st->{schema};
 my $config = $c->config();
 
 my @all_genes = map {
@@ -84,9 +86,10 @@ if (@gene_hashes <= 5) {
   push @gene_hashes, (undef) x @gene_hashes;
 }
 
-my $read_only_curs = $c->stash()->{read_only_curs};
+my $read_only_curs = $st->{read_only_curs};
+my $genotype_annotation_configured = $st->{genotype_annotation_configured};
 
-my $start_path = $c->stash()->{curs_root_uri};
+my $start_path = $st->{curs_root_uri};
 my $edit_path = "$start_path/edit_genes";
 my $genotype_manage_url = "$start_path/genotype_manage";
 

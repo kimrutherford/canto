@@ -6,8 +6,8 @@ use Test::More tests => 6;
 
 use Clone qw(clone);
 use JSON;
-
 use utf8;
+use Encode;
 
 use Digest::SHA qw(sha1_base64);
 
@@ -47,8 +47,8 @@ my $full_expected_curation_session =
         uniquename => 'SPCC63.05',
         organism => 'Schizosaccharomyces pombe',
       },
-      'Schizosaccharomyces pombe SPCC576.16c' => {
-        uniquename => 'SPCC576.16c',
+      'Schizosaccharomyces pombe SPBC1826.01c' => {
+        uniquename => 'SPBC1826.01c',
         organism => 'Schizosaccharomyces pombe',
       }
     },
@@ -142,32 +142,45 @@ my $full_expected_curation_session =
           email => 'some.testperson@pombase.org',
           community_curated => JSON::XS::false,
         },
-        with_gene => "SPCC576.16c",
+        with_gene => "SPBC1826.01c",
         extension => [
-          [
-            {
-              relation => 'exists_during',
-              rangeValue => 'GO:0051329',
-            },
-            {
-              relation => 'has_substrate',
-              rangeValue => 'PomBase:SPBC1105.11c',
-            },
-            {
-              relation => 'requires_feature',
-              rangeValue => 'Pfam:PF00564',
-            },
-          ],
-          [
-            {
-              relation => 'exists_during',
-              rangeValue => 'GO:0051329',
-            },
-            {
-              relation => 'has_substrate',
-              rangeValue => 'PomBase:SPBC1105.11c',
-            }
-          ],
+          {
+            relation => 'exists_during',
+            rangeValue => 'GO:0051329',
+          },
+          {
+            relation => 'has_substrate',
+            rangeValue => 'PomBase:SPBC1105.11c',
+          },
+          {
+            relation => 'requires_feature',
+            rangeValue => 'Pfam:PF00564',
+          },
+        ],
+        gene => 'Schizosaccharomyces pombe SPBC14F5.07',
+      },
+      {
+        evidence_code => "IPI",
+        creation_date => "2010-01-02",
+        term => "GO:0034763",
+        status => "new",
+        type => "biological_process",
+        publication => 'PMID:19756689',
+        curator => {
+          name => 'Some Testperson',
+          email => 'some.testperson@pombase.org',
+          community_curated => JSON::XS::false,
+        },
+        with_gene => "SPBC1826.01c",
+        extension => [
+          {
+            relation => 'exists_during',
+            rangeValue => 'GO:0051329',
+          },
+          {
+            relation => 'has_substrate',
+            rangeValue => 'PomBase:SPBC1105.11c',
+          }
         ],
         gene => 'Schizosaccharomyces pombe SPBC14F5.07',
       },
@@ -278,6 +291,10 @@ my $full_expected_curation_session =
       accepted_timestamp => '2012-02-15 13:45:00',
       curation_in_progress_timestamp => '2012-02-15 13:45:00',
       session_created_timestamp => '2012-02-15 13:45:00',
+      curator_email => 'some.testperson@pombase.org',
+      curator_name => 'Some Testperson',
+      curator_role => 'community',
+      curation_accepted_date => '2012-02-15 13:45:00',
       %extra_curs_statuses,
     },
     organisms => {
@@ -525,7 +542,8 @@ my $small_expected_track_data =
 sub check_track {
   my $options = shift;
   my ($count, $track_json) = Canto::Track::Serialise::json($config, $track_schema, $options);
-  my $track_ref = decode_json($track_json);
+
+  my $track_ref = decode_json(encode("utf8", $track_json));
 
   cmp_deeply($track_ref, $full_expected_track_data);
 

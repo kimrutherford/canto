@@ -92,11 +92,11 @@ __PACKAGE__->allow_access('/account');
 __PACKAGE__->allow_access('/login');
 __PACKAGE__->allow_access('/curs');
 __PACKAGE__->allow_access('/ws');
-__PACKAGE__->allow_access('/tools/pubmed_id_start');
 __PACKAGE__->allow_access('/tools/pubmed_id_lookup');
 __PACKAGE__->allow_access('/tools/start');
 __PACKAGE__->allow_access('/local');
 __PACKAGE__->allow_access('/docs');
+__PACKAGE__->allow_access('/stats');
 
 my $config = __PACKAGE__->config();
 

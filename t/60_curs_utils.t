@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 117;
+use Test::More tests => 126;
 use Test::Deep;
 
 use Canto::TestUtil;
@@ -13,6 +13,25 @@ my $config = $test_util->config();
 my $schema = $test_util->track_schema();
 
 my $curs_schema = Canto::Curs::get_schema_for_key($config, 'aaaa0007');
+
+is(Canto::Curs::Utils::make_allele_display_name('test-1', 'some_desc', 'some_type'),
+   'test-1(some_desc)');
+is(Canto::Curs::Utils::make_allele_display_name('testdelta', 'deletion', 'deletion'),
+   'testdelta');
+is(Canto::Curs::Utils::make_allele_display_name('testdelta', undef, 'deletion'),
+   'testdelta');
+is(Canto::Curs::Utils::make_allele_display_name('testdelta', 'deletion', 'deletion'),
+   'testdelta');
+is(Canto::Curs::Utils::make_allele_display_name('testdelta', 'deletion', 'wild_type'),
+   'testdelta(deletion)');
+is(Canto::Curs::Utils::make_allele_display_name('test+', '', 'wild type'),
+   'test+');
+is(Canto::Curs::Utils::make_allele_display_name('test+', 'wildtype', 'wild_type'),
+   'test+');
+is(Canto::Curs::Utils::make_allele_display_name('test+', 'deletion', 'wild_type'),
+   'test+(deletion)');
+is(Canto::Curs::Utils::make_allele_display_name('test+', undef, 'deletion'),
+   'test+(deletion)');
 
 sub check_new_annotations
 {
@@ -142,6 +161,7 @@ sub check_new_annotations
                      'gene_display_name' => 'SPCC63.05',
                    }
                  ],
+                 checked => 'no',
                },
                {
                  'publication_uniquename' => 'PMID:19756689',
@@ -191,6 +211,7 @@ sub check_new_annotations
                      'gene_display_name' => 'ssm4',
                    }
                  ],
+                 checked => 'no',
                }
              ]);
   }
@@ -267,6 +288,7 @@ check_new_annotations($dummy_alt_id);
                'with_or_from_identifier' => undef,
                'gene_identifier' => 'SPBC12C2.02c',
                'gene_name_or_identifier' => 'ste20',
+               'gene_product_form_id' => 'PR:000027576',
                'conditions' => [],
                'qualifiers' => [],
                'evidence_code' => 'IMP',
@@ -282,7 +304,8 @@ check_new_annotations($dummy_alt_id);
                'with_or_from_display_name' => 'PomBase:SPBC2G2.01c',
                'with_or_from_identifier' => 'PomBase:SPBC2G2.01c',
                'with_gene_id' => undef,
-             });
+               'extension' => undef,
+            });
 }
 
 {
@@ -298,10 +321,11 @@ check_new_annotations($dummy_alt_id);
                'taxonid' => '4896',
                'annotation_type' => 'biological_process',
                'term_ontid' => 'GO:0006810',
-               'term_name' => 'transport [requires_direct_regulator] SPCC1739.11c',
+               'term_name' => 'transport',
                'with_or_from_identifier' => undef,
                'gene_identifier' => 'SPBC12C2.02c',
                'gene_name_or_identifier' => 'ste20',
+               'gene_product_form_id' => undef,
                'gene_id' => undef,
                'qualifiers' => [],
                'conditions' => [],
@@ -317,6 +341,15 @@ check_new_annotations($dummy_alt_id);
                'with_or_from_display_name' => undef,
                'with_or_from_identifier' => undef,
                'with_gene_id' => undef,
+               'extension' =>
+                 [
+                   [
+                     {
+                       'relation' => 'requires_direct_regulator',
+                       'rangeValue' => 'CONFIGURE_IN_CANTO_DEPLOY.YAML:cdc11'
+                     }
+                   ]
+                 ],
            });
 }
 
@@ -371,7 +404,8 @@ check_new_annotations($dummy_alt_id);
                'genotype_id' => undef,
                'evidence_code' => 'UNK',
                'genotype_name_or_identifier' => 'cdc11-33 ssm4delta',
-               'annotation_type' => 'phenotype'
+               'annotation_type' => 'phenotype',
+               'extension' => undef,
              });
 }
 

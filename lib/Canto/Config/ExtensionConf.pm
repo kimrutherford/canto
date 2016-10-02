@@ -46,7 +46,7 @@ use warnings;
  Args    : @conf_file_names
  Return  : Returns a list of hashes like:
            [ { domain => 'GO:0004672',
-               subset_rel => 'is_a', allowed_relation => 'has_substrate',
+               subset_rel => ['is_a'], allowed_relation => 'has_substrate',
                range => 'GO:0005575' }, ... ]
            The range can be a term ID, or one of the following strings:
              "FeatureID" - the ID of any annotatable feature is allowed
@@ -68,7 +68,7 @@ sub parse {
 
       next if $line =~ /^#/;
 
-      my ($domain, $subset_rel, $allowed_relation, $range, $display_text,
+      my ($domain, $subset_rel, $allowed_relation, $range, $display_text, $help_text,
           $cardinality, $role) =
             split (/\t/, $line);
 
@@ -77,9 +77,10 @@ sub parse {
         next;
       }
 
-      if ($subset_rel !~ /^\w+$/) {
-        die qq("$subset_rel" does not look like a relation on line: $line\n");
-      }
+      my @subset_rel_split =
+        grep { length $_ > 0 }
+        map { s/^\s+//; s/\s+$//; $_; }
+        split /\|/, $subset_rel;
 
       if (!defined $display_text) {
         die "config line $. in $extension_conf_file has too few fields: $line\n";
@@ -111,7 +112,7 @@ sub parse {
               };
             }
           } else {
-            if (/^(text|\%)$/i) {
+            if (/^text$/i) {
               if (!grep { $_->{type} eq 'Text'} @new_range_bits) {
                 push @new_range_bits, {
                   type => 'Text',
@@ -127,7 +128,15 @@ sub parse {
                   }
                 }
               } else {
-                die "unsupported range part: $_\n";
+                if ($_ eq '%') {
+                  if (!grep { $_->{type} eq '%'} @new_range_bits) {
+                    push @new_range_bits, {
+                      type => '%',
+                    };
+                  }
+                } else {
+                  die "unsupported range part: $_\n";
+                }
               }
             }
           }
@@ -142,15 +151,25 @@ sub parse {
           };
       }
 
-      push @res, {
-        domain => $domain,
-        subset_rel => $subset_rel,
+      my %conf = (
+        subset_rel => \@subset_rel_split,
         allowed_relation => $allowed_relation,
         range => \@new_range_bits,
         display_text => $display_text,
+        help_text => $help_text,
         cardinality => \@cardinality,
         role => $role,
-      };
+      );
+
+      if ($domain =~ /(\S+)-(\S+)/) {
+        $conf{domain} = $1;
+        my $exclude_id_str = $2;
+        $conf{exclude_subset_ids} = [split /&/, $exclude_id_str];
+      } else {
+        $conf{domain} = $domain;
+      }
+
+      push @res, \%conf;
     }
 
     close $conf_fh or die "can't close $extension_conf_file: $!\n";
