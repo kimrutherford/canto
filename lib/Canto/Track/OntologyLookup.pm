@@ -140,9 +140,27 @@ sub _make_term_hash
   }
   my $annotation_namespace = $cvterm->cv()->name();
   $term_hash{annotation_namespace} = $annotation_namespace;
-  $term_hash{annotation_type_name} =
-    $self->config()->{annotation_types_by_namespace}->{$annotation_namespace}->{name} //
-    $annotation_namespace;
+
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+use Carp qw(longmess);
+warn 'zzzzz: ',  Dumper([
+$self->config()->{annotation_types_by_namespace}
+]);
+warn longmess('here');
+
+  my $annotation_types = $self->config()->{annotation_types_by_namespace}->{$annotation_namespace};
+
+  if ($annotation_types && @{$annotation_types} == 1) {
+    $term_hash{annotation_type_name} = $annotation_types->[0]->{name};
+  } else {
+    die "can't look up type for namespace: $annotation_namespace";
+  }
+
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn Dumper([\%term_hash]);
+
 
   if ($include_definition) {
     $term_hash{definition} = $cvterm->definition();
@@ -352,7 +370,7 @@ sub lookup
       my %term_hash =
         $self->_make_term_hash($cvterm,
                                $ontology_name,
-                               $include_definition, $include_children,
+                                 $include_definition, $include_children,
                                $include_synonyms, $matching_synonym);
 
       push @ret_list, \%term_hash;

@@ -875,6 +875,13 @@ sub make_annotation
 {
   my ($self, $pub, $data_arg) = @_;
 
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+use Carp qw(longmess);
+warn longmess('data_arg: ', Dumper([$data_arg]));
+
+
+
   if (!$data_arg) {
     croak "no \$data passed to make_annotation()\n";
   }
@@ -905,6 +912,9 @@ sub make_annotation
   }
 
   my %annotation_data = ();
+
+warn "ANNOTATION_TYPE_NAME: $annotation_type_name\n";
+
 
   if ($self->_category_from_type($annotation_type_name) eq 'ontology') {
     my $term_ontid = $data->{term_ontid};
@@ -971,6 +981,11 @@ sub _ontology_change_keys
   my $lookup = Canto::Track::get_adaptor($self->config(), 'ontology');
   my $data = $annotation->data();
 
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn 'zzzz_ontology_change_keys(): ', Dumper([$changes]);
+
+
   return (
     term_ontid => sub {
       my $term_ontid = shift;
@@ -980,6 +995,11 @@ sub _ontology_change_keys
       }
 
       my $res = $lookup->lookup_by_id( id => $term_ontid );
+
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn 'term_ontid: ', Dumper([$annotation->type(), $res]);
+
 
       $annotation->type($res->{annotation_type_name});
 
@@ -1028,6 +1048,11 @@ sub _ontology_change_keys
               $self->curs_schema()->find_with_type('Metagenotype', { metagenotype_id => $feature_id });
             $annotation->metagenotype_annotations()->delete();
             $annotation->set_metagenotypes($metagenotype);
+
+            use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+            warn 'after metagenotype delete:',  Dumper([$annotation->type()]);
+            warn ' :',  Dumper([$annotation->annotation_id()]);
           } else {
             die "unknown feature type: ", $changes->{feature_type};
           }
@@ -1178,6 +1203,12 @@ sub _store_change_hash
 
   my $data = $annotation->data();
 
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn '_store_change_hash type: ', Dumper([$changes, $annotation->type(),\%valid_change_keys]);
+
+
+
  CHANGE: for my $key (keys %$changes) {
     my $conf = $valid_change_keys{$key};
 
@@ -1287,6 +1318,11 @@ sub change_annotation
 
   my $changes = shift;
 
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn 'change_annotation(): ', Dumper([$changes]);
+
+
   try {
     my $pub_id = $self->get_metadata($curs_schema, 'curation_pub_id');
     my $pub = $curs_schema->resultset('Pub')->find($pub_id);
@@ -1361,6 +1397,16 @@ sub create_annotation
     return _make_error('No annotation_type passed to annotation creation service');
   }
 
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn 'create_annotation: ', Dumper([$annotation_type, $details]);
+
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn Dumper([$details]);
+
+
+
   my $curs_schema = $self->curs_schema();
   $curs_schema->txn_begin();
 
@@ -1369,9 +1415,24 @@ sub create_annotation
     my $pub_id = $self->get_metadata($curs_schema, 'curation_pub_id');
     my $pub = $curs_schema->resultset('Pub')->find($pub_id);
 
+warn "PUB: $pub_id";
+
     my $annotation = $self->make_annotation($pub, $details);
 
+
+warn "ann: $annotation";
+
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn Dumper([]);
+
+
     my $annotation_hash;
+
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn 'aaaa: ', Dumper([$self->_category_from_type($annotation->type())]);
+
 
     if ($self->_category_from_type($annotation_type) eq 'ontology') {
       $annotation_hash =
@@ -1385,6 +1446,10 @@ sub create_annotation
                                                         $annotation);
     }
 
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn 'bbb: ', Dumper([$annotation_hash]);
+
     $self->metadata_storer()->store_counts($curs_schema);
 
     $curs_schema->txn_commit();
@@ -1393,6 +1458,8 @@ sub create_annotation
              annotation => $annotation_hash };
   } catch {
     $curs_schema->txn_rollback();
+
+warn $_;
 
     chomp $_;
     return _make_error($_);

@@ -562,7 +562,14 @@ sub get_annotation_table
   my $annotation_rs =
     $schema->resultset('Annotation')->search({ %constraints }, { %options });;
 
+use Data::Dumper;
+$Data::Dumper::Maxdepth = 3;
+warn Dumper([\%constraints]);
+
+
   while (defined (my $annotation = $annotation_rs->next())) {
+
+warn "HERE";
     my @entries;
     if ($annotation_type_category eq 'ontology') {
       @entries = make_ontology_annotation($config, $schema, $annotation,
@@ -619,7 +626,7 @@ sub _process_existing_db_ontology
   }
 
   my $annotation_type_config =
-    $config->{annotation_types_by_namespace}->{$ontology_name} //
+    $config->{annotation_types_by_namespace}->{$ontology_name}->[0] //
     $config->{annotation_types}->{$ontology_name};
 
   my $annotation_type = $annotation_type_config->{name};
