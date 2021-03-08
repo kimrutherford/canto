@@ -89,6 +89,40 @@ __PACKAGE__->belongs_to(
   },
 );
 
+=head2 asymmetric_genotype_interaction_genotype_annotation_bs
+
+Type: has_many
+
+Related object: L<Canto::CursDB::AsymmetricGenotypeInteraction>
+
+=cut
+
+__PACKAGE__->has_many(
+  "asymmetric_genotype_interaction_genotype_annotation_bs",
+  "Canto::CursDB::AsymmetricGenotypeInteraction",
+  {
+    "foreign.genotype_annotation_b_id" => "self.genotype_annotation_id",
+  },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 asymmetric_genotype_interaction_primary_annotations
+
+Type: has_many
+
+Related object: L<Canto::CursDB::AsymmetricGenotypeInteraction>
+
+=cut
+
+__PACKAGE__->has_many(
+  "asymmetric_genotype_interaction_primary_annotations",
+  "Canto::CursDB::AsymmetricGenotypeInteraction",
+  {
+    "foreign.primary_annotation_id" => "self.genotype_annotation_id",
+  },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 genotype
 
 Type: belongs_to
@@ -109,9 +143,26 @@ __PACKAGE__->belongs_to(
   },
 );
 
+=head2 symmetric_genotype_interactions
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-11-24 19:46:37
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:imHVS384VQ8wQ3LFi56crQ
+Type: has_many
+
+Related object: L<Canto::CursDB::SymmetricGenotypeInteraction>
+
+=cut
+
+__PACKAGE__->has_many(
+  "symmetric_genotype_interactions",
+  "Canto::CursDB::SymmetricGenotypeInteraction",
+  {
+    "foreign.primary_annotation_id" => "self.genotype_annotation_id",
+  },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2021-04-07 17:02:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Zi1rNFH9p5R5U2ZxhmJElQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

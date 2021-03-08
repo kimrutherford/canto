@@ -138,6 +138,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 asymmetric_genotype_interactions
+
+Type: has_many
+
+Related object: L<Canto::CursDB::AsymmetricGenotypeInteraction>
+
+=cut
+
+__PACKAGE__->has_many(
+  "asymmetric_genotype_interactions",
+  "Canto::CursDB::AsymmetricGenotypeInteraction",
+  { "foreign.genotype_a_id" => "self.genotype_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 genotype_annotations
 
 Type: has_many
@@ -224,8 +239,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-06-17 20:56:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:q4OLCAH0iwZo5n5NC/wsWw
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2021-04-07 17:02:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zMC7gnWpnzcKwU1UuqH2xA
 
 =head2 annotations
 
